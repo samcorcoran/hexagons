@@ -79,11 +79,6 @@ def on_draw():
 	#Draw centre
 	cX = 250
 	cY = 250
-	pyglet.gl.glColor4f(1.0,0,0,1.0)
-	pyglet.graphics.draw(1, pyglet.gl.GL_POINTS,
-		('v2i', (cX, cY))
-	)
-	drawHex()
 	drawGrid()
 	#image.blit(0, 0)
 
