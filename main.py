@@ -26,7 +26,7 @@ for i in range(6):
 #    	('v2i', (250, 250))
 #)
 
-def drawHex(startPoint=(400,400), radius=50):
+def drawHex(fullHex=True, startPoint=(400,400), radius=50):
 	edgeLength = radius
 	sqrtThree = 1.73205080757
 	innerRadius = (sqrtThree*radius)/2
@@ -43,20 +43,28 @@ def drawHex(startPoint=(400,400), radius=50):
 	#S
 	points.append(startPoint[0])
 	points.append(startPoint[1]-radius)
-	#SW
-	points.append(startPoint[0]-innerRadius)
-	points.append(startPoint[1]-(edgeLength/2))
-	#NW
-	points.append(startPoint[0]-innerRadius)
-	points.append(startPoint[1]+(edgeLength/2))
+
+	# FullHex draws all six sides, otherwise only three are drawn
+	# Missing out three sides reduces draws for gridded hexagons where edges overlap
+	numEdges = 4
+	if fullHex:
+		#SW
+		points.append(startPoint[0]-innerRadius)
+		points.append(startPoint[1]-(edgeLength/2))
+		#NW
+		points.append(startPoint[0]-innerRadius)
+		points.append(startPoint[1]+(edgeLength/2))
+		numEdges = 6
+
 	#Draw edges
 	pyglet.gl.glColor4f(0.0,0.0,1.0,1.0)
-	pyglet.graphics.draw(6, pyglet.gl.GL_LINE_LOOP,
+	pyglet.graphics.draw(4, pyglet.gl.GL_LINES,
     	('v2f', points)
-	)	
+	)
+
 	# Draw points
 	pyglet.gl.glColor4f(0.0,1.0,0.0,1.0)
-	pyglet.graphics.draw(6, pyglet.gl.GL_POINTS,
+	pyglet.graphics.draw(numEdges, pyglet.gl.GL_POINTS,
     	('v2f', points)
 	)
 	
@@ -71,7 +79,7 @@ def drawGrid():
 			xoffset = 0
 			if y%2==0:
 				xoffset = innerRadius
-			drawHex((startX+xoffset+x*2*innerRadius, startY+y*(radius*1.5)), radius)
+			drawHex(False, (startX+xoffset+x*2*innerRadius, startY+y*(radius*1.5)), radius)
 
 @window.event
 def on_draw():
