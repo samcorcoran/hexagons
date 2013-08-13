@@ -58,7 +58,7 @@ def drawHex(fullHex=True, startPoint=(400,400), radius=50):
 
 	#Draw edges
 	pyglet.gl.glColor4f(0.0,0.0,1.0,1.0)
-	pyglet.graphics.draw(4, pyglet.gl.GL_LINES,
+	pyglet.graphics.draw(4, pyglet.gl.GL_LINE_STRIP,
     	('v2f', points)
 	)
 
@@ -72,10 +72,12 @@ def drawGrid():
 	sqrtThree = 1.73205080757
 	radius = 50
 	innerRadius = (sqrtThree*radius)/2
-	startX = 10
-	startY = 10
-	for y in range(10):
-		for x in range(10):
+	startX = 0
+	startY = 0
+	rows = 15
+	cols = 15
+	for y in range(rows):
+		for x in range(cols):
 			xoffset = 0
 			if y%2==0:
 				xoffset = innerRadius
