@@ -9,7 +9,7 @@ window = pyglet.window.Window()
 screenWidth = 800
 screenHeight = 600
 window.set_size(800, 600)
-image = pyglet.resource.image('kitten.jpg')
+image = pyglet.resource.image('groundtruth.bmp')
 
 gridLength = 10
 grid = [[hexagon.Hexagon() for x in range(gridLength)] for y in range(gridLength)]
@@ -22,12 +22,6 @@ nextVector = (0,1)
 for i in range(6):
 	hexPointOffsets.append(nextVector)
 	nextVector = (math.cos(60)*nextVector[0], -1*math.sin(60)*nextVector[1])
-
-##print(hexPointOffsets)
-#pyglet.gl.glColor4f(1.0,0,0,1.0)
-#pyglet.graphics.draw(1, pyglet.gl.GL_POINTS,
-#    	('v2i', (250, 250))
-#)
 
 def drawHex(fullHex=True, centrePoint=(400,400), radius=50, innerRadius=False, edgeColor=(0.0,0.0,1.0,1.0)):
 	edgeLength = radius
@@ -127,6 +121,9 @@ def drawHexGridFromPoints(hexesInRow=10):
 	screenClipGridHexagons(hexGrid)
 	for row in hexGrid:
 		for nextHex in row:
+			# Draw hexagon fill
+			nextHex.drawFilledHex()
+			# Draw hexagon edges and/or points
 			nextHex.drawHex()
 			# Draw hexagon centres
 			#nextHex.drawHexCentrePoint()
@@ -212,7 +209,7 @@ def screenClipGridHexagons(hexGrid):
 	for nextRow in hexGrid:
 		nextRow[0].clipPointsToScreen(widthInterval, heightInterval)
 		nextRow[-1].clipPointsToScreen(widthInterval, heightInterval)
-
+		
 
 @window.event
 def on_draw():
@@ -220,13 +217,13 @@ def on_draw():
 	#Draw centre
 	cX = 250
 	cY = 250
+	image.blit(0, 0)
 	#drawGrid()
 	#drawFittedGrid()
 	#createFittedHexGrid()
-	drawHexGridFromPoints(5)
+	drawHexGridFromPoints(50)
 	#hexPolygon = hexagon.Hexagon((100, 100), 30)
 	#hexPolygon.drawHex()
-	#image.blit(0, 0)
 
 print("Running app")
 pyglet.app.run()
