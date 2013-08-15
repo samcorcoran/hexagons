@@ -85,31 +85,108 @@ def drawGrid():
 			drawHex(False, (startX+xoffset+x*2*innerRadius, startY+y*(radius*1.5)), radius)
 
 def drawFittedGrid(hexesInRow=10):
+	hexGrid = createFittedHexGrid(hexesInRow)
+	for row in hexGrid:
+		for nextHex in row:
+			nextHex.drawHex()
+
+# Returns grid of hexagons
+def createFittedHexGrid(hexesInRow=10):
 	# Width of hexagons (w=root3*Radius/2) is calculated from screenwidth, which then determines hex radius
-	hexWidthRadius = (screenWidth / hexesInRow) / 2
-	hexRadius = (2*hexWidthRadius) / math.sqrt(3) # Also edge length
+	hexWidth = (screenWidth/hexesInRow)
+	hexRadius = hexWidth / math.sqrt(3) # Also edge length
+
+	hexesInCol = int(screenHeight / (hexRadius))
+	gridRows = []
+
 	# Loop over hex coordinate locations
 	hexCentreY = 0
-	rowNumber = 0
+	row = 0
 	while hexCentreY - hexRadius < screenHeight:
+		#print("Row number: %d" % (row))
 		hexCentreX = 0 
 		# Offset each row to allow for tesselation
-		if rowNumber%2==1:
-			hexCentreX += hexWidthRadius
+		if row%2==1:
+			hexCentreX += hexWidth / 2
 		# Draw all hexagons in row
-		colNumber = 0
-		while hexCentreX - hexWidthRadius < screenWidth:
+		nextRow = []
+		col = 0
+		while hexCentreX - (hexWidth/2) < screenWidth:
+			#print("Col number: %d" % (col))
 			hexPolygon = hexagon.Hexagon((hexCentreX, hexCentreY), hexRadius)
-			if rowNumber == 0:
-				# Full hex must be drawn as West side will be seen
-				hexPolygon.drawHex(True)
-			else:
-				hexPolygon.drawHex(False)
-			#drawHex(False, (hexCentreX, hexCentreY), hexRadius, hexWidthRadius, (1.0, 0.0, 0.0, 1.0))
-			hexCentreX += 2 * hexWidthRadius
-			colNumber += 1
-		rowNumber += 1
+			nextRow.append(hexPolygon)
+			hexCentreX += hexWidth
+			col += 1
+		gridRows.append(nextRow)
+		row += 1
 		hexCentreY += hexRadius * 1.5
+	return gridRows
+
+def drawHexGridFromPoints(hexesInRow=10):
+	hexGrid = createHexGridFromPoints(hexesInRow)
+	for row in hexGrid:
+		for nextHex in row:
+			nextHex.drawHex()
+
+# Build a hex grid, hex by hex, using points of neighbouring generated hexagons where possible
+def createHexGridFromPoints(hexesInRow=10):
+	# Width of hexagons (w=root3*Radius/2) is calculated from screenwidth, which then determines hex radius
+	hexWidth = (screenWidth/hexesInRow)
+	hexRadius = (hexWidth) / math.sqrt(3) # Also edge length
+
+	hexesInCol = int(screenHeight / (hexRadius))
+	gridRows = []
+
+	# Loop through hexagon locations, using index to determine if some points should be taken from neighbours
+	# Loop over hex coordinate locations
+	hexCentreY = 0
+	row = 0
+	while hexCentreY - hexRadius < screenHeight:
+		#print("Row number: %d" % (row))
+		hexCentreX = 0 
+		# Offset each row to allow for tesselation
+		if row%2==1:
+			hexCentreX += hexWidth / 2
+		# Draw all hexagons in row
+		nextRow = []
+		col = 0
+		while hexCentreX - (hexWidth/2) < screenWidth:
+			#print("Col number: %d" % (colNumber))
+			hexPolygon = hexagon.Hexagon((hexCentreX, hexCentreY), hexRadius, jitterStrength=0.3)
+
+			# Adopt neighbour point locations
+			# Non-first row must adopt southern points locations from the previous row
+			if row > 0 :
+				# Even rows start with a x offset, so must index a different southern hexagon
+				colIndexOffset = row%2
+
+				# Last hex on row cannot look SE
+				if col < hexesInRow:
+					# SE, take SE neighbour's N point
+					hexPolygon.points[2] = gridRows[row-1][col+colIndexOffset].points[0]
+					# S, take SE neighbour's NW point
+					hexPolygon.points[3] = gridRows[row-1][col+colIndexOffset].points[5]
+				else:
+					# S; Alternatively, take SW neighbour's NE point
+					hexPolygon.points[3] = gridRows[row-1][col-1+colIndexOffset].points[1]
+
+				# If hex isn't in first column, there will be a SW neighbour too, 
+				#  otherwise, retain generated point
+				if col+colIndexOffset > 0:
+					# SW, take SW neighbour's N point
+					hexPolygon.points[4] = gridRows[row-1][col-1+colIndexOffset].points[0]
+			if col > 0:
+				# NW, Adopt W neighbour's NE point as this
+				hexPolygon.points[5] = nextRow[col-1].points[1]
+			# Remaining points (N, NE) are not overwritten				
+
+			nextRow.append(hexPolygon)
+			hexCentreX += hexWidth
+			col += 1
+		gridRows.append(nextRow)
+		row += 1
+		hexCentreY += hexRadius * 1.5
+	return gridRows
 
 @window.event
 def on_draw():
@@ -118,7 +195,9 @@ def on_draw():
 	cX = 250
 	cY = 250
 	#drawGrid()
-	drawFittedGrid()
+	#drawFittedGrid()
+	#createFittedHexGrid()
+	drawHexGridFromPoints(50)
 	#hexPolygon = hexagon.Hexagon((100, 100), 30)
 	#hexPolygon.drawHex()
 	#image.blit(0, 0)
