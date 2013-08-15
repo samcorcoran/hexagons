@@ -176,6 +176,9 @@ def createHexGridFromPoints(hexesInRow=10):
 					# SW, take SW neighbour's N point
 					hexPolygon.points[4] = gridRows[row-1][col-1+colIndexOffset].points[0]
 			if col > 0:
+				if row == 0:
+					# SW, take west neighbour SE point
+					hexPolygon.points[4] = nextRow[col-1].points[2]
 				# NW, Adopt W neighbour's NE point as this
 				hexPolygon.points[5] = nextRow[col-1].points[1]
 			# Remaining points (N, NE) are not overwritten				
