@@ -124,9 +124,12 @@ def createFittedHexGrid(hexesInRow=10):
 
 def drawHexGridFromPoints(hexesInRow=10):
 	hexGrid = createHexGridFromPoints(hexesInRow)
+	screenClipGridHexagons(hexGrid)
 	for row in hexGrid:
 		for nextHex in row:
 			nextHex.drawHex()
+			nextHex.drawHex(True, True, False, (0.0, 0.0, 1.0, 1.0), True)
+
 
 # Build a hex grid, hex by hex, using points of neighbouring generated hexagons where possible
 def createHexGridFromPoints(hexesInRow=10):
@@ -152,7 +155,7 @@ def createHexGridFromPoints(hexesInRow=10):
 		col = 0
 		while hexCentreX - (hexWidth/2) < screenWidth:
 			#print("Col number: %d" % (colNumber))
-			hexPolygon = hexagon.Hexagon((hexCentreX, hexCentreY), hexRadius, jitterStrength=0.3)
+			hexPolygon = hexagon.Hexagon((hexCentreX, hexCentreY), hexRadius, jitterStrength=0.25)
 
 			# Adopt neighbour point locations
 			# Non-first row must adopt southern points locations from the previous row
@@ -191,6 +194,23 @@ def createHexGridFromPoints(hexesInRow=10):
 		hexCentreY += hexRadius * 1.5
 	return gridRows
 
+def screenClipGridHexagons(hexGrid):
+	# Loop over boundary hexes, fixing their off-screen points to the screen boundary
+	# Check works on regular hexagon's points rather than jittered points
+	widthInterval = [0, screenWidth]
+	heightInterval = [0, screenHeight]
+	# Bottom row
+	for nextHex in hexGrid[0][:]:
+		nextHex.clipPointsToScreen(widthInterval, heightInterval)
+	# Top row
+	for nextHex in hexGrid[-1][:]:
+		nextHex.clipPointsToScreen(widthInterval, heightInterval)
+	# Left and right columns
+	for nextRow in hexGrid:
+		nextRow[0].clipPointsToScreen(widthInterval, heightInterval)
+		nextRow[-1].clipPointsToScreen(widthInterval, heightInterval)
+
+
 @window.event
 def on_draw():
 	window.clear()
@@ -200,7 +220,7 @@ def on_draw():
 	#drawGrid()
 	#drawFittedGrid()
 	#createFittedHexGrid()
-	drawHexGridFromPoints(50)
+	drawHexGridFromPoints(5)
 	#hexPolygon = hexagon.Hexagon((100, 100), 30)
 	#hexPolygon.drawHex()
 	#image.blit(0, 0)
