@@ -128,8 +128,11 @@ def drawHexGridFromPoints(hexesInRow=10):
 	for row in hexGrid:
 		for nextHex in row:
 			nextHex.drawHex()
+			# Draw hexagon centres
+			#nextHex.drawHexCentrePoint()
+			#nextHex.drawHexCentrePoint(True, (0,1,1,1))
+			# Draw regular hexagon grid
 			#nextHex.drawHex(True, True, False, (0.0, 0.0, 1.0, 1.0), True)
-
 
 # Build a hex grid, hex by hex, using points of neighbouring generated hexagons where possible
 def createHexGridFromPoints(hexesInRow=10):

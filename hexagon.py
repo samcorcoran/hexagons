@@ -9,8 +9,10 @@ class Hexagon():
 		self.radius = radius
 		self.points = self.calculatePoints()
 		self.regularHexPoints = copy.deepcopy(self.points)
+		self.regularHexCentre = self.centre
 		if jitterStrength:
 			self.jitterPoints(jitterStrength)
+			self.centre = self.calculateCentrePoint()
 	
 	def calculatePoints(self):
 		sqrtThree = 1.73205080757
@@ -36,6 +38,11 @@ class Hexagon():
 		for i in range(len(self.points)):
 			self.points[i][0] += random.uniform(-maxJitter, maxJitter)
 			self.points[i][1] += random.uniform(-maxJitter, maxJitter)
+
+	def calculateCentrePoint(self, points=False):
+		points = self.points if not points else points
+		xPoints, yPoints = zip(*points)
+		return [sum(xPoints)/len(xPoints), sum(yPoints)/len(yPoints)]
 
 	def drawHex(self, fullHex=True, drawEdges=True, drawPoints=False, edgeColor=(1.0,0.0,0.0,1.0), drawRegularHexGrid=False):
 		pointsList = self.points if not drawRegularHexGrid else self.regularHexPoints
@@ -65,6 +72,13 @@ class Hexagon():
 			pyglet.graphics.draw(numEdges, pyglet.gl.GL_POINTS,
 				('v2f', pointsList)
 			)
+
+	def drawHexCentrePoint(self, drawRegularHexCentre=False, pointColor=(1.0,0.0,1.0,1.0)):
+		point = self.regularHexCentre if drawRegularHexCentre else self.centre
+		pyglet.gl.glColor4f(*pointColor)
+		pyglet.graphics.draw(1, pyglet.gl.GL_POINTS,
+				('v2f', point)
+		)
 
 	def clipPointsToScreen(self, widthInterval=[0,800], heightInterval=[0,600], useRegularPoints=True):
 		hexPoints = self.regularHexPoints if useRegularPoints else self.points
