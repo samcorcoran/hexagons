@@ -4,16 +4,17 @@ from pyglet import image
 import hexagon
 import random
 import math
+import copy
 
 window = pyglet.window.Window()
 screenWidth = 800
 screenHeight = 600
 window.set_size(800, 600)
-maskImage = pyglet.resource.image('groundtruth.bmp')
+maskImage = pyglet.resource.image('groundtruth2.bmp')
 gridChanged = True
 hexGrid = []
-landHexes = []
-waterHexes = []
+landHexes = dict()
+waterHexes = dict()
 islands = []
 
 gridLength = 10
@@ -230,11 +231,11 @@ def findMarkedHexes(hexGrid):
 				nextHex.fillColor = (1.0,0.0,0.0,1.0)
 				# Indicate that hex must be land
 				nextHex.isLand = True
-				landHexes.append(nextHex)
+				landHexes[nextHex.hexIndex] = nextHex
 			else:
 				# Indicate hex is water
 				nextHex.isWater = True
-				waterHexes.append(nextHex)
+				waterHexes[nextHex.hexIndex] = nextHex
 			hexCount += 1
 	print("Finished finding masked hexes")
 
@@ -261,28 +262,52 @@ def createHexMap(hexGrid):
 			key = hexGrid[y][x].hexIndex
 			hexMap.insert(key, nextHex)
 
-def floodFillRegions(hexList):
-	unassignedHexes = copy.deepcopy(hexList)
+def floodFillLandRegions(hexMap):
+	# Copy map so this dict can have keys removed without losing items from other dict
+	unassignedHexes = copy.copy(hexMap)
 	while unassignedHexes:
+		# Choose a new land color
+		fillColor = (random.random(), random.random(), random.random(), 0.8)
 		# Take a hex from the list of unassigned
-		nextHex = unassignedHexes.pop()
+		nextHex = unassignedHexes.pop(random.choice(list(unassignedHexes.keys())))
+		groupedHexes = [nextHex]
 		# Add it and its like-regioned neighbours to a list
-		groupedHexes = floodFillNeighbours(nextHex, unassignedHexes)
+		if unassignedHexes:
+			groupedHexes.extend(floodFillLandNeighbours(nextHex, unassignedHexes))
+		for gHex in groupedHexes:
+			gHex.fillColor = fillColor
 
-def floodFillNeighbours(nextHex, remainingHexes):
+# Depth first search for neighbouring land hexes which appear in remainingHexes
+def floodFillLandNeighbours(nextHex, remainingHexes):
+	#print("Hex "  + str(nextHex.hexIndex))
 	groupedNeighbours = []
-	if nextHex.isLand == True:
-		# Only include self (and neighbour descendants) if this hex passes test
-		groupedNeighbours.append(nextHex)
-		for neighbour in nextHex.neighbours:
-			groupedNeighbours.extend(floodFillNeighbours(neighbour))
+	# Only continue of there are hexes remaining
+	#print("Hex has %d neighbours." % (len(nextHex.neighbours)))
+	# Determine which neighbours are valid
+	neighboursForExploration = []
+	for neighbour in nextHex.neighbours.values():
+		# If neighbour is tagged as land and exists in remainingHexes
+		if neighbour.hexIndex in remainingHexes and neighbour.isLand:
+			# Add this neighbour to group
+			groupedNeighbours.append(remainingHexes.pop(neighbour.hexIndex))
+			# Keep list of neighbours to be explored
+			neighboursForExploration.append(neighbour)
+	# Explore the neighbours neighbours, if remaningHexes is not empty
+	if remainingHexes.keys():
+		for neighbour in neighboursForExploration:
+			groupedNeighbours.extend(floodFillLandNeighbours(neighbour, remainingHexes))
+	else:
+		#print("Key is not in list")
+		pass
+	#print("Returning grouped neighbours:")
+	#print(groupedNeighbours)
 	return groupedNeighbours
 
 @window.event
 def on_draw():
 	global gridChanged
 	global hexGrid
-	hexesInRow = 50
+	hexesInRow = 100
 	if gridChanged:
 		window.clear()
 		maskImage.blit(0, 0)
@@ -299,6 +324,7 @@ def on_draw():
 		#print(checkForOutOfBounds(hexGrid))
 		
 		findMarkedHexes(hexGrid)
+		floodFillLandRegions(landHexes)
 		countHexesInGrid(hexGrid)
 		#hexPolygon = hexagon.Hexagon((100, 100), 30)
 		#hexPolygon.drawHex()
