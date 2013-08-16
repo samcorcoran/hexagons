@@ -13,6 +13,7 @@ maskImage = pyglet.resource.image('groundtruth.bmp')
 gridChanged = True
 hexGrid = []
 landHexes = []
+waterHexes = []
 islands = []
 
 gridLength = 10
@@ -68,6 +69,7 @@ def createHexGridFromPoints(hexesInRow=10, clipPointsToScreen=True):
 	# Loop through hexagon locations, using index to determine if some points should be taken from neighbours
 	# Loop over hex coordinate locations
 	hexCentreY = 0
+	totalHexes = 0
 	row = 0
 	while hexCentreY - hexRadius < screenHeight:
 		#print("Row number: %d" % (row))
@@ -79,10 +81,9 @@ def createHexGridFromPoints(hexesInRow=10, clipPointsToScreen=True):
 		nextRow = []
 		col = 0
 		while hexCentreX - (hexWidth/2) < screenWidth:
-			#print("Col number: %d" % (colNumber))
-			hexPolygon = hexagon.Hexagon((hexCentreX, hexCentreY), hexRadius, jitterStrength=0.25)
-
-			# Adopt neighbour point locations
+			#print("Creating hex %d, with (col,row): (%d, %d)" % (totalHexes, col, row))
+			hexPolygon = hexagon.Hexagon((hexCentreX, hexCentreY), hexRadius, hexIndex=(col, row), jitterStrength=0.25)
+			totalHexes += 1
 			# Non-first row must adopt southern points locations from the previous row
 			if row > 0 :
 				# Even rows start with a x offset, so must index a different southern hexagon
@@ -114,10 +115,71 @@ def createHexGridFromPoints(hexesInRow=10, clipPointsToScreen=True):
 			nextRow.append(hexPolygon)
 			hexCentreX += hexWidth
 			col += 1
+		#print("Length of nextRow: %d" % (len(nextRow)))
 		gridRows.append(nextRow)
 		row += 1
 		hexCentreY += hexRadius * 1.5
 	return gridRows
+
+# Compile list of neighbours that currently exist (southerly and westerly)
+def assignExistingNeighbours(hexGrid):
+	totalHexes = 0
+	for row in hexGrid:
+		for nextHex in row:
+			#print("Assigning neighbours for nextHex index: " + str(nextHex.hexIndex) + "(Hexagon " + str(totalHexes) + ")")
+			totalHexes += 1
+			# Odd-numbered rows are right-shifted, so their southernly neighbours are offset relatively by 1
+			# Odd rows SE neighbour has xIndex + 1
+			# Odd rows SW neighbour shares an x index
+			# Even rows SE neighbour shares an x index
+			# Even rows SW neighbour has xIndex - 1
+			# First row has no southern neighbours
+			if not nextHex.hexIndex[1] == 0:
+				# y is identical for both southernly neighbours
+				y = nextHex.hexIndex[1]-1
+				# SE
+				# This xOffset is 1 on even rows and 0 on odd
+				xOffset = 1 if nextHex.hexIndex[1] % 2 == 1 else 0
+				x = nextHex.hexIndex[0]+xOffset
+				# If right column on an 
+				#print("SE x, y: %d, %d" % (x, y))
+				# Odd rows are one hex shorter, so subtract 1 from row length when handling an even row
+				# If you are on an odd row, previous row length is len(row)+1
+				previousRowLength = len(row)+int(nextHex.hexIndex[1] % 2)-int((nextHex.hexIndex[1]+1) % 2)
+				if x >= 0 and x < previousRowLength:
+					#print("SE neighbour was found")
+					neighbour = hexGrid[y][x]
+					nextHex.neighbours["SE"] = neighbour
+					# Add reciprocal neighbouring information
+					neighbour.neighbours["NW"] = nextHex
+				else:
+					#print("No SE Neighbour")
+					pass
+				# SW
+				# This xOffset is 0 on even rows and 1 on odd
+				xOffset = 1 if nextHex.hexIndex[1] % 2 == 0 else 0
+				x = nextHex.hexIndex[0]-xOffset
+				#print("SW x, y: %d, %d" % (x, y))
+				# Odd rows are one hex shorter, so subtract 1 from row length when handling an even row
+				# If on an odd row, the previous row is len(row) - 1
+				previousRowLength = len(row)-int((nextHex.hexIndex[1]+1) % 2)
+				if x >= 0 and x < previousRowLength:
+					#print("SW neighbour was found")
+					neighbour = hexGrid[y][x]
+					nextHex.neighbours["SW"] = neighbour
+					# Add reciprocal neighbouring information
+					neighbour.neighbours["NE"] = nextHex
+				else:
+					#print("No SW Neighbour")
+					pass
+			# First column has no 
+			if not nextHex.hexIndex[0] == 0:
+				#print("West neighbour was found: (%d, %d)" % (nextHex.hexIndex[0]-1, nextHex.hexIndex[1]))
+				# W
+				neighbour = hexGrid[nextHex.hexIndex[1]][nextHex.hexIndex[0]-1]
+				nextHex.neighbours["W"] = neighbour
+				# Add reciprocal neighbouring information
+				neighbour.neighbours["E"] = nextHex
 
 def screenClipGridHexagons(hexGrid):
 	# Loop over boundary hexes, fixing their off-screen points to the screen boundary
@@ -125,15 +187,30 @@ def screenClipGridHexagons(hexGrid):
 	widthInterval = [0, screenWidth]
 	heightInterval = [0, screenHeight]
 	# Bottom row
+	#print("Clipping bottom row")
 	for nextHex in hexGrid[0]:
 		nextHex.clipPointsToScreen(widthInterval, heightInterval)
 	# Top row
+	#print("Clipping top row")
 	for nextHex in hexGrid[-1]:
 		nextHex.clipPointsToScreen(widthInterval, heightInterval)
 	# Left and right columns
+	#print("Clipping left and right column of each row")
 	for nextRow in hexGrid:
 		nextRow[0].clipPointsToScreen(widthInterval, heightInterval)
 		nextRow[-1].clipPointsToScreen(widthInterval, heightInterval)
+
+def checkForOutOfBounds(hexGrid, printOOB=False):
+	hexCount = 0
+	for row in hexGrid:
+		for nextHex in row:
+			for i in range(len(nextHex.points)):
+				if nextHex.points[i][0] < 0 or nextHex.points[i][0] > screenWidth or nextHex.points[i][1] < 0 or nextHex.points[i][1] > screenHeight:
+					print("Hex %d (%d, %d) is out of bounds." % (hexCount, nextHex.hexIndex[0], nextHex.hexIndex[1]))
+					print("Hex point %d: %s" % (i, str(nextHex.points[i])))
+					return True
+			hexCount += 1
+	return False
 
 def findMarkedHexes(hexGrid):
 	print("Begun finding masked hexes")
@@ -152,8 +229,12 @@ def findMarkedHexes(hexGrid):
 			if nextHex.compareToMaskImage(data, maskImage.width):
 				nextHex.fillColor = (1.0,0.0,0.0,1.0)
 				# Indicate that hex must be land
+				nextHex.isLand = True
 				landHexes.append(nextHex)
-
+			else:
+				# Indicate hex is water
+				nextHex.isWater = True
+				waterHexes.append(nextHex)
 			hexCount += 1
 	print("Finished finding masked hexes")
 
@@ -164,11 +245,44 @@ def countHexesInGrid(hexGrid):
 			total += 1
 	print("Total hexes: %d" % (total))
 
+def countNeighbours(hexGrid):
+	totalHexes = 0
+	for row in hexGrid:
+		for nextHex in row:
+			print("Hex %d %s has total neighbours = %d" % (totalHexes, nextHex.hexIndex, len(nextHex.neighbours)))
+			totalHexes += 1
+
+# Takes a grid of hexes in staggered row format and returns a dictionary using axial coordinates
+def createHexMap(hexGrid):	
+	hexMap = dict()
+	for y in range(len(hexGrid)):
+		for x in range(len(hexGrid[y])):
+			# Determine hex key
+			key = hexGrid[y][x].hexIndex
+			hexMap.insert(key, nextHex)
+
+def floodFillRegions(hexList):
+	unassignedHexes = copy.deepcopy(hexList)
+	while unassignedHexes:
+		# Take a hex from the list of unassigned
+		nextHex = unassignedHexes.pop()
+		# Add it and its like-regioned neighbours to a list
+		groupedHexes = floodFillNeighbours(nextHex, unassignedHexes)
+
+def floodFillNeighbours(nextHex, remainingHexes):
+	groupedNeighbours = []
+	if nextHex.isLand == True:
+		# Only include self (and neighbour descendants) if this hex passes test
+		groupedNeighbours.append(nextHex)
+		for neighbour in nextHex.neighbours:
+			groupedNeighbours.extend(floodFillNeighbours(neighbour))
+	return groupedNeighbours
+
 @window.event
 def on_draw():
 	global gridChanged
 	global hexGrid
-	hexesInRow = 100
+	hexesInRow = 50
 	if gridChanged:
 		window.clear()
 		maskImage.blit(0, 0)
@@ -176,7 +290,14 @@ def on_draw():
 		#drawFittedGrid()
 		#createFittedHexGrid()
 		hexGrid = createHexGridFromPoints(hexesInRow)
+		# Adopt neighbour point locations
+		assignExistingNeighbours(hexGrid)
+		#countNeighbours(hexGrid)
 		screenClipGridHexagons(hexGrid)
+		
+		#print("Any points out of bounds?")
+		#print(checkForOutOfBounds(hexGrid))
+		
 		findMarkedHexes(hexGrid)
 		countHexesInGrid(hexGrid)
 		#hexPolygon = hexagon.Hexagon((100, 100), 30)

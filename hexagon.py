@@ -6,13 +6,17 @@ import copy
 from itertools import chain
 
 class Hexagon():
-	def __init__(self, centrePoint=(0,0), radius=20, jitterStrength=False):
+	def __init__(self, centrePoint=(0,0), radius=20, hexIndex=False, jitterStrength=False):
+		self.hexIndex = hexIndex
 		self.centre = centrePoint
 		self.radius = radius
 		self.points = self.calculatePoints()
 		self.regularHexPoints = copy.deepcopy(self.points)
 		self.regularHexCentre = self.centre
-		self.fillColor = False #(0.2,0,0,0.8)
+		self.neighbours = dict()
+		self.fillColor = False #(random.random(),random.random(),random.random(),0.5)
+		self.isLand = False
+		self.isWater = False
 		if jitterStrength:
 			self.jitterPoints(jitterStrength)
 			self.centre = self.calculateCentrePoint()
@@ -101,23 +105,47 @@ class Hexagon():
 		)
 
 	def clipPointsToScreen(self, widthInterval=[0,800], heightInterval=[0,600], useRegularPoints=True):
+		#print("Clipping hex " + str(self.hexIndex))
+		if useRegularPoints:
+			# Even if regular points are being clipped, jittered must be clipped first
+			# this accomodates scenario where the regular point was valid but was jittered out
+			# of bounds. 
+			self.clipPointsToScreen(widthInterval, heightInterval, False)
+		# Regular hexagon points can be used to avoid jittering causing gaps around perimeter
 		hexPoints = self.regularHexPoints if useRegularPoints else self.points
-		# Check N for clipping
 		for i in range(len(hexPoints)):
+			#print(" p%d: (%f, %f)" % (i, hexPoints[i][0], hexPoints[i][1]))
+			clipped = False
 			# Clip y values to screen
 			if hexPoints[i][1] >= heightInterval[1]:
+				#print(" ..clipped hexpoints[%d][1] (%d) to heightInterval[1] %d" % (i, hexPoints[i][1], heightInterval[1]))
+				clipped = True
 				# Set y to top edge of screen
 				self.points[i][1] = heightInterval[1]
 			elif hexPoints[i][1] <=  heightInterval[0]:
+				#print(" ..clipped hexpoints[%d][1] (%d) to heightInterval[0] %d" % (i, hexPoints[i][1],heightInterval[0]))
+				clipped = True
 				# Set y to bottom of screen
 				self.points[i][1] =  heightInterval[0]
+
 			# Clip x values to screen
 			if hexPoints[i][0] >= widthInterval[1]:
+				#print(" ..clipped hexpoints[%d][0] (%d) to widthInterval[1] %d" % (i, hexPoints[i][0],widthInterval[1]))
+				clipped = True
 				# Set x to east edge of screen
 				self.points[i][0] = widthInterval[1]
-			elif hexPoints[i][0] <=  heightInterval[0]:
+			elif hexPoints[i][0] <=  widthInterval[0]:
+				#print(" ..clipped hexpoints[%d][0] (%d) to widthInterval[0] %d" % (i, hexPoints[i][0],widthInterval[0]))				
+				clipped = True
 				# Set x to west edge of screen
-				self.points[i][0] =  heightInterval[0]
+				self.points[i][0] =  widthInterval[0]
+			
+			if clipped:
+				#print(" after clipping, point: " + str(self.points[i]))
+				pass
+			else:
+				#print(" no clipping required, point:"  + str(self.points[i]))
+				pass
 		self.centre = self.calculateCentrePoint(self.points)
 
 	def compareToMaskImage(self, maskImageData, imageWidth, passRate=0.5, attenuation=0.95):
@@ -132,7 +160,7 @@ class Hexagon():
 		for point in attenuatedPerimeter:
 			#print("Point: " + str(point))
 			i = int(int(point[0]) + ((int(point[1])-1) * imageWidth))-1
-			#print(i)
+			#print("Point [%f, %f] had an index of: %d" % (point[0], point[1], i))
 			if maskImageData[i] > 0:
 				totalVotes += 1
 		if totalVotes > 1:
