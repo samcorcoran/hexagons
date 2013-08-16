@@ -12,6 +12,8 @@ window.set_size(800, 600)
 maskImage = pyglet.resource.image('groundtruth.bmp')
 gridChanged = True
 hexGrid = []
+landHexes = []
+islands = []
 
 gridLength = 10
 grid = [[hexagon.Hexagon() for x in range(gridLength)] for y in range(gridLength)]
@@ -24,134 +26,35 @@ nextVector = (0,1)
 for i in range(6):
 	hexPointOffsets.append(nextVector)
 	nextVector = (math.cos(60)*nextVector[0], -1*math.sin(60)*nextVector[1])
-
-def drawHex(fullHex=True, centrePoint=(400,400), radius=50, innerRadius=False, edgeColor=(0.0,0.0,1.0,1.0)):
-	edgeLength = radius
-	if not innerRadius:
-		sqrtThree = 1.73205080757
-		innerRadius = (sqrtThree*radius)/2
-	points=[]
-	#Top point (North)
-	points.append(centrePoint[0])
-	points.append(centrePoint[1]+radius)
-	#NE
-	points.append(centrePoint[0]+innerRadius)
-	points.append(centrePoint[1]+(edgeLength/2))
-	#SE
-	points.append(centrePoint[0]+innerRadius)
-	points.append(centrePoint[1]-(edgeLength/2))
-	#S
-	points.append(centrePoint[0])
-	points.append(centrePoint[1]-radius)
-	# FullHex draws all six sides, otherwise only three are drawn
-	# Missing out three sides reduces draws for gridded hexagons where edges overlap
-	numEdges = 4
-	if fullHex:
-		#SW
-		points.append(centrePoint[0]-innerRadius)
-		points.append(centrePoint[1]-(edgeLength/2))
-		#NW
-		points.append(centrePoint[0]-innerRadius)
-		points.append(centrePoint[1]+(edgeLength/2))
-		numEdges = 6
-	# Draw edges
-	pyglet.gl.glColor4f(*edgeColor)
-	pyglet.graphics.draw(numEdges, pyglet.gl.GL_LINE_STRIP,
-    	('v2f', points)
-	)
-	# Draw points
-	pyglet.gl.glColor4f(0.0,1.0,0.0,1.0)
-	pyglet.graphics.draw(numEdges, pyglet.gl.GL_POINTS,
-    	('v2f', points)
-	)
 	
-def drawGrid():
-	sqrtThree = 1.73205080757
-	radius = 50
-	innerRadius = (sqrtThree*radius)/2
-	startX = 0
-	startY = 0
-	rows = 15
-	cols = 15
-	for y in range(rows):
-		for x in range(cols):
-			xoffset = 0
-			if y%2==0:
-				xoffset = innerRadius
-			drawHex(False, (startX+xoffset+x*2*innerRadius, startY+y*(radius*1.5)), radius)
-
-def drawFittedGrid(hexesInRow=10):
-	hexGrid = createFittedHexGrid(hexesInRow)
-	for row in hexGrid:
-		for nextHex in row:
-			nextHex.drawHex()
-
-# Returns grid of hexagons
-def createFittedHexGrid(hexesInRow=10):
-	# Width of hexagons (w=root3*Radius/2) is calculated from screenwidth, which then determines hex radius
-	hexWidth = (screenWidth/hexesInRow)
-	hexRadius = hexWidth / math.sqrt(3) # Also edge length
-
-	hexesInCol = int(screenHeight / (hexRadius))
-	gridRows = []
-
-	# Loop over hex coordinate locations
-	hexCentreY = 0
-	row = 0
-	while hexCentreY - hexRadius < screenHeight:
-		#print("Row number: %d" % (row))
-		hexCentreX = 0 
-		# Offset each row to allow for tesselation
-		if row%2==1:
-			hexCentreX += hexWidth / 2
-		# Draw all hexagons in row
-		nextRow = []
-		col = 0
-		while hexCentreX - (hexWidth/2) < screenWidth:
-			#print("Col number: %d" % (col))
-			hexPolygon = hexagon.Hexagon((hexCentreX, hexCentreY), hexRadius)
-			nextRow.append(hexPolygon)
-			hexCentreX += hexWidth
-			col += 1
-		gridRows.append(nextRow)
-		row += 1
-		hexCentreY += hexRadius * 1.5
-	return gridRows
-
-def drawHexGridFromPoints(hexesInRow=10, hexGrid=False):
-	print("Started drawing")
-	if not hexGrid:
-		# Generate grid
-		print("generating grid in draw")
-		hexGrid = createHexGridFromPoints(hexesInRow)
-		screenClipGridHexagons(hexGrid)
-	# Ensure no points fall outside of screen by clipping OOB to boundary
-	# Color hex fills according to mask texture
-	findMarkedHexes(hexGrid)
-	linePoints = []
-	for row in hexGrid:
-		for nextHex in row:
-			# Draw hexagon fill
-			nextHex.drawFilledHex()
-			# Draw hexagon edges and/or points
-			#nextHex.drawHex()
-			# Draw hexagon centres
-			#nextHex.drawHexCentrePoint()
-			#nextHex.drawHexCentrePoint(True, (0,1,1,1))
-			# Draw regular hexagon grid
-			#nextHex.drawHex(True, True, False, (0.0, 0.0, 1.0, 1.0), True)
-			linePoints.extend(nextHex.points[0])
-			for point in nextHex.points:
-				# Enter each point twice, for the two consecutive lines
-				linePoints.extend(point + point)
-			# Last point is first point, completing the loop
-			linePoints.extend(nextHex.points[0])
-	print("linePoints length: " + str(len(linePoints)))
-	pyglet.gl.glColor4f(0.0,0.0,1.0,1.0)
-	pyglet.graphics.draw(int(len(linePoints)/2), pyglet.gl.GL_LINES,
-		('v2f', linePoints)
-	)
-	print("Finished drawing")
+def drawHexGrid(hexGrid, drawHexEdges=True, drawHexFills=True):
+	if hexGrid:
+		linePoints = []
+		for row in hexGrid:
+			for nextHex in row:
+				if drawHexFills:
+					# Draw hexagon fill
+					nextHex.drawFilledHex()
+				# Draw hexagon edges and/or points
+				#nextHex.drawHex()
+				# Draw hexagon centres
+				#nextHex.drawHexCentrePoint()
+				#nextHex.drawHexCentrePoint(True, (0,1,1,1))
+				# Draw regular hexagon grid
+				#nextHex.drawHex(True, True, False, (0.0, 0.0, 1.0, 1.0), True)
+				linePoints.extend(nextHex.points[0])
+				for point in nextHex.points:
+					# Enter each point twice, for the two consecutive lines
+					linePoints.extend(point + point)
+				# Last point is first point, completing the loop
+				linePoints.extend(nextHex.points[0])
+		print("linePoints length: " + str(len(linePoints)))
+		if drawHexEdges:
+			pyglet.gl.glColor4f(0.0,0.0,1.0,1.0)
+			pyglet.graphics.draw(int(len(linePoints)/2), pyglet.gl.GL_LINES,
+				('v2f', linePoints)
+			)
+		print("Finished drawing")	
 
 # Build a hex grid, hex by hex, using points of neighbouring generated hexagons where possible
 def createHexGridFromPoints(hexesInRow=10, clipPointsToScreen=True):
@@ -222,10 +125,10 @@ def screenClipGridHexagons(hexGrid):
 	widthInterval = [0, screenWidth]
 	heightInterval = [0, screenHeight]
 	# Bottom row
-	for nextHex in hexGrid[0][:]:
+	for nextHex in hexGrid[0]:
 		nextHex.clipPointsToScreen(widthInterval, heightInterval)
 	# Top row
-	for nextHex in hexGrid[-1][:]:
+	for nextHex in hexGrid[-1]:
 		nextHex.clipPointsToScreen(widthInterval, heightInterval)
 	# Left and right columns
 	for nextRow in hexGrid:
@@ -248,6 +151,9 @@ def findMarkedHexes(hexGrid):
 			#print("Hex " + str(hexCount))
 			if nextHex.compareToMaskImage(data, maskImage.width):
 				nextHex.fillColor = (1.0,0.0,0.0,1.0)
+				# Indicate that hex must be land
+				landHexes.append(nextHex)
+
 			hexCount += 1
 	print("Finished finding masked hexes")
 
@@ -271,11 +177,12 @@ def on_draw():
 		#createFittedHexGrid()
 		hexGrid = createHexGridFromPoints(hexesInRow)
 		screenClipGridHexagons(hexGrid)
+		findMarkedHexes(hexGrid)
 		countHexesInGrid(hexGrid)
 		#hexPolygon = hexagon.Hexagon((100, 100), 30)
 		#hexPolygon.drawHex()
 		gridChanged = False
-	drawHexGridFromPoints(hexesInRow, hexGrid)
+	drawHexGrid(hexGrid)
 
 print("Running app")
 pyglet.app.run()
