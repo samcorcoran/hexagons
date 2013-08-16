@@ -1,6 +1,6 @@
 import pyglet
-#from pyglet.scene2d import *
 from pyglet.gl import *
+from pyglet import image
 import hexagon
 import random
 import math
@@ -9,7 +9,9 @@ window = pyglet.window.Window()
 screenWidth = 800
 screenHeight = 600
 window.set_size(800, 600)
-image = pyglet.resource.image('groundtruth.bmp')
+maskImage = pyglet.resource.image('groundtruth.bmp')
+gridChanged = True
+hexGrid = []
 
 gridLength = 10
 grid = [[hexagon.Hexagon() for x in range(gridLength)] for y in range(gridLength)]
@@ -116,23 +118,43 @@ def createFittedHexGrid(hexesInRow=10):
 		hexCentreY += hexRadius * 1.5
 	return gridRows
 
-def drawHexGridFromPoints(hexesInRow=10):
-	hexGrid = createHexGridFromPoints(hexesInRow)
-	screenClipGridHexagons(hexGrid)
+def drawHexGridFromPoints(hexesInRow=10, hexGrid=False):
+	print("Started drawing")
+	if not hexGrid:
+		# Generate grid
+		print("generating grid in draw")
+		hexGrid = createHexGridFromPoints(hexesInRow)
+		screenClipGridHexagons(hexGrid)
+	# Ensure no points fall outside of screen by clipping OOB to boundary
+	# Color hex fills according to mask texture
+	findMarkedHexes(hexGrid)
+	linePoints = []
 	for row in hexGrid:
 		for nextHex in row:
 			# Draw hexagon fill
 			nextHex.drawFilledHex()
 			# Draw hexagon edges and/or points
-			nextHex.drawHex()
+			#nextHex.drawHex()
 			# Draw hexagon centres
 			#nextHex.drawHexCentrePoint()
 			#nextHex.drawHexCentrePoint(True, (0,1,1,1))
 			# Draw regular hexagon grid
 			#nextHex.drawHex(True, True, False, (0.0, 0.0, 1.0, 1.0), True)
+			linePoints.extend(nextHex.points[0])
+			for point in nextHex.points:
+				# Enter each point twice, for the two consecutive lines
+				linePoints.extend(point + point)
+			# Last point is first point, completing the loop
+			linePoints.extend(nextHex.points[0])
+	print("linePoints length: " + str(len(linePoints)))
+	pyglet.gl.glColor4f(0.0,0.0,1.0,1.0)
+	pyglet.graphics.draw(int(len(linePoints)/2), pyglet.gl.GL_LINES,
+		('v2f', linePoints)
+	)
+	print("Finished drawing")
 
 # Build a hex grid, hex by hex, using points of neighbouring generated hexagons where possible
-def createHexGridFromPoints(hexesInRow=10):
+def createHexGridFromPoints(hexesInRow=10, clipPointsToScreen=True):
 	# Width of hexagons (w=root3*Radius/2) is calculated from screenwidth, which then determines hex radius
 	hexWidth = (screenWidth/hexesInRow)
 	hexRadius = (hexWidth) / math.sqrt(3) # Also edge length
@@ -209,21 +231,51 @@ def screenClipGridHexagons(hexGrid):
 	for nextRow in hexGrid:
 		nextRow[0].clipPointsToScreen(widthInterval, heightInterval)
 		nextRow[-1].clipPointsToScreen(widthInterval, heightInterval)
-		
+
+def findMarkedHexes(hexGrid):
+	print("Begun finding masked hexes")
+	maskImageData = maskImage.get_image_data()
+	data = maskImageData.get_data('I', maskImage.width)
+	totalHits = 0
+	for n in range(len(data)):
+		if not data[n] == 0:
+			totalHits += 1 #print("n: %d contains %d" % (n, data[n]))
+	print("Total hits: " + str(totalHits))
+	print("Length of data: " + str(len(data)))
+	hexCount = 0
+	for row in hexGrid:
+		for nextHex in row:
+			#print("Hex " + str(hexCount))
+			if nextHex.compareToMaskImage(data, maskImage.width):
+				nextHex.fillColor = (1.0,0.0,0.0,1.0)
+			hexCount += 1
+	print("Finished finding masked hexes")
+
+def countHexesInGrid(hexGrid):
+	total = 0
+	for row in hexGrid:
+		for nextHex in row:
+			total += 1
+	print("Total hexes: %d" % (total))
 
 @window.event
 def on_draw():
-	window.clear()
-	#Draw centre
-	cX = 250
-	cY = 250
-	image.blit(0, 0)
-	#drawGrid()
-	#drawFittedGrid()
-	#createFittedHexGrid()
-	drawHexGridFromPoints(50)
-	#hexPolygon = hexagon.Hexagon((100, 100), 30)
-	#hexPolygon.drawHex()
+	global gridChanged
+	global hexGrid
+	hexesInRow = 100
+	if gridChanged:
+		window.clear()
+		maskImage.blit(0, 0)
+		#drawGrid()
+		#drawFittedGrid()
+		#createFittedHexGrid()
+		hexGrid = createHexGridFromPoints(hexesInRow)
+		screenClipGridHexagons(hexGrid)
+		countHexesInGrid(hexGrid)
+		#hexPolygon = hexagon.Hexagon((100, 100), 30)
+		#hexPolygon.drawHex()
+		gridChanged = False
+	drawHexGridFromPoints(hexesInRow, hexGrid)
 
 print("Running app")
 pyglet.app.run()

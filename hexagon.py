@@ -1,4 +1,6 @@
 import pyglet
+from pyglet.gl import *
+from pyglet import image
 import random
 import copy
 from itertools import chain
@@ -10,6 +12,7 @@ class Hexagon():
 		self.points = self.calculatePoints()
 		self.regularHexPoints = copy.deepcopy(self.points)
 		self.regularHexCentre = self.centre
+		self.fillColor = False #(0.2,0,0,0.8)
 		if jitterStrength:
 			self.jitterPoints(jitterStrength)
 			self.centre = self.calculateCentrePoint()
@@ -73,29 +76,22 @@ class Hexagon():
 				('v2f', pointsList)
 			)
 		
-
-	def drawFilledHex(self, drawFill=False, fillColor=(0.2,0.0,0.4,0.2), drawRegularHexGrid=False):
-		pointsList = self.regularHexPoints if drawRegularHexGrid else self.points		
-		centrePoint = self.regularHexCentre if drawRegularHexGrid else self.centre
-		firstPoint = pointsList[0]
-		# Polygon centre point are first values
-		pointsList = centrePoint + list(chain.from_iterable(pointsList))
-		pointsList.extend(firstPoint)
-
-		# Draw filled polygon
-		pyglet.gl.glColor4f(*fillColor)
-		# Polygon is always drawn as fullHex
-		#print("pointsLIst length:")
-		#print(len(pointsList))
-		#print("pointsList:")
-		#print(pointsList)
-		pyglet.graphics.draw(int(len(pointsList)/2), pyglet.gl.GL_TRIANGLE_FAN,
-			('v2f', pointsList)
-		)		
-		#pyglet.graphics.draw_indexed(6, pyglet.gl.GL_TRIANGLE_FAN,
-		#	[0,1,2,0,2,3,0,3,4,0,4,5,0,5,6,0,6,1]
-		#	('v2f', pointsList)
-		#)		
+	def drawFilledHex(self, drawFill=False, fillColor=False, drawRegularHexGrid=False):
+		if self.fillColor:
+			pointsList = self.regularHexPoints if drawRegularHexGrid else self.points		
+			centrePoint = self.regularHexCentre if drawRegularHexGrid else self.centre
+			firstPoint = pointsList[0]
+			# Polygon centre point are first values
+			pointsList = centrePoint + list(chain.from_iterable(pointsList))
+			pointsList.extend(firstPoint)
+			# Draw filled polygon
+			pyglet.gl.glColor4f(*self.fillColor)
+			# Polygon is always drawn as fullHex
+			glEnable(GL_BLEND)
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+			pyglet.graphics.draw(int(len(pointsList)/2), pyglet.gl.GL_TRIANGLE_FAN,
+				('v2f', pointsList)
+			)		
 
 	def drawHexCentrePoint(self, drawRegularHexCentre=False, pointColor=(1.0,0.0,1.0,1.0)):
 		point = self.regularHexCentre if drawRegularHexCentre else self.centre
@@ -123,3 +119,22 @@ class Hexagon():
 				# Set x to west edge of screen
 				self.points[i][0] =  heightInterval[0]
 		self.centre = self.calculateCentrePoint(self.points)
+
+	def compareToMaskImage(self, maskImageData, imageWidth, passRate=0.5, attenuation=0.95):
+		# Perimeter points and centre point each get a 'vote'
+		xPoints, yPoints = zip(*self.points)
+		attenuatedPerimeterX = [self.centre[0] + (x - self.centre[0])*attenuation for x in xPoints]
+		attenuatedPerimeterY = [self.centre[1] + (y - self.centre[1])*attenuation for y in yPoints]
+		attenuatedPerimeter = zip(attenuatedPerimeterX, attenuatedPerimeterY)
+
+		totalVotes = 0
+		# Check points against mask image
+		for point in attenuatedPerimeter:
+			#print("Point: " + str(point))
+			i = int(int(point[0]) + ((int(point[1])-1) * imageWidth))-1
+			#print(i)
+			if maskImageData[i] > 0:
+				totalVotes += 1
+		if totalVotes > 1:
+			return True
+		return False
