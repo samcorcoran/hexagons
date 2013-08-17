@@ -6,7 +6,7 @@ import copy
 from itertools import chain
 
 class Hexagon():
-	def __init__(self, centrePoint=(0,0), radius=20, hexIndex=False, jitterStrength=False):
+	def __init__(self, centrePoint, radius=20, hexIndex=False, jitterStrength=False):
 		self.hexIndex = hexIndex
 		self.centre = centrePoint
 		self.radius = radius
@@ -148,7 +148,7 @@ class Hexagon():
 				pass
 		self.centre = self.calculateCentrePoint(self.points)
 
-	def compareToMaskImage(self, maskImageData, imageWidth, passRate=0.5, attenuation=0.95):
+	def compareToMaskImage(self, maskImageData, imageWidth, passRate=0.5, attenuation=0.8):
 		# Perimeter points and centre point each get a 'vote'
 		xPoints, yPoints = zip(*self.points)
 		attenuatedPerimeterX = [self.centre[0] + (x - self.centre[0])*attenuation for x in xPoints]
@@ -163,6 +163,6 @@ class Hexagon():
 			#print("Point [%f, %f] had an index of: %d" % (point[0], point[1], i))
 			if maskImageData[i] > 0:
 				totalVotes += 1
-		if totalVotes > 1:
+		if totalVotes > passRate*len(self.points):
 			return True
 		return False
