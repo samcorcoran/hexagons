@@ -19,7 +19,7 @@ class Hexagon():
 		self.isWater = False
 		if jitterStrength:
 			self.jitterPoints(jitterStrength)
-			self.centre = self.calculateCentrePoint()
+		self.centre = self.calculateCentrePoint()
 	
 	def calculatePoints(self):
 		sqrtThree = 1.73205080757
