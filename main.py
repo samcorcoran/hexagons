@@ -72,7 +72,7 @@ def createHexGridFromPoints(hexesInRow=10, clipPointsToScreen=True):
 		for col in range(hexesInRow+1-(row%2)):
 			#print("Hex %d in row %d" % (col, row))
 			#print("Creating hex %d, with (col,row): (%d, %d)" % (totalHexes, col, row))
-			hexPolygon = hexagon.Hexagon((hexCentreX, hexCentreY), hexRadius, hexIndex=(col, row), jitterStrength=0)
+			hexPolygon = hexagon.Hexagon((hexCentreX, hexCentreY), hexRadius, hexIndex=(col, row), jitterStrength=0.2)
 			totalHexes += 1
 			# Non-first row must adopt southern points locations from the previous row
 			if row > 0 :
@@ -80,7 +80,7 @@ def createHexGridFromPoints(hexesInRow=10, clipPointsToScreen=True):
 				colIndexOffset = row%2
 
 				# Last hex on row cannot look SE
-				if col < hexesInRow-(row%2):
+				if col < hexesInRow:
 					# SE, take SE neighbour's N point
 					hexPolygon.points[2] = gridRows[row-1][col+colIndexOffset].points[0]
 					# S, take SE neighbour's NW point
