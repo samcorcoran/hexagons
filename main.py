@@ -17,18 +17,6 @@ landHexes = dict()
 waterHexes = dict()
 islands = []
 
-gridLength = 10
-grid = [[hexagon.Hexagon() for x in range(gridLength)] for y in range(gridLength)]
-
-#Hexagon dimensions
-radius = 10 #also is sidelength
-#Hex Point Offsets from centre
-hexPointOffsets = []
-nextVector = (0,1)
-for i in range(6):
-	hexPointOffsets.append(nextVector)
-	nextVector = (math.cos(60)*nextVector[0], -1*math.sin(60)*nextVector[1])
-	
 def drawHexGrid(hexGrid, drawHexEdges=True, drawHexFills=True):
 	if hexGrid:
 		linePoints = []
@@ -326,8 +314,6 @@ def on_draw():
 		findMarkedHexes(hexGrid)
 		floodFillLandRegions(landHexes)
 		countHexesInGrid(hexGrid)
-		#hexPolygon = hexagon.Hexagon((100, 100), 30)
-		#hexPolygon.drawHex()
 		gridChanged = False
 	drawHexGrid(hexGrid)
 
