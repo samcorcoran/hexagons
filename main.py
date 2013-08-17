@@ -258,35 +258,33 @@ def floodFillLandRegions(hexMap):
 		fillColor = (random.random(), random.random(), random.random(), 0.8)
 		# Take a hex from the list of unassigned
 		nextHex = unassignedHexes.pop(random.choice(list(unassignedHexes.keys())))
-		groupedHexes = [nextHex]
+
+		groupedHexes = []
 		# Add it and its like-regioned neighbours to a list
-		if unassignedHexes:
-			groupedHexes.extend(floodFillLandNeighbours(nextHex, unassignedHexes))
+		explorableHexes = [nextHex]
+		while explorableHexes:
+			unexploredHex = explorableHexes.pop()
+			groupedHexes.append(unexploredHex)
+			# If there are still hexes left to find, check hex's neighbours
+			if unassignedHexes:
+				explorableHexes.extend(floodFillLandNeighbours(unexploredHex, unassignedHexes))
+		islands.append(groupedHexes)
 		for gHex in groupedHexes:
+			# Apply some behaviour to hexes in region
 			gHex.fillColor = fillColor
 
-# Depth first search for neighbouring land hexes which appear in remainingHexes
+# Check nextHex's neighbours for validity, return list of those which are valid
 def floodFillLandNeighbours(nextHex, remainingHexes):
 	#print("Hex "  + str(nextHex.hexIndex))
 	groupedNeighbours = []
 	# Only continue of there are hexes remaining
 	#print("Hex has %d neighbours." % (len(nextHex.neighbours)))
 	# Determine which neighbours are valid
-	neighboursForExploration = []
 	for neighbour in nextHex.neighbours.values():
 		# If neighbour is tagged as land and exists in remainingHexes
 		if neighbour.hexIndex in remainingHexes and neighbour.isLand:
 			# Add this neighbour to group
 			groupedNeighbours.append(remainingHexes.pop(neighbour.hexIndex))
-			# Keep list of neighbours to be explored
-			neighboursForExploration.append(neighbour)
-	# Explore the neighbours neighbours, if remaningHexes is not empty
-	if remainingHexes.keys():
-		for neighbour in neighboursForExploration:
-			groupedNeighbours.extend(floodFillLandNeighbours(neighbour, remainingHexes))
-	else:
-		#print("Key is not in list")
-		pass
 	#print("Returning grouped neighbours:")
 	#print(groupedNeighbours)
 	return groupedNeighbours
