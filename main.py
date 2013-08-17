@@ -17,7 +17,7 @@ landHexes = dict()
 waterHexes = dict()
 islands = []
 
-def drawHexGrid(hexGrid, drawHexEdges=True, drawHexFills=True):
+def drawHexGrid(hexGrid, drawHexEdges=True, drawHexFills=True, drawHexCentres=False, drawRegularGrid=False):
 	if hexGrid:
 		linePoints = []
 		for row in hexGrid:
@@ -27,11 +27,14 @@ def drawHexGrid(hexGrid, drawHexEdges=True, drawHexFills=True):
 					nextHex.drawFilledHex()
 				# Draw hexagon edges and/or points
 				#nextHex.drawHex()
-				# Draw hexagon centres
-				#nextHex.drawHexCentrePoint()
-				#nextHex.drawHexCentrePoint(True, (0,1,1,1))
+				if drawHexCentres:
+					# Draw hexagon centres
+					#nextHex.drawHexCentrePoint()
+					nextHex.drawHexCentrePoint(True, (0,1,1,1))
 				# Draw regular hexagon grid
-				#nextHex.drawHex(True, True, False, (0.0, 0.0, 1.0, 1.0), True)
+				if drawRegularGrid:
+					nextHex.drawHex(True, True, False, (0.0, 0.0, 1.0, 1.0), True)
+				# Compile points of hexagon into list for batch rendering of gl_lines
 				linePoints.extend(nextHex.points[0])
 				for point in nextHex.points:
 					# Enter each point twice, for the two consecutive lines
@@ -44,10 +47,11 @@ def drawHexGrid(hexGrid, drawHexEdges=True, drawHexFills=True):
 			pyglet.graphics.draw(int(len(linePoints)/2), pyglet.gl.GL_LINES,
 				('v2f', linePoints)
 			)
-		print("Finished drawing")	
+		print("Finished drawing")
 
 # Build a hex grid, hex by hex, using points of neighbouring generated hexagons where possible
 def createHexGridFromPoints(hexesInRow=10, clipPointsToScreen=True):
+	print("Creating hex grid from points (hexesInRow: %d)" % (hexesInRow))
 	# Width of hexagons (w=root3*Radius/2) is calculated from screenwidth, which then determines hex radius
 	hexWidth = (screenWidth/hexesInRow)
 	hexRadius = (hexWidth) / math.sqrt(3) # Also edge length
@@ -109,6 +113,7 @@ def createHexGridFromPoints(hexesInRow=10, clipPointsToScreen=True):
 		gridRows.append(nextRow)
 		row += 1
 		hexCentreY += hexRadius * 1.5
+	print("Created a hexGrid with %d rows. Odd rows are length %d and even are %d." % (len(gridRows), len(gridRows[0]), len(gridRows[1])))
 	return gridRows
 
 # Compile list of neighbours that currently exist (southerly and westerly)
@@ -117,6 +122,7 @@ def assignExistingNeighbours(hexGrid):
 	for row in hexGrid:
 		for nextHex in row:
 			#print("Assigning neighbours for nextHex index: " + str(nextHex.hexIndex) + "(Hexagon " + str(totalHexes) + ")")
+			#print("  this row mod 2 is %d, with a length of %d" % (int(nextHex.hexIndex[1]%2), len(row)))
 			totalHexes += 1
 			# Odd-numbered rows are right-shifted, so their southernly neighbours are offset relatively by 1
 			# Odd rows SE neighbour has xIndex + 1
@@ -294,7 +300,7 @@ def floodFillLandNeighbours(nextHex, remainingHexes):
 def on_draw():
 	global gridChanged
 	global hexGrid
-	hexesInRow = 100
+	hexesInRow = 75
 	if gridChanged:
 		window.clear()
 		if False:
@@ -311,8 +317,9 @@ def on_draw():
 		findMarkedHexes(hexGrid)
 		floodFillLandRegions(landHexes)
 		countHexesInGrid(hexGrid)
+
 		gridChanged = False
-	drawHexGrid(hexGrid)
+	drawHexGrid(hexGrid, drawHexEdges=False, drawHexFills=True, drawHexCentres=False)
 
 print("Running app")
 pyglet.app.run()
