@@ -296,10 +296,8 @@ def on_draw():
 	hexesInRow = 100
 	if gridChanged:
 		window.clear()
-		maskImage.blit(0, 0)
-		#drawGrid()
-		#drawFittedGrid()
-		#createFittedHexGrid()
+		if False:
+			maskImage.blit(0, 0)
 		hexGrid = createHexGridFromPoints(hexesInRow)
 		# Adopt neighbour point locations
 		assignExistingNeighbours(hexGrid)
