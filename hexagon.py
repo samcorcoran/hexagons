@@ -10,13 +10,13 @@ import graph
 class Hexagon():
 	def __init__(self, centreCoordinates, radius=20, hexIndex=False, jitterStrength=False):
 		self.hexIndex = hexIndex
-		self.centre = graph.Vertex( coordinates=centreCoordinates )
+		self.centre = graph.Vertex( coordinates=centreCoordinates, hexes=[self])
 		self.radius = radius
 		self.points = []
 		self.createVertices()
 		self.edges = []
 		self.regularHexPoints = copy.deepcopy(self.points)
-		self.regularHexCentre = self.centre
+		self.regularHexCentre = copy.deepcopy(self.centre)
 		self.neighbours = dict()
 		self.fillColor = False #(random.random(),random.random(),random.random(),0.5)
 		self.isLand = False
@@ -29,7 +29,7 @@ class Hexagon():
 		sqrtThree = 1.73205080757
 		innerRadius = (sqrtThree*self.radius)/2
 		#N, Top point
-		self.points.append( graph.Vertex( coordinates=(self.centre.x, self.centre.y+self.radius) ) )
+		self.points.append( graph.Vertex( coordinates=(self.centre.x, self.centre.y+self.radius), hexes=[self] ))
 		#NE
 		self.points.append( graph.Vertex( coordinates=(self.centre.x+innerRadius, self.centre.y+(self.radius/2)), hexes=[self] ))
 		#SE
@@ -73,7 +73,7 @@ class Hexagon():
 			xSum += point.x
 			ySum += point.y
 			totalPoints += 1
-		return graph.Vertex( (xSum/totalPoints, ySum/totalPoints) )
+		return graph.Vertex( (xSum/totalPoints, ySum/totalPoints), hexes=[self] )
 
 	def drawHex(self, fullHex=True, drawEdges=True, drawPoints=False, edgeColor=(1.0,0.0,0.0,1.0), pointColor=(0.0,1.0,0.0,1.0), drawRegularHexGrid=False):
 		pointsList = self.points if not drawRegularHexGrid else self.regularHexPoints
