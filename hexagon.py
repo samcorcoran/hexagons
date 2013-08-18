@@ -172,7 +172,7 @@ class Hexagon():
 				pass
 		self.centre = self.calculateCentrePoint(self.points)
 
-	def compareToMaskImage(self, maskImageData, imageWidth, passRate=0.5, attenuation=0.8, drawAttenuatedPoints=False):
+	def compareToMaskImage(self, maskImageData, imageWidth, passRate=0.4, attenuation=0.8, drawAttenuatedPoints=False):
 		# Perimeter points and centre point each get a 'vote'
 		# Check points against mask image, register votes if point and mask location match
 		totalVotes = 0
