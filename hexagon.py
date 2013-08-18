@@ -6,6 +6,7 @@ import copy
 from itertools import chain
 
 import graph
+import drawUtils
 
 class Hexagon():
 	def __init__(self, centreCoordinates, radius=20, hexIndex=False, jitterStrength=False):
@@ -18,6 +19,7 @@ class Hexagon():
 		self.regularHexPoints = copy.deepcopy(self.points)
 		self.regularHexCentre = copy.deepcopy(self.centre)
 		self.neighbours = dict()
+		self.drainageNeighbour = False
 		self.fillColor = False #(random.random(),random.random(),random.random(),0.5)
 		self.isLand = False
 		self.isWater = False
@@ -56,6 +58,9 @@ class Hexagon():
 
 	def getPerimeterCoordinatesList(self):
 		return list(chain.from_iterable( [(self.points[n].x, self.points[n].y) for n in range(len(self.points))]))
+
+	def getCentreCoordinates(self):
+		return [self.centre.x, self.centre.y]
 
 	# Randomly shifts all point locations by a random value between +/-(edgeLength * jitterStrength)
 	def jitterPoints(self, jitterStrength=0.2):
@@ -298,4 +303,47 @@ class Hexagon():
 			#print("Hex %s passed mask-match with %d votes (%d to pass)." % (self.hexIndex, totalVotes, passRate*len(self.points)))
 			return True
 		return False
+
+	# Based on point altitudes, determine which neighbouring hex is the steeper descent
+	# Used for drainage basin calculation
+	def findDrainageNeighbour(self):
+		if self.isLand == True:
+			# Find the lowest perimeter point in hex perimeter
+			lowestPoint = self.points[0]
+			for point in self.points:
+				if point.altitude < lowestPoint.altitude:
+					# A new lowest has been found
+					lowestPoint = point
+			# Determine which of the hexagons neighbouring this point has the lowest altitude
+			lowestHex = lowestPoint.surroundingHexes[0]
+			for nextHex in lowestPoint.surroundingHexes.values():
+				if nextHex.centre.altitude < lowestHex.centre.altitude:
+					# A preferred draining hex has been found
+					lowestHex = nextHex
+			# If self would be best choice for draining, indicate that draining should be terminated
+			self.drainageNeighbour = lowestHex
+			if lowestHex == self:
+				return True
+			return lowestHex
+		else:
+			return False
+
+	def drawDrainageRoute(self, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), drawMouthsAsSinks=True):
+		if not self.drainageNeighbour:
+			self.findDrainageNeighbour()
+		if self.drainageNeighbour == self or (drawMouthsAsSinks and not self.drainageNeighbour.isLand):
+			# Draw a square to indicate sink
+			offset = self.radius*0.1
+			pyglet.gl.glColor4f(*sinkColor)
+			pyglet.graphics.draw_indexed(4, pyglet.gl.GL_TRIANGLES,
+				[0, 1, 2, 0, 2, 3],
+				('v2f', [self.centre.x-offset, self.centre.y-offset, 
+					self.centre.x+offset, self.centre.y-offset,
+					self.centre.x+offset, self.centre.y+offset,
+					self.centre.x-offset, self.centre.y+offset
+					])
+			)
+		else:
+			pyglet.gl.glColor4f(*drainageRouteColor)
+			drawUtils.drawArrow(self.getCentreCoordinates(), self.drainageNeighbour.getCentreCoordinates())
 

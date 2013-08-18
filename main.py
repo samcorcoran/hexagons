@@ -225,11 +225,15 @@ def floodFillLandNeighbours(nextHex, remainingHexes):
 	#print(groupedNeighbours)
 	return groupedNeighbours
 
+def drawDrainageRoutes(hexMap):
+	for nextHex in hexMap.values():
+		nextHex.drawDrainageRoute()
+
 @window.event
 def on_draw():
 	global gridChanged
 	global hexGrid
-	hexesInRow = 50
+	hexesInRow = 25
 	if gridChanged:
 		window.clear()
 		if True:
@@ -250,6 +254,8 @@ def on_draw():
 
 		gridChanged = False
 	drawHexGrid(hexGrid, drawHexEdges=False, drawHexFills=True, drawHexCentres=False)
+	drawDrainageRoutes(landHexes)
+
 
 print("Running app")
 pyglet.app.run()
