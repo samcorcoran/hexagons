@@ -75,6 +75,98 @@ class Hexagon():
 			totalPoints += 1
 		return graph.Vertex( (xSum/totalPoints, ySum/totalPoints), hexes=[self] )
 
+	def addHexToNeighbourhood(self, hexGrid, hexesInOddRow):
+		#print("Adding hex %s to nhood..." % (str(self.hexIndex)))
+
+		# Identify new hex's index
+		rowIsOdd = self.hexIndex[1]%2 == 1
+
+		# Identify SE neighbouring hex, if one exists
+		hasSENeighbour = self.hexIndex[0] < hexesInOddRow or rowIsOdd
+		# Identify SW neighbouring hex, if one exists
+		hasSWNeighbour = self.hexIndex[0] > 0 or rowIsOdd
+		# No southern neighbours for the first row... 
+		if self.hexIndex[1] == 0:
+			hasSENeighbour = False
+			hasSWNeighbour = False
+
+		# Not last column, unless this row is odd (previous row is therefore longer)
+		if hasSENeighbour:
+			x = self.hexIndex[0]+1 if rowIsOdd else self.hexIndex[0]
+			y = self.hexIndex[1]-1
+			#print("SE Neighbour of Hex %s has x,y: (%d, %d)" % (self.hexIndex, x, y))
+			southeastNeighbour = hexGrid[y][x]
+			## Adopt SE neighbour's points
+			### self SE point is neighbour's N point
+			self.points[2] = southeastNeighbour.points[0]
+			self.points[2].addHexNeighbours([self])
+			### self S point is neighbour's NW point
+			self.points[3] = southeastNeighbour.points[5]
+			self.points[3].addHexNeighbours([self])
+			## Log neighbour relationship
+			self.neighbours[2] = southeastNeighbour
+			southeastNeighbour.neighbours[5] = self
+			## Create shared edge object
+			## Share edge object with both hexes
+			self.edges[2] = graph.Edge( [self.points[2], self.points[3]], [self, southeastNeighbour] )
+			southeastNeighbour.edges[5] = self.edges[2]
+		else:
+			#print("No SE neighbour for hex %s." % (str(self.hexIndex)))
+			pass
+
+		# Not first column, unless this row is even (previous row is therefore longer)
+		if hasSWNeighbour:
+			x = self.hexIndex[0]-1 if not rowIsOdd else self.hexIndex[0]
+			y = self.hexIndex[1]-1
+			#print("SW Neighbour of Hex %s has x,y: (%d, %d)" % (self.hexIndex, x, y))
+			southwestNeighbour = hexGrid[y][x]
+			## Adopt SW neighbour's points
+			### self S point is neighbour's NE point
+			# This may have already been added from the SE neighbour
+			if not hasSENeighbour:
+				self.points[3] = southwestNeighbour.points[1]
+				self.points[3].addHexNeighbours([self])
+			### self SW point is neighbour's N point
+			self.points[4] = southwestNeighbour.points[0]
+			self.points[4].addHexNeighbours([self])
+			## Log neighbour relationship
+			self.neighbours[3] = southwestNeighbour
+			southwestNeighbour.neighbours[0] = self
+			## Create shared edge object
+			## Share edge object with both hexes
+			self.edges[3] = graph.Edge( [self.points[3], self.points[4]], [self, southwestNeighbour] )
+			southwestNeighbour.edges[0] = self.edges[3]
+		else:
+			#print("No SW neighbour for hex %s." % (str(self.hexIndex)))
+			pass
+
+		# Identify W neighbouring hex, if one exists
+		# Not first column...
+		if self.hexIndex[0] > 0:
+			x = self.hexIndex[0]-1
+			y = self.hexIndex[1]
+			#print("W Neighbour of Hex %s has x,y: (%d, %d)" % (self.hexIndex, x, y))		
+			westNeighbour = hexGrid[y][x]
+			## Adopt W neighbour's points
+			### self SW point is neighbour's SE point
+			# This may have already been added from the SW neighbour
+			if not hasSWNeighbour:
+				self.points[4] = westNeighbour.points[2]
+				self.points[4].addHexNeighbours([self])
+			### self NW point is neighbour's NE point
+			self.points[5] = westNeighbour.points[1]
+			self.points[5].addHexNeighbours([self])
+			## Log neighbour relationship
+			self.neighbours[4] = westNeighbour
+			westNeighbour.neighbours[1] = self
+			## Create shared edge object
+			## Share edge object with both hexes
+			self.edges[4] = graph.Edge( [self.points[4], self.points[5]], [self, westNeighbour] )
+			westNeighbour.edges[1] = self.edges[4]
+		else:
+			#print("No W neighbour for hex %s." % (str(self.hexIndex)))
+			pass
+
 	def drawHex(self, fullHex=True, drawEdges=True, drawPoints=False, edgeColor=(1.0,0.0,0.0,1.0), pointColor=(0.0,1.0,0.0,1.0), drawRegularHexGrid=False):
 		pointsList = self.points if not drawRegularHexGrid else self.regularHexPoints
 		pointsList = list(chain.from_iterable(pointsList))
