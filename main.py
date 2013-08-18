@@ -180,6 +180,19 @@ def assignExistingNeighbours(hexGrid):
 				# Add reciprocal neighbouring information
 				neighbour.neighbours["E"] = nextHex
 
+def assignHexMapAltitudes(hexMap):
+	# Iterate over hexes in may
+	for nextHex in hexMap.values():
+		# Iterate over hex's points
+		cumulativeAltitude = 0
+		for point in nextHex.points:
+			# If point has no altitude, assign one randomly
+			if not point.altitude:
+				point.altitude = random.uniform(40,80)
+				cumulativeAltitude += point.altitude
+		# After all perimeter points are complete, take average for hex centre altitude
+		nextHex.centre.altitude = cumulativeAltitude/len(nextHex.points)
+
 def screenClipGridHexagons(hexGrid):
 	# Loop over boundary hexes, fixing their off-screen points to the screen boundary
 	# Check works on regular hexagon's points rather than jittered points

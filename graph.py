@@ -6,6 +6,7 @@ class Vertex():
 		self.y = coordinates[1]
 		self.surroundingHexes = hexes
 		self.departingEdges = edges
+		self.altitude = False
 
 	def addHexNeighbours(self, hexes):
 		self.hexes.extend(hexes)
