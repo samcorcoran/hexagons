@@ -14,7 +14,7 @@ class Hexagon():
 		self.radius = radius
 		self.points = []
 		self.createVertices()
-		self.edges = []
+		self.edges = dict()
 		self.regularHexPoints = copy.deepcopy(self.points)
 		self.regularHexCentre = copy.deepcopy(self.centre)
 		self.neighbours = dict()
@@ -33,13 +33,13 @@ class Hexagon():
 		#NE
 		self.points.append( graph.Vertex( coordinates=(self.centre.x+innerRadius, self.centre.y+(self.radius/2)), hexes=[self] ))
 		#SE
-		self.points.append(graph.Vertex( coordinates=(self.centre.x+innerRadius, self.centre.y-(self.radius/2)), hexes=[self] ))
+		self.points.append( graph.Vertex( coordinates=(self.centre.x+innerRadius, self.centre.y-(self.radius/2)), hexes=[self] ))
 		#S
-		self.points.append(graph.Vertex( coordinates=(self.centre.x, self.centre.y-self.radius), hexes=[self] ))
+		self.points.append( graph.Vertex( coordinates=(self.centre.x, self.centre.y-self.radius), hexes=[self] ))
 		#SW
-		self.points.append(graph.Vertex( coordinates=(self.centre.x-innerRadius, self.centre.y-(self.radius/2)), hexes=[self] ))
+		self.points.append( graph.Vertex( coordinates=(self.centre.x-innerRadius, self.centre.y-(self.radius/2)), hexes=[self] ))
 		#NW
-		self.points.append(graph.Vertex( coordinates=(self.centre.x-innerRadius, self.centre.y+(self.radius/2)), hexes=[self] ))
+		self.points.append( graph.Vertex( coordinates=(self.centre.x-innerRadius, self.centre.y+(self.radius/2)), hexes=[self] ))
 
 	def createEdges(self):
 		# Create an edge for each pair of points

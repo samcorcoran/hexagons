@@ -4,15 +4,19 @@ class Vertex():
 	def __init__(self, coordinates, hexes=[], edges=[]):
 		self.x = coordinates[0]
 		self.y = coordinates[1]
-		self.surroundingHexes = hexes
+		self.surroundingHexes = dict()
+		self.addHexNeighbours(hexes)
 		self.departingEdges = edges
 		self.altitude = False
 
 	def addHexNeighbours(self, hexes):
-		self.hexes.extend(hexes)
+		for nextHex in hexes:
+			# Only add hex if it isn't already included
+			if not nextHex.hexIndex in self.surroundingHexes:
+				self.surroundingHexes[len(self.surroundingHexes)] = nextHex
 
 	def addDepartingEdge(self, edges):
-		self.edges.extend(edges)
+		self.departingEdges.extend(edges)
 
 
 class Edge():

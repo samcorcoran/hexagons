@@ -59,7 +59,6 @@ def createHexGridFromPoints(hexesInRow=10, clipPointsToScreen=True):
 	hexWidth = (screenWidth/hexesInRow)
 	hexRadius = (hexWidth) / math.sqrt(3) # Also edge length
 
-	hexesInCol = int(screenHeight / (hexRadius))
 	gridRows = []
 
 	# Loop through hexagon locations, using index to determine if some points should be taken from neighbours
@@ -73,112 +72,116 @@ def createHexGridFromPoints(hexesInRow=10, clipPointsToScreen=True):
 		# Offset each row to allow for tesselation
 		if row%2==1:
 			hexCentreX += hexWidth / 2
-		# Draw all hexagons in row
-		nextRow = []
+		# Add another row to gridRows
+		gridRows.append([])
 		# Draw one less hex on odd-numbered rows
 		for col in range(hexesInRow+1-(row%2)):
 			#print("Hex %d in row %d" % (col, row))
 			#print("Creating hex %d, with (col,row): (%d, %d)" % (totalHexes, col, row))
 			hexPolygon = hexagon.Hexagon((hexCentreX, hexCentreY), hexRadius, hexIndex=(col, row), jitterStrength=0.2)
+			addHexToNeighbourhood(hexPolygon, gridRows, hexesInRow)
 			totalHexes += 1
-			# Non-first row must adopt southern points locations from the previous row
-			if row > 0 :
-				# Even rows start with a x offset, so must index a different southern hexagon
-				colIndexOffset = row%2
-
-				# Last hex on row cannot look SE
-				if col < hexesInRow:
-					# SE, take SE neighbour's N point
-					hexPolygon.points[2] = gridRows[row-1][col+colIndexOffset].points[0]
-					# S, take SE neighbour's NW point
-					hexPolygon.points[3] = gridRows[row-1][col+colIndexOffset].points[5]
-				else:
-					# S; Alternatively, take SW neighbour's NE point
-					hexPolygon.points[3] = gridRows[row-1][col-1+colIndexOffset].points[1]
-
-				# If hex isn't in first column, there will be a SW neighbour too, 
-				#  otherwise, retain generated point
-				if col+colIndexOffset > 0:
-					# SW, take SW neighbour's N point
-					hexPolygon.points[4] = gridRows[row-1][col-1+colIndexOffset].points[0]
-			if col > 0:
-				if row == 0:
-					# SW, take west neighbour SE point
-					hexPolygon.points[4] = nextRow[col-1].points[2]
-				# NW, Adopt W neighbour's NE point as this
-				hexPolygon.points[5] = nextRow[col-1].points[1]
-			# Remaining points (N, NE) are not overwritten				
-
-			nextRow.append(hexPolygon)
+			# Add hex to current top row of hex grid
+			gridRows[-1].append(hexPolygon)
 			hexCentreX += hexWidth
-			col += 1
 		#print("Length of nextRow: %d" % (len(nextRow)))
-		gridRows.append(nextRow)
+		#gridRows.append(nextRow)
 		row += 1
 		hexCentreY += hexRadius * 1.5
 	print("Created a hexGrid with %d rows. Odd rows are length %d and even are %d." % (len(gridRows), len(gridRows[0]), len(gridRows[1])))
 	return gridRows
 
-# Compile list of neighbours that currently exist (southerly and westerly)
-def assignExistingNeighbours(hexGrid):
-	totalHexes = 0
-	for row in hexGrid:
-		for nextHex in row:
-			#print("Assigning neighbours for nextHex index: " + str(nextHex.hexIndex) + "(Hexagon " + str(totalHexes) + ")")
-			#print("  this row mod 2 is %d, with a length of %d" % (int(nextHex.hexIndex[1]%2), len(row)))
-			totalHexes += 1
-			# Odd-numbered rows are right-shifted, so their southernly neighbours are offset relatively by 1
-			# Odd rows SE neighbour has xIndex + 1
-			# Odd rows SW neighbour shares an x index
-			# Even rows SE neighbour shares an x index
-			# Even rows SW neighbour has xIndex - 1
-			# First row has no southern neighbours
-			if not nextHex.hexIndex[1] == 0:
-				# y is identical for both southernly neighbours
-				y = nextHex.hexIndex[1]-1
-				# SE
-				# This xOffset is 1 on even rows and 0 on odd
-				xOffset = 1 if nextHex.hexIndex[1] % 2 == 1 else 0
-				x = nextHex.hexIndex[0]+xOffset
-				# If right column on an 
-				#print("SE x, y: %d, %d" % (x, y))
-				# Odd rows are one hex shorter, so subtract 1 from row length when handling an even row
-				# If you are on an odd row, previous row length is len(row)+1
-				previousRowLength = len(row)+int(nextHex.hexIndex[1] % 2)-int((nextHex.hexIndex[1]+1) % 2)
-				if x >= 0 and x < previousRowLength:
-					#print("SE neighbour was found")
-					neighbour = hexGrid[y][x]
-					nextHex.neighbours["SE"] = neighbour
-					# Add reciprocal neighbouring information
-					neighbour.neighbours["NW"] = nextHex
-				else:
-					#print("No SE Neighbour")
-					pass
-				# SW
-				# This xOffset is 0 on even rows and 1 on odd
-				xOffset = 1 if nextHex.hexIndex[1] % 2 == 0 else 0
-				x = nextHex.hexIndex[0]-xOffset
-				#print("SW x, y: %d, %d" % (x, y))
-				# Odd rows are one hex shorter, so subtract 1 from row length when handling an even row
-				# If on an odd row, the previous row is len(row) - 1
-				previousRowLength = len(row)-int((nextHex.hexIndex[1]+1) % 2)
-				if x >= 0 and x < previousRowLength:
-					#print("SW neighbour was found")
-					neighbour = hexGrid[y][x]
-					nextHex.neighbours["SW"] = neighbour
-					# Add reciprocal neighbouring information
-					neighbour.neighbours["NE"] = nextHex
-				else:
-					#print("No SW Neighbour")
-					pass
-			# First column has no 
-			if not nextHex.hexIndex[0] == 0:
-				#print("West neighbour was found: (%d, %d)" % (nextHex.hexIndex[0]-1, nextHex.hexIndex[1]))
-				# W
-				neighbour = hexGrid[nextHex.hexIndex[1]][nextHex.hexIndex[0]-1]
-				nextHex.neighbours["W"] = neighbour
-				# Add reciprocal neighbouring information
-				neighbour.neighbours["E"] = nextHex
+def addHexToNeighbourhood(newHex, hexGrid, hexesInOddRow):
+	#print("Adding hex %s to nhood..." % (str(newHex.hexIndex)))
+
+	# Identify new hex's index
+	rowIsOdd = newHex.hexIndex[1]%2 == 1
+
+	# Identify SE neighbouring hex, if one exists
+	hasSENeighbour = newHex.hexIndex[0] < hexesInOddRow or rowIsOdd
+	# Identify SW neighbouring hex, if one exists
+	hasSWNeighbour = newHex.hexIndex[0] > 0 or rowIsOdd
+	# No southern neighbours for the first row... 
+	if newHex.hexIndex[1] == 0:
+		hasSENeighbour = False
+		hasSWNeighbour = False
+
+	# Not last column, unless this row is odd (previous row is therefore longer)
+	if hasSENeighbour:
+		x = newHex.hexIndex[0]+1 if rowIsOdd else newHex.hexIndex[0]
+		y = newHex.hexIndex[1]-1
+		#print("SE Neighbour of Hex %s has x,y: (%d, %d)" % (newHex.hexIndex, x, y))
+		southeastNeighbour = hexGrid[y][x]
+		## Adopt SE neighbour's points
+		### newHex SE point is neighbour's N point
+		newHex.points[2] = southeastNeighbour.points[0]
+		newHex.points[2].addHexNeighbours([newHex])
+		### newHex S point is neighbour's NW point
+		newHex.points[3] = southeastNeighbour.points[5]
+		newHex.points[3].addHexNeighbours([newHex])
+		## Log neighbour relationship
+		newHex.neighbours[2] = southeastNeighbour
+		southeastNeighbour.neighbours[5] = newHex
+		## Create shared edge object
+		## Share edge object with both hexes
+		newHex.edges[2] = graph.Edge( [newHex.points[2], newHex.points[3]], [newHex, southeastNeighbour] )
+		southeastNeighbour.edges[5] = newHex.edges[2]
+	else:
+		#print("No SE neighbour for hex %s." % (str(newHex.hexIndex)))
+		pass
+
+	# Not first column, unless this row is even (previous row is therefore longer)
+	if hasSWNeighbour:
+		x = newHex.hexIndex[0]-1 if not rowIsOdd else newHex.hexIndex[0]
+		y = newHex.hexIndex[1]-1
+		#print("SW Neighbour of Hex %s has x,y: (%d, %d)" % (newHex.hexIndex, x, y))
+		southwestNeighbour = hexGrid[y][x]
+		## Adopt SW neighbour's points
+		### newHex S point is neighbour's NE point
+		# This may have already been added from the SE neighbour
+		if not hasSENeighbour:
+			newHex.points[3] = southwestNeighbour.points[1]
+			newHex.points[3].addHexNeighbours([newHex])
+		### newHex SW point is neighbour's N point
+		newHex.points[4] = southwestNeighbour.points[0]
+		newHex.points[4].addHexNeighbours([newHex])
+		## Log neighbour relationship
+		newHex.neighbours[3] = southwestNeighbour
+		southwestNeighbour.neighbours[0] = newHex
+		## Create shared edge object
+		## Share edge object with both hexes
+		newHex.edges[3] = graph.Edge( [newHex.points[3], newHex.points[4]], [newHex, southwestNeighbour] )
+		southwestNeighbour.edges[0] = newHex.edges[3]
+	else:
+		#print("No SW neighbour for hex %s." % (str(newHex.hexIndex)))
+		pass
+
+	# Identify W neighbouring hex, if one exists
+	# Not first column...
+	if newHex.hexIndex[0] > 0:
+		x = newHex.hexIndex[0]-1
+		y = newHex.hexIndex[1]
+		#print("W Neighbour of Hex %s has x,y: (%d, %d)" % (newHex.hexIndex, x, y))		
+		westNeighbour = hexGrid[y][x]
+		## Adopt W neighbour's points
+		### newHex SW point is neighbour's SE point
+		# This may have already been added from the SW neighbour
+		if not hasSWNeighbour:
+			newHex.points[4] = westNeighbour.points[2]
+			newHex.points[4].addHexNeighbours([newHex])
+		### newHex NW point is neighbour's NE point
+		newHex.points[5] = westNeighbour.points[1]
+		newHex.points[5].addHexNeighbours([newHex])
+		## Log neighbour relationship
+		newHex.neighbours[4] = westNeighbour
+		westNeighbour.neighbours[1] = newHex
+		## Create shared edge object
+		## Share edge object with both hexes
+		newHex.edges[4] = graph.Edge( [newHex.points[4], newHex.points[5]], [newHex, westNeighbour] )
+		westNeighbour.edges[1] = newHex.edges[4]
+	else:
+		#print("No W neighbour for hex %s." % (str(newHex.hexIndex)))
+		pass
 
 def assignHexMapAltitudes(hexMap):
 	# Iterate over hexes in may
@@ -217,7 +220,7 @@ def checkForOutOfBounds(hexGrid, printOOB=False):
 	for row in hexGrid:
 		for nextHex in row:
 			for i in range(len(nextHex.points)):
-				if nextHex.points[i][0] < 0 or nextHex.points[i][0] > screenWidth or nextHex.points[i][1] < 0 or nextHex.points[i][1] > screenHeight:
+				if nextHex.points[i].x < 0 or nextHex.points[i].x > screenWidth or nextHex.points[i].y < 0 or nextHex.points[i].y > screenHeight:
 					print("Hex %d (%d, %d) is out of bounds." % (hexCount, nextHex.hexIndex[0], nextHex.hexIndex[1]))
 					print("Hex point %d: %s" % (i, str(nextHex.points[i])))
 					return True
@@ -322,8 +325,6 @@ def on_draw():
 		if True:
 			maskImage.blit(0, 0)
 		hexGrid = createHexGridFromPoints(hexesInRow)
-		# Adopt neighbour point locations
-		assignExistingNeighbours(hexGrid)
 		#countNeighbours(hexGrid)
 		screenClipGridHexagons(hexGrid)
 		
@@ -335,7 +336,7 @@ def on_draw():
 		countHexesInGrid(hexGrid)
 
 		gridChanged = False
-	drawHexGrid(hexGrid, drawHexEdges=False, drawHexFills=True, drawHexCentres=False)
+	drawHexGrid(hexGrid, drawHexEdges=True, drawHexFills=True, drawHexCentres=False)
 
 print("Running app")
 pyglet.app.run()
