@@ -6,6 +6,8 @@ import random
 import math
 import copy
 
+import graph
+
 window = pyglet.window.Window()
 screenWidth = 800
 screenHeight = 600
@@ -35,12 +37,13 @@ def drawHexGrid(hexGrid, drawHexEdges=True, drawHexFills=True, drawHexCentres=Fa
 				if drawRegularGrid:
 					nextHex.drawHex(True, True, False, (0.0, 0.0, 1.0, 1.0), True)
 				# Compile points of hexagon into list for batch rendering of gl_lines
-				linePoints.extend(nextHex.points[0])
-				for point in nextHex.points:
+				linePoints.extend(nextHex.getPointCoordinatesList(pointNumber=0))
+				for i in range(len(nextHex.points)):
 					# Enter each point twice, for the two consecutive lines
-					linePoints.extend(point + point)
+					nextCoordinates = nextHex.getPointCoordinatesList(pointNumber=i)
+					linePoints.extend(nextCoordinates + nextCoordinates)
 				# Last point is first point, completing the loop
-				linePoints.extend(nextHex.points[0])
+				linePoints.extend(nextHex.getPointCoordinatesList(pointNumber=0))
 		print("linePoints length: " + str(len(linePoints)))
 		if drawHexEdges:
 			pyglet.gl.glColor4f(0.0,0.0,1.0,1.0)
@@ -303,7 +306,7 @@ def on_draw():
 	hexesInRow = 75
 	if gridChanged:
 		window.clear()
-		if False:
+		if True:
 			maskImage.blit(0, 0)
 		hexGrid = createHexGridFromPoints(hexesInRow)
 		# Adopt neighbour point locations

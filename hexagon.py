@@ -5,12 +5,16 @@ import random
 import copy
 from itertools import chain
 
+import graph
+
 class Hexagon():
-	def __init__(self, centrePoint, radius=20, hexIndex=False, jitterStrength=False):
+	def __init__(self, centreCoordinates, radius=20, hexIndex=False, jitterStrength=False):
 		self.hexIndex = hexIndex
-		self.centre = centrePoint
+		self.centre = graph.Vertex( coordinates=centreCoordinates )
 		self.radius = radius
-		self.points = self.calculatePoints()
+		self.points = []
+		self.createVertices()
+		self.edges = []
 		self.regularHexPoints = copy.deepcopy(self.points)
 		self.regularHexCentre = self.centre
 		self.neighbours = dict()
@@ -21,35 +25,55 @@ class Hexagon():
 			self.jitterPoints(jitterStrength)
 		self.centre = self.calculateCentrePoint()
 	
-	def calculatePoints(self):
+	def createVertices(self):
 		sqrtThree = 1.73205080757
 		innerRadius = (sqrtThree*self.radius)/2
-		points=[]
 		#N, Top point
-		points.append([self.centre[0], self.centre[1]+self.radius])
+		self.points.append( graph.Vertex( coordinates=(self.centre.x, self.centre.y+self.radius) ) )
 		#NE
-		points.append([self.centre[0]+innerRadius, self.centre[1]+(self.radius/2)])
+		self.points.append( graph.Vertex( coordinates=(self.centre.x+innerRadius, self.centre.y+(self.radius/2)), hexes=[self] ))
 		#SE
-		points.append([self.centre[0]+innerRadius, self.centre[1]-(self.radius/2)])
+		self.points.append(graph.Vertex( coordinates=(self.centre.x+innerRadius, self.centre.y-(self.radius/2)), hexes=[self] ))
 		#S
-		points.append([self.centre[0], self.centre[1]-self.radius])
+		self.points.append(graph.Vertex( coordinates=(self.centre.x, self.centre.y-self.radius), hexes=[self] ))
 		#SW
-		points.append([self.centre[0]-innerRadius, self.centre[1]-(self.radius/2)])
+		self.points.append(graph.Vertex( coordinates=(self.centre.x-innerRadius, self.centre.y-(self.radius/2)), hexes=[self] ))
 		#NW
-		points.append([self.centre[0]-innerRadius, self.centre[1]+(self.radius/2)])
-		return points
+		self.points.append(graph.Vertex( coordinates=(self.centre.x-innerRadius, self.centre.y+(self.radius/2)), hexes=[self] ))
+
+	def createEdges(self):
+		# Create an edge for each pair of points
+		for i in range(len(self.points)-1):
+			self.edges.append(graph.Edge( vertices=(self.points[i], self.points[i+1]), hexes=[self] ))
+		# Edge departing from last point returns to first point
+		self.edges.append(graph.Edge( vertices=(self.points[5], self.points[0]), hexes=[self] ))
+
+	def getPointCoordinatesList(self, pointNumber):
+		if pointNumber < len(self.points):
+			# Return coord list for given point
+			return [self.points[pointNumber].x, self.points[pointNumber].y]
+		return False
+
+	def getPerimeterCoordinatesList(self):
+		return list(chain.from_iterable( [(self.points[n].x, self.points[n].y) for n in range(len(self.points))]))
 
 	# Randomly shifts all point locations by a random value between +/-(edgeLength * jitterStrength)
 	def jitterPoints(self, jitterStrength=0.2):
 		maxJitter = jitterStrength*self.radius
 		for i in range(len(self.points)):
-			self.points[i][0] += random.uniform(-maxJitter, maxJitter)
-			self.points[i][1] += random.uniform(-maxJitter, maxJitter)
+			self.points[i].x += random.uniform(-maxJitter, maxJitter)
+			self.points[i].y += random.uniform(-maxJitter, maxJitter)
 
 	def calculateCentrePoint(self, points=False):
-		points = points if points else self.points 
-		xPoints, yPoints = zip(*points)
-		return [sum(xPoints)/len(xPoints), sum(yPoints)/len(yPoints)]
+		points = points if points else self.points
+		xSum = 0
+		ySum = 0
+		totalPoints = 0
+		for point in points:
+			xSum += point.x
+			ySum += point.y
+			totalPoints += 1
+		return graph.Vertex( (xSum/totalPoints, ySum/totalPoints) )
 
 	def drawHex(self, fullHex=True, drawEdges=True, drawPoints=False, edgeColor=(1.0,0.0,0.0,1.0), pointColor=(0.0,1.0,0.0,1.0), drawRegularHexGrid=False):
 		pointsList = self.points if not drawRegularHexGrid else self.regularHexPoints
@@ -82,11 +106,11 @@ class Hexagon():
 		
 	def drawFilledHex(self, drawFill=False, fillColor=False, drawRegularHexGrid=False):
 		if self.fillColor:
-			pointsList = self.regularHexPoints if drawRegularHexGrid else self.points		
+			pointsList = self.regularHexPoints if drawRegularHexGrid else self.points
 			centrePoint = self.regularHexCentre if drawRegularHexGrid else self.centre
-			firstPoint = pointsList[0]
-			# Polygon centre point are first values
-			pointsList = centrePoint + list(chain.from_iterable(pointsList))
+			firstPoint = [pointsList[0].x, pointsList[0].y]
+			# Polygon centre point coordinates are first values
+			pointsList = [centrePoint.x, centrePoint.y] + self.getPerimeterCoordinatesList()
 			pointsList.extend(firstPoint)
 			# Draw filled polygon
 			pyglet.gl.glColor4f(*self.fillColor)
@@ -117,28 +141,28 @@ class Hexagon():
 			#print(" p%d: (%f, %f)" % (i, hexPoints[i][0], hexPoints[i][1]))
 			clipped = False
 			# Clip y values to screen
-			if hexPoints[i][1] >= heightInterval[1]:
+			if hexPoints[i].y >= heightInterval[1]:
 				#print(" ..clipped hexpoints[%d][1] (%d) to heightInterval[1] %d" % (i, hexPoints[i][1], heightInterval[1]))
 				clipped = True
 				# Set y to top edge of screen
-				self.points[i][1] = heightInterval[1]
-			elif hexPoints[i][1] <=  heightInterval[0]:
+				self.points[i].y = heightInterval[1]
+			elif hexPoints[i].y <=  heightInterval[0]:
 				#print(" ..clipped hexpoints[%d][1] (%d) to heightInterval[0] %d" % (i, hexPoints[i][1],heightInterval[0]))
 				clipped = True
 				# Set y to bottom of screen
-				self.points[i][1] =  heightInterval[0]
+				self.points[i].y =  heightInterval[0]
 
 			# Clip x values to screen
-			if hexPoints[i][0] >= widthInterval[1]:
+			if hexPoints[i].x >= widthInterval[1]:
 				#print(" ..clipped hexpoints[%d][0] (%d) to widthInterval[1] %d" % (i, hexPoints[i][0],widthInterval[1]))
 				clipped = True
 				# Set x to east edge of screen
-				self.points[i][0] = widthInterval[1]
-			elif hexPoints[i][0] <=  widthInterval[0]:
+				self.points[i].x = widthInterval[1]
+			elif hexPoints[i].x <=  widthInterval[0]:
 				#print(" ..clipped hexpoints[%d][0] (%d) to widthInterval[0] %d" % (i, hexPoints[i][0],widthInterval[0]))				
 				clipped = True
 				# Set x to west edge of screen
-				self.points[i][0] =  widthInterval[0]
+				self.points[i].x =  widthInterval[0]
 			
 			if clipped:
 				#print(" after clipping, point: " + str(self.points[i]))
@@ -148,21 +172,34 @@ class Hexagon():
 				pass
 		self.centre = self.calculateCentrePoint(self.points)
 
-	def compareToMaskImage(self, maskImageData, imageWidth, passRate=0.5, attenuation=0.8):
+	def compareToMaskImage(self, maskImageData, imageWidth, passRate=0.5, attenuation=0.8, drawAttenuatedPoints=False):
 		# Perimeter points and centre point each get a 'vote'
-		xPoints, yPoints = zip(*self.points)
-		attenuatedPerimeterX = [self.centre[0] + (x - self.centre[0])*attenuation for x in xPoints]
-		attenuatedPerimeterY = [self.centre[1] + (y - self.centre[1])*attenuation for y in yPoints]
-		attenuatedPerimeter = zip(attenuatedPerimeterX, attenuatedPerimeterY)
-
+		# Check points against mask image, register votes if point and mask location match
 		totalVotes = 0
-		# Check points against mask image
-		for point in attenuatedPerimeter:
+		attenuatedPointsList = []
+		for point in self.points:
 			#print("Point: " + str(point))
-			i = int(int(point[0]) + ((int(point[1])-1) * imageWidth))-1
+			# Attenuated positions are closer to the centre of the hex
+			attenuatedX = self.centre.x + (point.x - self.centre.x)*attenuation
+			attenuatedY = self.centre.y + (point.y - self.centre.y)*attenuation
+
+			i = int(int(attenuatedX) + ((int(attenuatedY)-1) * imageWidth))-1
 			#print("Point [%f, %f] had an index of: %d" % (point[0], point[1], i))
+			
 			if maskImageData[i] > 0:
 				totalVotes += 1
-		if totalVotes > passRate*len(self.points):
+
+			# If points are to be drawn, assemble them into a list
+			if drawAttenuatedPoints:
+				attenuatedPointsList.extend([attenuatedX, attenuatedY])
+
+		if drawAttenuatedPoints:
+			pyglet.gl.glColor4f(1.0,0.0,0.0,1.0)
+			pyglet.graphics.draw(int(len(attenuatedPointsList)/2), pyglet.gl.GL_POINTS,
+				('v2f', attenuatedPointsList)
+			)
+
+		if totalVotes >= passRate*len(self.points):
+			#print("Hex %s passed mask-match with %d votes (%d to pass)." % (self.hexIndex, totalVotes, passRate*len(self.points)))
 			return True
 		return False
