@@ -196,7 +196,7 @@ class Hexagon():
 				('v2f', pointsList)
 			)
 		
-	def drawFilledHex(self, drawFill=False, fillColor=False, drawRegularHexGrid=False):
+	def drawFilledHex(self, fillColor=False, drawRegularHexGrid=False):
 		if self.fillColor:
 			pointsList = self.regularHexPoints if drawRegularHexGrid else self.points
 			centrePoint = self.regularHexCentre if drawRegularHexGrid else self.centre
@@ -205,7 +205,10 @@ class Hexagon():
 			pointsList = [centrePoint.x, centrePoint.y] + self.getPerimeterCoordinatesList()
 			pointsList.extend(firstPoint)
 			# Draw filled polygon
-			pyglet.gl.glColor4f(*self.fillColor)
+			# Scale opacity by centre point's altitude
+			fillColor = tuple([self.centre.altitude * self.fillColor[x] for x in range(3)] + [self.fillColor[3]])
+			#pyglet.gl.glColor4f(self.fillColor[0], self.fillColor[1], self.fillColor[2], self.fillColor[3]*self.centre.altitude)
+			pyglet.gl.glColor4f(*fillColor)
 			# Polygon is always drawn as fullHex
 			glEnable(GL_BLEND)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -217,7 +220,7 @@ class Hexagon():
 		point = self.regularHexCentre if drawRegularHexCentre else self.centre
 		pyglet.gl.glColor4f(*pointColor)
 		pyglet.graphics.draw(1, pyglet.gl.GL_POINTS,
-				('v2f', point)
+			('v2f', point)
 		)
 
 	def clipPointsToScreen(self, widthInterval=[0,800], heightInterval=[0,600], useRegularPoints=True):
@@ -295,3 +298,4 @@ class Hexagon():
 			#print("Hex %s passed mask-match with %d votes (%d to pass)." % (self.hexIndex, totalVotes, passRate*len(self.points)))
 			return True
 		return False
+

@@ -99,10 +99,12 @@ def assignHexMapAltitudes(hexMap):
 		for point in nextHex.points:
 			# If point has no altitude, assign one randomly
 			if not point.altitude:
-				point.altitude = random.uniform(40,80)
-				cumulativeAltitude += point.altitude
+				point.altitude = random.uniform(0.1,1)
+				#print("Assigning altitude: %f" % (point.altitude))
+			cumulativeAltitude += point.altitude
 		# After all perimeter points are complete, take average for hex centre altitude
 		nextHex.centre.altitude = cumulativeAltitude/len(nextHex.points)
+		#print("Hex %s centre altitude is %f" % (str(nextHex.hexIndex), nextHex.centre.altitude))
 
 def screenClipGridHexagons(hexGrid):
 	# Loop over boundary hexes, fixing their off-screen points to the screen boundary
@@ -189,7 +191,7 @@ def floodFillLandRegions(hexMap):
 	unassignedHexes = copy.copy(hexMap)
 	while unassignedHexes:
 		# Choose a new land color
-		fillColor = (random.random(), random.random(), random.random(), 0.8)
+		fillColor = (random.random(), random.random(), random.random(), 1.0)
 		# Take a hex from the list of unassigned
 		nextHex = unassignedHexes.pop(random.choice(list(unassignedHexes.keys())))
 
@@ -227,7 +229,7 @@ def floodFillLandNeighbours(nextHex, remainingHexes):
 def on_draw():
 	global gridChanged
 	global hexGrid
-	hexesInRow = 75
+	hexesInRow = 50
 	if gridChanged:
 		window.clear()
 		if True:
@@ -242,6 +244,9 @@ def on_draw():
 		findMarkedHexes(hexGrid)
 		floodFillLandRegions(landHexes)
 		countHexesInGrid(hexGrid)
+
+		# Assign heights to land vertices
+		assignHexMapAltitudes(landHexes)
 
 		gridChanged = False
 	drawHexGrid(hexGrid, drawHexEdges=False, drawHexFills=True, drawHexCentres=False)
