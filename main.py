@@ -7,12 +7,13 @@ import math
 import copy
 
 import graph
+import regions
 
 window = pyglet.window.Window()
 screenWidth = 800
 screenHeight = 600
 window.set_size(800, 600)
-maskImage = pyglet.resource.image('groundtruth2.bmp')
+maskImage = pyglet.resource.image('groundtruth3.bmp')
 gridChanged = True
 hexGrid = []
 landHexes = dict()
@@ -105,6 +106,26 @@ def assignHexMapAltitudes(hexMap):
 		# After all perimeter points are complete, take average for hex centre altitude
 		nextHex.centre.altitude = cumulativeAltitude/len(nextHex.points)
 		#print("Hex %s centre altitude is %f" % (str(nextHex.hexIndex), nextHex.centre.altitude))
+
+def assignHexMapAltitudesFromCoast(hexRegion):
+	for nextHex in hexRegion.hexes.values():
+		cumulativeAltitude = 0
+		for point in nextHex.points:
+			if not point.altitude:
+				distanceFromCoast = hexRegion.borderDistances[nextHex.hexIndex]+1
+				largestDist = len(hexRegion.borderHexes)+1
+				#print("Altitude: %f/%f" % (distanceFromCoast, largestDist)) 
+				point.altitude = 0 if largestDist == 0 else distanceFromCoast/largestDist
+				# Add some randomness
+				point.altitude *= random.uniform(0.75, 1.25)
+			cumulativeAltitude += point.altitude
+			nextHex.centre.altitude = cumulativeAltitude/len(nextHex.points)
+
+def assignEqualAltitudes(hexMap):
+	for nextHex in hexMap.values():
+		for point in nextHex.points:
+			point.altitude = 1
+		nextHex.centre.altitude = 1
 
 def screenClipGridHexagons(hexGrid):
 	# Loop over boundary hexes, fixing their off-screen points to the screen boundary
@@ -233,7 +254,7 @@ def drawDrainageRoutes(hexMap):
 def on_draw():
 	global gridChanged
 	global hexGrid
-	hexesInRow = 25
+	hexesInRow = 80
 	if gridChanged:
 		window.clear()
 		if True:
@@ -249,12 +270,18 @@ def on_draw():
 		floodFillLandRegions(landHexes)
 		countHexesInGrid(hexGrid)
 
+		landRegion = regions.Region(landHexes)
+		landRegion.findBorderHexes()
+
 		# Assign heights to land vertices
-		assignHexMapAltitudes(landHexes)
+		#assignEqualAltitudes(landHexes)
+		#assignHexMapAltitudes(landHexes)
+		assignHexMapAltitudesFromCoast(landRegion)
 
 		gridChanged = False
 	drawHexGrid(hexGrid, drawHexEdges=False, drawHexFills=True, drawHexCentres=False)
-	drawDrainageRoutes(landHexes)
+	if True:
+		drawDrainageRoutes(landHexes)
 
 
 print("Running app")

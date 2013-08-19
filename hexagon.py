@@ -22,6 +22,7 @@ class Hexagon():
 		self.drainageNeighbour = False
 		self.fillColor = False #(random.random(),random.random(),random.random(),0.5)
 		self.isLand = False
+		self.distanceFromWater = False
 		self.isWater = False
 		if jitterStrength:
 			self.jitterPoints(jitterStrength)
@@ -330,6 +331,7 @@ class Hexagon():
 
 	def drawDrainageRoute(self, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), drawMouthsAsSinks=True):
 		if not self.drainageNeighbour:
+			# Calculate drainage neighbour if not already known
 			self.findDrainageNeighbour()
 		if self.drainageNeighbour == self or (drawMouthsAsSinks and not self.drainageNeighbour.isLand):
 			# Draw a square to indicate sink
@@ -347,3 +349,12 @@ class Hexagon():
 			pyglet.gl.glColor4f(*drainageRouteColor)
 			drawUtils.drawArrow(self.getCentreCoordinates(), self.drainageNeighbour.getCentreCoordinates())
 
+	# def findDistanceFromWater(self):
+	# 	if self.isLand:
+	# 		if not self.distanceFromWater:
+	# 			uncheckedNeighbours = list(self.neighbours.values())
+	# 			for neighbour in neighbours:
+	# 			else:
+	# 				return self.distanceFromWater
+
+	#def checkNeighbourDistancesFromWater(self, 
