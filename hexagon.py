@@ -112,10 +112,9 @@ class Hexagon():
 			## Log neighbour relationship
 			self.neighbours[2] = southeastNeighbour
 			southeastNeighbour.neighbours[5] = self
-			## Create shared edge object
-			## Share edge object with both hexes
-			self.edges[2] = graph.Edge( [self.points[2], self.points[3]], [self, southeastNeighbour] )
-			southeastNeighbour.edges[5] = self.edges[2]
+			# Records points as neighbours to each other if not already
+			#  reciprocal relationship is automatically handled
+			self.points[2].addVertexNeighbour(self.points[3])
 		else:
 			#print("No SE neighbour for hex %s." % (str(self.hexIndex)))
 			pass
@@ -138,10 +137,9 @@ class Hexagon():
 			## Log neighbour relationship
 			self.neighbours[3] = southwestNeighbour
 			southwestNeighbour.neighbours[0] = self
-			## Create shared edge object
-			## Share edge object with both hexes
-			self.edges[3] = graph.Edge( [self.points[3], self.points[4]], [self, southwestNeighbour] )
-			southwestNeighbour.edges[0] = self.edges[3]
+			# Records points as neighbours to each other if not already
+			#  reciprocal relationship is automatically handled
+			self.points[3].addVertexNeighbour(self.points[4])
 		else:
 			#print("No SW neighbour for hex %s." % (str(self.hexIndex)))
 			pass
@@ -165,10 +163,9 @@ class Hexagon():
 			## Log neighbour relationship
 			self.neighbours[4] = westNeighbour
 			westNeighbour.neighbours[1] = self
-			## Create shared edge object
-			## Share edge object with both hexes
-			self.edges[4] = graph.Edge( [self.points[4], self.points[5]], [self, westNeighbour] )
-			westNeighbour.edges[1] = self.edges[4]
+			# Records points as neighbours to each other if not already
+			#  reciprocal relationship is automatically handled
+			self.points[4].addVertexNeighbour(self.points[5])			
 		else:
 			#print("No W neighbour for hex %s." % (str(self.hexIndex)))
 			pass
@@ -329,32 +326,66 @@ class Hexagon():
 		else:
 			return False
 
-	def drawDrainageRoute(self, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), drawMouthsAsSinks=True):
+	def drawDrainageRoute(self, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), drawMouthsAsSinks=False):
 		if not self.drainageNeighbour:
 			# Calculate drainage neighbour if not already known
 			self.findDrainageNeighbour()
 		if self.drainageNeighbour == self or (drawMouthsAsSinks and not self.drainageNeighbour.isLand):
 			# Draw a square to indicate sink
-			offset = self.radius*0.1
-			pyglet.gl.glColor4f(*sinkColor)
-			pyglet.graphics.draw_indexed(4, pyglet.gl.GL_TRIANGLES,
-				[0, 1, 2, 0, 2, 3],
-				('v2f', [self.centre.x-offset, self.centre.y-offset, 
-					self.centre.x+offset, self.centre.y-offset,
-					self.centre.x+offset, self.centre.y+offset,
-					self.centre.x-offset, self.centre.y+offset
-					])
-			)
+			drawUtils.drawSquare([self.centre.x, self.centre.y], 4, sinkColor)
 		else:
 			pyglet.gl.glColor4f(*drainageRouteColor)
 			drawUtils.drawArrow(self.getCentreCoordinates(), self.drainageNeighbour.getCentreCoordinates())
 
-	# def findDistanceFromWater(self):
-	# 	if self.isLand:
-	# 		if not self.distanceFromWater:
-	# 			uncheckedNeighbours = list(self.neighbours.values())
-	# 			for neighbour in neighbours:
-	# 			else:
-	# 				return self.distanceFromWater
-
-	#def checkNeighbourDistancesFromWater(self, 
+	def drawVertexDrainageRoute(self, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), drawMouthsAsSinks=False):
+		#print("Drainage for hex %s..." % str(self.hexIndex))
+		if self.isLand == True:
+			lowestPoint = self.centre
+			terminates = False
+			while not terminates:
+				lowestNeighbouringPoint = lowestPoint
+				coastal = False
+				if len(lowestPoint.neighbouringVertices) > 0:
+					# Point is a perimeter vertex! Drain to other perimeter points or to centre points
+					for neighbouringPoint in lowestPoint.neighbouringVertices:
+						if neighbouringPoint.altitude:
+							# Compare own altitude with neighbouring point
+							if neighbouringPoint.altitude < lowestNeighbouringPoint.altitude:
+								lowestNeighbouringPoint = neighbouringPoint
+						else:
+							# Has reached a water body
+							coastal = True
+					# Provide option to run to centre of neighbouring hex if preferable
+					for neighbouringHex in lowestPoint.surroundingHexes.values():
+						if neighbouringHex.centre.altitude:
+							# If a hex centre is even just equal to current point, it is preferable
+							#  this deals with the unlikely case of flat hexagons, incorporating all drainage that terminates on perimeter
+							if neighbouringHex.centre.altitude <= lowestNeighbouringPoint.altitude:
+								#print("lowest point was a hex centre (%s)" % (str(neighbouringHex.hexIndex)))
+								lowestNeighbouringPoint = neighbouringHex.centre
+						else:
+							# Neighbouring hex is part of a water body
+							coastal = True
+				else:
+					# Point is a hex centre point! Drain to perimeter vertices
+					currentHex = lowestPoint.surroundingHexes[0]
+					for perimeterPoint in currentHex.points:
+						if perimeterPoint.altitude:
+							if perimeterPoint.altitude < lowestNeighbouringPoint.altitude:
+								lowestNeighbouringPoint = perimeterPoint
+						else:
+							# One of the perimeter points is part of water body
+							coastal = True
+				# Has now found the lowest point
+				if lowestNeighbouringPoint == lowestPoint:
+					# Terminates here at a sink point
+					terminates = True
+					drawUtils.drawSquare([lowestPoint.x, lowestPoint.y], 4, sinkColor)
+				elif coastal:
+					# Has reached a water body
+					terminates = True
+				else:
+					# Draw drainage route
+					drawUtils.drawArrow([lowestPoint.x, lowestPoint.y], [lowestNeighbouringPoint.x, lowestNeighbouringPoint.y], drainageRouteColor)
+					# Set the lowestPoint, ready for the next iteration
+					lowestPoint = lowestNeighbouringPoint

@@ -1,7 +1,9 @@
 import pyglet
 import math
 
-def drawArrow(v0, v1):
+def drawArrow(v0, v1, color):
+	pyglet.gl.glColor4f(*color)
+
 	headLength = 0.15
 	internalAngle = 0.1
 
@@ -25,4 +27,15 @@ def drawArrow(v0, v1):
 
 	pyglet.graphics.draw(3, pyglet.gl.GL_TRIANGLES,
 		('v2f', v1 + [firstBarbX, firstBarbY, secondBarbX, secondBarbY])
+	)
+
+def drawSquare(v0, width, color):
+	pyglet.gl.glColor4f(*color)
+	pyglet.graphics.draw_indexed(4, pyglet.gl.GL_TRIANGLES,
+		[0, 1, 2, 0, 2, 3],
+		('v2f', [v0[0]-width/2, v0[1]-width/2, 
+			v0[0]+width/2, v0[1]-width/2,
+			v0[0]+width/2, v0[1]+width/2,
+			v0[0]-width/2, v0[1]+width/2
+			])
 	)

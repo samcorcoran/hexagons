@@ -108,19 +108,24 @@ def assignHexMapAltitudes(hexMap):
 		#print("Hex %s centre altitude is %f" % (str(nextHex.hexIndex), nextHex.centre.altitude))
 
 def assignHexMapAltitudesFromCoast(hexRegion):
+	minimumAltitude = 0.1
 	for nextHex in hexRegion.hexes.values():
-		cumulativeAltitude = 0
+		#print("Altitudes for hex %s " % (str(nextHex.hexIndex)))
+		altitudes = []
 		for point in nextHex.points:
 			if not point.altitude:
 				distanceFromCoast = hexRegion.borderDistances[nextHex.hexIndex]+1
 				# Plus one to offset zero indexing, plus another to prevent altitudes of 1
-				largestDist = len(hexRegion.borderHexes)+2
+				largestDist = len(hexRegion.borderHexes)+1
 				#print("Altitude: %f/%f" % (distanceFromCoast, largestDist)) 
-				point.altitude = 0 if largestDist == 0 else distanceFromCoast/largestDist
+				point.altitude = 0 if largestDist == 0 else (distanceFromCoast**2)/(largestDist**2)
 				# Add some randomness
-				point.altitude *= random.uniform(0.9, 1.5)
-			cumulativeAltitude += point.altitude
-			nextHex.centre.altitude = cumulativeAltitude/len(nextHex.points)
+				point.altitude *= random.uniform(0.95, 1.2)
+				point.altitude += minimumAltitude
+			altitudes.append( point.altitude )
+		nextHex.centre.altitude = sum(altitudes)/len(altitudes)
+		#print("  Altitudes: %s, centre: %s" % (str(altitudes), str(nextHex.centre.altitude)))
+
 
 def assignEqualAltitudes(hexMap):
 	for nextHex in hexMap.values():
@@ -249,13 +254,14 @@ def floodFillLandNeighbours(nextHex, remainingHexes):
 
 def drawDrainageRoutes(hexMap):
 	for nextHex in hexMap.values():
-		nextHex.drawDrainageRoute()
+		nextHex.drawVertexDrainageRoute()
+		#nextHex.drawDrainageRoute()
 
 @window.event
 def on_draw():
 	global gridChanged
 	global hexGrid
-	hexesInRow = 80
+	hexesInRow = 15
 	if gridChanged:
 		window.clear()
 		if True:
@@ -280,7 +286,7 @@ def on_draw():
 		assignHexMapAltitudesFromCoast(landRegion)
 
 		gridChanged = False
-	drawHexGrid(hexGrid, drawHexEdges=False, drawHexFills=True, drawHexCentres=False)
+	drawHexGrid(hexGrid, drawHexEdges=True, drawHexFills=True, drawHexCentres=False)
 	if True:
 		drawDrainageRoutes(landHexes)
 
