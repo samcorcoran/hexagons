@@ -200,7 +200,9 @@ class Hexagon():
 			)
 		
 	def drawFilledHex(self, fillColor=False, drawRegularHexGrid=False):
-		if self.fillColor:
+		if not fillColor:
+			fillColor = self.fillColor
+		if fillColor:
 			pointsList = self.regularHexPoints if drawRegularHexGrid else self.points
 			centrePoint = self.regularHexCentre if drawRegularHexGrid else self.centre
 			firstPoint = [pointsList[0].x, pointsList[0].y]
@@ -209,9 +211,9 @@ class Hexagon():
 			pointsList.extend(firstPoint)
 			# Draw filled polygon
 			# Scale opacity by centre point's altitude
-			fillColor = tuple([self.centre.altitude * self.fillColor[x] for x in range(3)] + [self.fillColor[3]])
-			#pyglet.gl.glColor4f(self.fillColor[0], self.fillColor[1], self.fillColor[2], self.fillColor[3]*self.centre.altitude)
-			pyglet.gl.glColor4f(*fillColor)
+			color = tuple([self.centre.altitude * fillColor[x] for x in range(3)] + [fillColor[3]])
+			#pyglet.gl.glColor4f(fillColor[0], fillColor[1], fillColor[2], fillColor[3]*self.centre.altitude)
+			pyglet.gl.glColor4f(*color)
 			# Polygon is always drawn as fullHex
 			glEnable(GL_BLEND)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
