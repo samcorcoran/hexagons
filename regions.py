@@ -42,7 +42,7 @@ class Region():
 				# Append set of border hexes to 
 				self.borderHexes.append(nextRing)
 
-	def findBorderVertices(self):
+	def findBorderVertices(self, drawBorderVertices=False):
 		print("Finding all border vertices...")
 		if not self.borderHexes:
 			# Find the outer ring of region hexes if not already known
@@ -50,16 +50,28 @@ class Region():
 		# Compile list of any points that have neighbours not in region
 		#  only test points belonging to outer ring of border hexes
 		for nextHex in self.borderHexes[0].values():
+			#nextHex.drawFilledHex((1,0,0,0.5))
 			for point in nextHex.points:
 				# Don't include a point if it is already listed as a border vertex
 				if not point in self.borderVertices:
 					# Check point's neighbours to determine if it is on border
-					for neighbourHex in point.surroundingHexes:
+					hasExternalNeighbour = False
+					for neighbourHex in point.surroundingHexes.values():
 						# Check dictionary of region hexes to see if this neighbour is a member
-						if not neighbourHex in self.hexes:
+						if not neighbourHex.hexIndex in self.hexes:
 							# This point is a border vertex
-							# Store point keyed on coordinates
-							self.borderVertices[ (point.x, point.y) ] = point
+							hasExternalNeighbour = True
+							# No need to check other neighbours
+							break
+					if hasExternalNeighbour:
+						# Store point keyed on coordinates
+						self.borderVertices[ (point.x, point.y) ] = point
+						# Draw diagnostic points if required
+						if drawBorderVertices:
+							drawUtils.drawSquare([point.x, point.y], 4, (1,0,1,1))						
+					else:
+						#print("point had no neighbours outside of region")
+						pass
 
 	def findClosestBorderVertex(self, v1):
 		if self.borderVertices:
@@ -70,10 +82,11 @@ class Region():
 				nextDistance = v1.distanceFrom(borderVertex)
 				if nextDistance < shortestDistance:
 					closestVertex = borderVertex
+					shortestDistance = nextDistance
 			return closestVertex, shortestDistance
 		return False
 
-	def calculateAllVertexBorderDistances(self):
+	def calculateAllVertexBorderDistances(self, drawArrowsToCoast=False):
 		print("Calculating all vertex border distances...")
 		if not self.borderVertices:
 			self.findBorderVertices()
@@ -82,6 +95,9 @@ class Region():
 			for nextPoint in nextHex.points:
 				# Store point's distance to border in dict with point coordinates as key
 				closestBorderVertex, distance = self.findClosestBorderVertex(nextPoint)
+				# Draw diagnostic arrows from region points to nearest coastal points if required
+				if drawArrowsToCoast:
+					drawUtils.drawArrow([nextPoint.x, nextPoint.y], [closestBorderVertex.x, closestBorderVertex.y], (0,1,0,1))
 				# Keep track of longest distance, for possible normalisation purposes
 				if distance > self.largestVertexBorderDistance:
 					self.largestVertexBorderDistance = distance

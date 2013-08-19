@@ -139,7 +139,7 @@ def assignRegionVertexAltitudesFromCoast(hexRegion):
 				point.altitude = 0 if hexRegion.largestVertexBorderDistance == 0 else (distanceFromCoast**2)/(hexRegion.largestVertexBorderDistance**2)
 				# Add some randomness
 				#point.altitude *= random.triangular(0.9, 1, 1)
-				#point.altitude += minimumAltitude
+				point.altitude += minimumAltitude
 			altitudes.append( point.altitude )
 		nextHex.centre.altitude = sum(altitudes)/len(altitudes)
 		#print("  Altitudes: %s, centre: %s" % (str(altitudes), str(nextHex.centre.altitude)))
@@ -248,10 +248,12 @@ def floodFillLandRegions(hexMap):
 			# If there are still hexes left to find, check hex's neighbours
 			if unassignedHexes:
 				explorableHexes.extend(floodFillLandNeighbours(unexploredHex, unassignedHexes))
-		islands.append(groupedHexes)
+		island = dict()
 		for gHex in groupedHexes:
+			island[gHex.hexIndex] = gHex
 			# Apply some behaviour to hexes in region
 			gHex.fillColor = fillColor
+		islands.append(island)
 
 # Check nextHex's neighbours for validity, return list of those which are valid
 def floodFillLandNeighbours(nextHex, remainingHexes):
@@ -279,7 +281,7 @@ def drawDrainageRoutes(hexMap):
 def on_draw():
 	global gridChanged
 	global hexGrid
-	hexesInRow = 30
+	hexesInRow = 8
 	if gridChanged:
 		window.clear()
 		if True:
@@ -295,16 +297,17 @@ def on_draw():
 		floodFillLandRegions(landHexes)
 		countHexesInGrid(hexGrid)
 
-		landRegion = regions.Region(landHexes)
-		landRegion.findBorderHexes()
+		for island in islands:
+			islandRegion = regions.Region(island)
+			islandRegion.findBorderHexes()
 
-		landRegion.calculateAllVertexBorderDistances()
+			islandRegion.calculateAllVertexBorderDistances()
 
-		# Assign heights to land vertices
-		#assignEqualAltitudes(landHexes)
-		#assignHexMapAltitudes(landHexes)
-		#assignHexMapAltitudesFromCoast(landRegion)
-		assignRegionVertexAltitudesFromCoast(landRegion)
+			# Assign heights to land vertices
+			#assignEqualAltitudes(landHexes)
+			#assignHexMapAltitudes(landHexes)
+			#assignHexMapAltitudesFromCoast(landRegion)
+			assignRegionVertexAltitudesFromCoast(islandRegion)
 
 		gridChanged = False
 	drawHexGrid(hexGrid, drawHexEdges=False, drawHexFills=True, drawHexCentres=False)
