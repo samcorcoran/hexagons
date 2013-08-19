@@ -413,20 +413,23 @@ class Hexagon():
 				if not point.isByWater():
 					# Check if drainage has already been calculated
 					if not point.drainageNeighbour:
-						lowestPoint = point
+						lowestPoints = [point]
 						for neighbouringPoint in point.neighbouringVertices:
-							if neighbouringPoint.altitude < lowestPoint.altitude:
-								lowestPoint = neighbouringPoint
-						if lowestPoint == point:
+							if neighbouringPoint.altitude < lowestPoints[0].altitude:
+								lowestPoints = [neighbouringPoint]
+							elif neighbouringPoint.altitude == lowestPoints[0].altitude:
+								lowestPoints.append(neighbouringPoint)
+						chosenPoint = random.choice(lowestPoints)
+						if chosenPoint == point:
 							# This point is a sink
 							if drawSinks:
-								drawUtils.drawSquare([lowestPoint.x, lowestPoint.y], 4, sinkColor)
+								drawUtils.drawSquare([chosenPoint.x, chosenPoint.y], 4, sinkColor)
 						else:
 							# This neighbour is the drainage neighbour
-							point.drainageNeighbour = lowestPoint
-							lowestPoint.drainedNeighbours.append(point)
+							point.drainageNeighbour = chosenPoint
+							chosenPoint.drainedNeighbours.append(point)
 							# Draw drainage route
-							drawUtils.drawArrow([point.x, point.y], [lowestPoint.x, lowestPoint.y], drainageRouteColor)
+							drawUtils.drawArrow([point.x, point.y], [chosenPoint.x, chosenPoint.y], drainageRouteColor)
 				else:
 					# This vertex is coastal
 					if point.drainedNeighbours:
