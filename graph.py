@@ -12,6 +12,7 @@ class Vertex():
 		self.drainageNeighbour = False
 		# Neighbouring vertices which drain into this vertex
 		self.drainedNeighbours = []
+		self.minBorderDistance = False
 
 	def addHexNeighbours(self, hexes):
 		for nextHex in hexes:
@@ -34,4 +35,7 @@ class Vertex():
 			if nextHex.isWater:
 				return True
 		return False
+
+	def distanceFrom(self, v1):
+		return math.sqrt((v1.x - self.x)**2 + (v1.y - self.y)**2)
 

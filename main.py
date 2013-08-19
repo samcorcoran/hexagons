@@ -114,7 +114,7 @@ def assignHexMapAltitudesFromCoast(hexRegion):
 		altitudes = []
 		for point in nextHex.points:
 			if not point.altitude:
-				distanceFromCoast = hexRegion.borderDistances[nextHex.hexIndex]+1
+				distanceFromCoast = hexRegion.hexBorderDistances[nextHex.hexIndex]+1
 				# Plus one to offset zero indexing, plus another to prevent altitudes of 1
 				largestDist = len(hexRegion.borderHexes)+1
 				#print("Altitude: %f/%f" % (distanceFromCoast, largestDist)) 
@@ -122,6 +122,24 @@ def assignHexMapAltitudesFromCoast(hexRegion):
 				# Add some randomness
 				point.altitude *= random.triangular(0.9, 1, 1)
 				point.altitude += minimumAltitude
+			altitudes.append( point.altitude )
+		nextHex.centre.altitude = sum(altitudes)/len(altitudes)
+		#print("  Altitudes: %s, centre: %s" % (str(altitudes), str(nextHex.centre.altitude)))
+
+def assignRegionVertexAltitudesFromCoast(hexRegion):
+	minimumAltitude = 0.1
+	for nextHex in hexRegion.hexes.values():
+		#print("Altitudes for hex %s " % (str(nextHex.hexIndex)))
+		altitudes = []
+		for point in nextHex.points:
+			if not point.altitude:
+				closestBorderVertex = hexRegion.vertexBorderDistances[(point.x, point.y)]
+				distanceFromCoast = point.distanceFrom(closestBorderVertex)
+				#print("Altitude: %f/%f" % (distanceFromCoast, largestDist))
+				point.altitude = 0 if hexRegion.largestVertexBorderDistance == 0 else (distanceFromCoast**2)/(hexRegion.largestVertexBorderDistance**2)
+				# Add some randomness
+				#point.altitude *= random.triangular(0.9, 1, 1)
+				#point.altitude += minimumAltitude
 			altitudes.append( point.altitude )
 		nextHex.centre.altitude = sum(altitudes)/len(altitudes)
 		#print("  Altitudes: %s, centre: %s" % (str(altitudes), str(nextHex.centre.altitude)))
@@ -253,9 +271,9 @@ def floodFillLandNeighbours(nextHex, remainingHexes):
 
 def drawDrainageRoutes(hexMap):
 	for nextHex in hexMap.values():
-		nextHex.drawPerimeterDrainageRoutes()
+		#nextHex.drawPerimeterDrainageRoutes()
 		#nextHex.drawVertexDrainageRoute()
-		#nextHex.drawDrainageRoute()
+		nextHex.drawDrainageRoute()
 
 @window.event
 def on_draw():
@@ -280,16 +298,18 @@ def on_draw():
 		landRegion = regions.Region(landHexes)
 		landRegion.findBorderHexes()
 
+		landRegion.calculateAllVertexBorderDistances()
+
 		# Assign heights to land vertices
 		#assignEqualAltitudes(landHexes)
 		#assignHexMapAltitudes(landHexes)
-		assignHexMapAltitudesFromCoast(landRegion)
+		#assignHexMapAltitudesFromCoast(landRegion)
+		assignRegionVertexAltitudesFromCoast(landRegion)
 
 		gridChanged = False
 	drawHexGrid(hexGrid, drawHexEdges=False, drawHexFills=True, drawHexCentres=False)
 	if True:
 		drawDrainageRoutes(landHexes)
-
 
 print("Running app")
 pyglet.app.run()

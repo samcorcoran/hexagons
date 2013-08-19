@@ -334,8 +334,7 @@ class Hexagon():
 			# Draw a square to indicate sink
 			drawUtils.drawSquare([self.centre.x, self.centre.y], 4, sinkColor)
 		else:
-			pyglet.gl.glColor4f(*drainageRouteColor)
-			drawUtils.drawArrow(self.getCentreCoordinates(), self.drainageNeighbour.getCentreCoordinates())
+			drawUtils.drawArrow(self.getCentreCoordinates(), self.drainageNeighbour.getCentreCoordinates(), drainageRouteColor)
 
 	def drawVertexDrainageRoute(self, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), drawMouthsAsSinks=False):
 		#print("Drainage for hex %s..." % str(self.hexIndex))
