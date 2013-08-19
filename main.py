@@ -164,15 +164,6 @@ def countNeighbours(hexGrid):
 			print("Hex %d %s has total neighbours = %d" % (totalHexes, nextHex.hexIndex, len(nextHex.neighbours)))
 			totalHexes += 1
 
-# Takes a grid of hexes in staggered row format and returns a dictionary using axial coordinates
-def createHexMap(hexGrid):	
-	hexMap = dict()
-	for y in range(len(hexGrid)):
-		for x in range(len(hexGrid[y])):
-			# Determine hex key
-			key = hexGrid[y][x].hexIndex
-			hexMap.insert(key, nextHex)
-
 def floodFillLandRegions(hexMap):
 	# Copy map so this dict can have keys removed without losing items from other dict
 	unassignedHexes = copy.copy(hexMap)
@@ -196,7 +187,8 @@ def floodFillLandRegions(hexMap):
 			island[gHex.hexIndex] = gHex
 			# Apply some behaviour to hexes in region
 			gHex.fillColor = fillColor
-		islands.append(island)
+		# Create region with hexes and store as an island
+		islands.append(regions.Region(island))
 
 # Check nextHex's neighbours for validity, return list of those which are valid
 def floodFillLandNeighbours(nextHex, remainingHexes):
@@ -240,10 +232,8 @@ def on_draw():
 		floodFillLandRegions(landHexes)
 		countHexesInGrid(hexGrid)
 
-		for island in islands:
-			islandRegion = regions.Region(island)
+		for islandRegion in islands:
 			islandRegion.findBorderHexes()
-
 			islandRegion.calculateAllVertexBorderDistances()
 
 			# Assign heights to land vertices
