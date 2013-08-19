@@ -120,7 +120,7 @@ def assignHexMapAltitudesFromCoast(hexRegion):
 				#print("Altitude: %f/%f" % (distanceFromCoast, largestDist)) 
 				point.altitude = 0 if largestDist == 0 else (distanceFromCoast**2)/(largestDist**2)
 				# Add some randomness
-				point.altitude *= random.triangular(0.9, 1, 1)
+				point.altitude *= random.triangular(0.5, 1.5, 1)
 				point.altitude += minimumAltitude
 			altitudes.append( point.altitude )
 		nextHex.centre.altitude = sum(altitudes)/len(altitudes)
@@ -138,7 +138,7 @@ def assignRegionVertexAltitudesFromCoast(hexRegion):
 				#print("Altitude: %f/%f" % (distanceFromCoast, largestDist))
 				point.altitude = 0 if hexRegion.largestVertexBorderDistance == 0 else (distanceFromCoast**2)/(hexRegion.largestVertexBorderDistance**2)
 				# Add some randomness
-				#point.altitude *= random.triangular(0.9, 1, 1)
+				point.altitude *= random.uniform(0.5, 1.5)
 				point.altitude += minimumAltitude
 			altitudes.append( point.altitude )
 		nextHex.centre.altitude = sum(altitudes)/len(altitudes)
@@ -281,7 +281,7 @@ def drawDrainageRoutes(hexMap):
 def on_draw():
 	global gridChanged
 	global hexGrid
-	hexesInRow = 8
+	hexesInRow = 50
 	if gridChanged:
 		window.clear()
 		if True:
@@ -306,7 +306,7 @@ def on_draw():
 			# Assign heights to land vertices
 			#assignEqualAltitudes(landHexes)
 			#assignHexMapAltitudes(landHexes)
-			#assignHexMapAltitudesFromCoast(landRegion)
+			#assignHexMapAltitudesFromCoast(islandRegion)
 			assignRegionVertexAltitudesFromCoast(islandRegion)
 
 		gridChanged = False

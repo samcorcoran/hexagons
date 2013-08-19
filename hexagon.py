@@ -315,16 +315,23 @@ class Hexagon():
 					# A new lowest has been found
 					lowestPoint = point
 			# Determine which of the hexagons neighbouring this point has the lowest altitude
-			lowestHex = lowestPoint.surroundingHexes[0]
+			lowestHexes = [lowestPoint.surroundingHexes[0]]
 			for nextHex in lowestPoint.surroundingHexes.values():
-				if nextHex.centre.altitude < lowestHex.centre.altitude:
+				if nextHex.centre.altitude < lowestHexes[0].centre.altitude:
 					# A preferred draining hex has been found
-					lowestHex = nextHex
+					lowestHexes = [nextHex]
+				elif nextHex.centre.altitude == lowestHexes[0].centre.altitude:
+					# This hex is equal altitude so equally suitable
+					lowestHexes.append(nextHex)
 			# If self would be best choice for draining, indicate that draining should be terminated
-			self.drainageNeighbour = lowestHex
-			if lowestHex == self:
-				return True
-			return lowestHex
+			random.shuffle(lowestHexes)
+			for chosenHex in lowestHexes:
+				if not chosenHex == self:
+					self.drainageNeighbour = chosenHex
+					return chosenHex
+			# chosenHex must have been self
+			self.drainageNeighbour = self
+			return True
 		else:
 			return False
 
