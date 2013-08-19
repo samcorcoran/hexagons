@@ -389,3 +389,35 @@ class Hexagon():
 					drawUtils.drawArrow([lowestPoint.x, lowestPoint.y], [lowestNeighbouringPoint.x, lowestNeighbouringPoint.y], drainageRouteColor)
 					# Set the lowestPoint, ready for the next iteration
 					lowestPoint = lowestNeighbouringPoint
+		
+	def drawPerimeterDrainageRoutes(self, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), mouthColor=(0,0,1,1), drawSinks=True, drawMouths=True):
+		if self.isLand:
+			# If not already done, calculate the drainage direction for each point, and draw it 
+			for point in self.points:
+				if not point.isByWater():
+					# Check if drainage has already been calculated
+					if not point.drainageNeighbour:
+						lowestPoint = point
+						for neighbouringPoint in point.neighbouringVertices:
+							if neighbouringPoint.altitude < lowestPoint.altitude:
+								lowestPoint = neighbouringPoint
+						if lowestPoint == point:
+							# This point is a sink
+							if drawSinks:
+								drawUtils.drawSquare([lowestPoint.x, lowestPoint.y], 4, sinkColor)
+						else:
+							# This neighbour is the drainage neighbour
+							point.drainageNeighbour = lowestPoint
+							lowestPoint.drainedNeighbours.append(point)
+							# Draw drainage route
+							drawUtils.drawArrow([point.x, point.y], [lowestPoint.x, lowestPoint.y], drainageRouteColor)
+				else:
+					# This vertex is coastal
+					if point.drainedNeighbours:
+						# Point drained some neighbours, may be a river mouth
+						if drawMouths:
+							drawUtils.drawSquare([point.x, point.y], 4, mouthColor)
+						pass
+					pass
+
+

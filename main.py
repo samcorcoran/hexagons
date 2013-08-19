@@ -120,12 +120,11 @@ def assignHexMapAltitudesFromCoast(hexRegion):
 				#print("Altitude: %f/%f" % (distanceFromCoast, largestDist)) 
 				point.altitude = 0 if largestDist == 0 else (distanceFromCoast**2)/(largestDist**2)
 				# Add some randomness
-				point.altitude *= random.triangular(0.9, 1.3, 1)
+				point.altitude *= random.triangular(0.9, 1, 1)
 				point.altitude += minimumAltitude
 			altitudes.append( point.altitude )
 		nextHex.centre.altitude = sum(altitudes)/len(altitudes)
 		#print("  Altitudes: %s, centre: %s" % (str(altitudes), str(nextHex.centre.altitude)))
-
 
 def assignEqualAltitudes(hexMap):
 	for nextHex in hexMap.values():
@@ -254,14 +253,15 @@ def floodFillLandNeighbours(nextHex, remainingHexes):
 
 def drawDrainageRoutes(hexMap):
 	for nextHex in hexMap.values():
-		nextHex.drawVertexDrainageRoute()
+		nextHex.drawPerimeterDrainageRoutes()
+		#nextHex.drawVertexDrainageRoute()
 		#nextHex.drawDrainageRoute()
 
 @window.event
 def on_draw():
 	global gridChanged
 	global hexGrid
-	hexesInRow = 15
+	hexesInRow = 30
 	if gridChanged:
 		window.clear()
 		if True:
@@ -286,7 +286,7 @@ def on_draw():
 		assignHexMapAltitudesFromCoast(landRegion)
 
 		gridChanged = False
-	drawHexGrid(hexGrid, drawHexEdges=True, drawHexFills=True, drawHexCentres=False)
+	drawHexGrid(hexGrid, drawHexEdges=False, drawHexFills=True, drawHexCentres=False)
 	if True:
 		drawDrainageRoutes(landHexes)
 

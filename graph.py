@@ -8,6 +8,10 @@ class Vertex():
 		self.neighbouringVertices = []
 		self.addHexNeighbours(hexes)
 		self.altitude = False
+		# Neighbouring vertex which is drained into from this vertex
+		self.drainageNeighbour = False
+		# Neighbouring vertices which drain into this vertex
+		self.drainedNeighbours = []
 
 	def addHexNeighbours(self, hexes):
 		for nextHex in hexes:
@@ -24,3 +28,10 @@ class Vertex():
 		# Ensure reciprocal relationship
 		newVertex.addVertexNeighbour(self)
 		return True
+
+	def isByWater(self):
+		for nextHex in self.surroundingHexes.values():
+			if nextHex.isWater:
+				return True
+		return False
+
