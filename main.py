@@ -120,7 +120,7 @@ def assignHexMapAltitudesFromCoast(hexRegion):
 				#print("Altitude: %f/%f" % (distanceFromCoast, largestDist)) 
 				point.altitude = 0 if largestDist == 0 else (distanceFromCoast**2)/(largestDist**2)
 				# Add some randomness
-				point.altitude *= random.uniform(0.95, 1.2)
+				point.altitude *= random.triangular(0.9, 1.3, 1)
 				point.altitude += minimumAltitude
 			altitudes.append( point.altitude )
 		nextHex.centre.altitude = sum(altitudes)/len(altitudes)
