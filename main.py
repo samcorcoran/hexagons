@@ -14,7 +14,7 @@ window = pyglet.window.Window()
 screenWidth = 800
 screenHeight = 600
 window.set_size(800, 600)
-maskImage = pyglet.resource.image('groundtruth3.bmp')
+maskImage = pyglet.resource.image('groundtruth4.bmp')
 gridChanged = True
 hexGrid = []
 landHexes = dict()
