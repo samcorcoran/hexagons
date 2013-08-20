@@ -20,6 +20,7 @@ class Hexagon():
 		self.regularHexCentre = copy.deepcopy(self.centre)
 		self.neighbours = dict()
 		self.drainageNeighbour = False
+		self.drainedNeighbours = []
 		self.fillColor = False #(random.random(),random.random(),random.random(),0.5)
 		self.isLand = False
 		self.distanceFromWater = False
@@ -50,6 +51,25 @@ class Hexagon():
 			self.edges.append(graph.Edge( vertices=(self.points[i], self.points[i+1]), hexes=[self] ))
 		# Edge departing from last point returns to first point
 		self.edges.append(graph.Edge( vertices=(self.points[5], self.points[0]), hexes=[self] ))
+
+	def getSuccessivePoint(self, v0):
+		#print("getSuccessivePoint calling get point index")
+		v0index, indexFound = self.getPointIndex(v0)
+		if indexFound:
+			return self.points[ (v0index+1) % len(self.points) ]
+		#print("getSuccessivePoint returning false")
+		return False
+
+	def getPointIndex(self, v0):
+		for i in range(len(self.points)):
+			if self.points[i] == v0:
+				# Return index at which point is found
+				#print("... point index determined as " + str(i))
+				# Zeroy is a 'falsy' value in python, so accompany index with a flag
+				return i, True
+		# Point was not found
+		#print("getPointIndex returning false")		
+		return False, False
 
 	def getPointCoordinatesList(self, pointNumber):
 		if pointNumber < len(self.points):
@@ -328,6 +348,7 @@ class Hexagon():
 			for chosenHex in lowestHexes:
 				if not chosenHex == self:
 					self.drainageNeighbour = chosenHex
+					chosenHex.drainedNeighbours.append(self)
 					return chosenHex
 			# chosenHex must have been self
 			self.drainageNeighbour = self

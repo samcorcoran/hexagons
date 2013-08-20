@@ -14,6 +14,7 @@ class Region():
 		self.borderHexes = []
 		self.hexBorderDistances = dict()
 		self.borderVertices = dict()
+		self.orderedBorderVertices = []
 		self.vertexBorderDistances = dict()
 		self.largestVertexBorderDistance = False
 		self.borderEdges = []
@@ -73,6 +74,50 @@ class Region():
 						#print("point had no neighbours outside of region")
 						pass
 
+	def findOrderedBorderVertices(self, drawBorderVertices=True, borderVertexColor=(0.1, 0.5, 0.5, 1)):
+		print("Finding all border vertices and storing them as an ordered sequence...")
+		if not self.borderVertices:
+			# Find the outer ring of region hexes if not already known
+			self.findBorderVertices()
+
+		startingPoint = list(self.borderVertices.values())[0]
+		currentHex = False
+		for neighbour in startingPoint.surroundingHexes.values():
+			if neighbour.hexIndex in self.hexes:
+				currentHex = neighbour
+				break
+
+		if not currentHex:
+			print("WARNING: Starting point for border drawing was not found.")
+		currentPoint = startingPoint
+
+		# Continue while list is empty or start has not been reached in looping exploration
+		while not startingPoint == currentPoint or not self.orderedBorderVertices:
+			# Add point to list
+			self.orderedBorderVertices.append(currentPoint)
+			# Attempt to determine if currentPoint straddles a second hex which should now be explored
+			i, indexFound = currentHex.getPointIndex(currentPoint)
+			if not indexFound:
+				print("WARNING: Index for current point was not found in currentHex.")
+			# Look in ith direction, to obey winding order			
+			#  Check if neighbour exists before accessing, as border hexes may be missing neighbours
+			if i in currentHex.neighbours and currentHex.neighbours[i].hexIndex in self.hexes:
+				#print("Hex %s is being replaced by hex %s as current hex" % (str(currentHex.hexIndex), str(currentHex.neighbours[i].hexIndex)))
+				currentHex = currentHex.neighbours[i]
+				currentPoint = currentHex.getSuccessivePoint(currentPoint)
+			else:
+				nextI = (i+1) % len(currentHex.points)
+				#print("Hex %s is staying current hex. Incrementing i to %d" % (str(currentHex.hexIndex), nextI))
+				currentPoint = currentHex.points[ nextI ]
+
+		# Now all points have been found, draw them if required
+		if drawBorderVertices:
+			for point in self.orderedBorderVertices:
+				pyglet.gl.glColor4f(*borderVertexColor)
+				pyglet.graphics.draw(1, pyglet.gl.GL_POINTS,
+					('v2f', point.getCoords())
+				)
+
 	def findClosestBorderVertex(self, v1):
 		if self.borderVertices:
 			# Get any item from dictionary
@@ -103,3 +148,27 @@ class Region():
 					self.largestVertexBorderDistance = distance
 				# Register point's distance to border
 				self.vertexBorderDistances[(nextPoint.x, nextPoint.y)] = closestBorderVertex
+
+	def doesPointBorderRegion(self, v0):
+		internalNeighbour = False
+		externalNeighbour = True
+		for neighbour in v0.surroundingHexes.values():
+			if neighbour.hexIndex in self.hexes:
+				internalNeighbour = True
+			else:
+				externalNeighbour = True
+		# Returns false if either is false
+		return (internalNeighbour and externalNeighbour)
+
+	def drawRegionBorder(self, borderColor=(0.8,0.5,0.1,1)):
+		if not self.orderedBorderVertices:
+			self.findOrderedBorderVertices()
+		print("Drawing region border...")
+		# Convert vertices into list of coordinates
+		pointsList = [x.getCoords() for x in self.orderedBorderVertices]
+		pointsList = list(chain.from_iterable(pointsList))
+		# Draw line loop
+		pyglet.gl.glColor4f(*borderColor)
+		pyglet.graphics.draw(len(self.orderedBorderVertices), pyglet.gl.GL_LINE_LOOP,
+			('v2f', pointsList)
+		)

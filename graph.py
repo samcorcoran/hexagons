@@ -39,3 +39,5 @@ class Vertex():
 	def distanceFrom(self, v1):
 		return math.sqrt((v1.x - self.x)**2 + (v1.y - self.y)**2)
 
+	def getCoords(self):
+		return [self.x, self.y]

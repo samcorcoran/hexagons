@@ -216,10 +216,10 @@ def drawDrainageRoutes(hexMap):
 def on_draw():
 	global gridChanged
 	global hexGrid
-	hexesInRow = 20
+	hexesInRow = 50
 	if gridChanged:
 		window.clear()
-		if True:
+		if False:
 			maskImage.blit(0, 0)
 		hexGrid = createHexGridFromPoints(hexesInRow)
 		#countNeighbours(hexGrid)
@@ -244,8 +244,11 @@ def on_draw():
 
 		gridChanged = False
 	drawHexGrid(hexGrid, drawHexEdges=False, drawHexFills=True, drawHexCentres=False)
-	if True:
+	if False:
 		drawDrainageRoutes(landHexes)
+	if True:
+		for island in islands:
+			island.drawRegionBorder()
 
 print("Running app")
 pyglet.app.run()
