@@ -14,7 +14,7 @@ window = pyglet.window.Window()
 screenWidth = 800
 screenHeight = 600
 window.set_size(800, 600)
-maskImage = pyglet.resource.image('groundtruth4.bmp')
+maskImage = pyglet.resource.image('groundtruth5.bmp')
 gridChanged = True
 hexGrid = []
 landHexes = dict()
@@ -244,7 +244,7 @@ def on_draw():
 
 		gridChanged = False
 	drawHexGrid(hexGrid, drawHexEdges=False, drawHexFills=True, drawHexCentres=False)
-	if False:
+	if True:
 		drawDrainageRoutes(landHexes)
 	if True:
 		for island in islands:
