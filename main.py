@@ -128,12 +128,7 @@ def findMarkedHexes(hexGrid):
 	print("Begun finding masked hexes")
 	maskImageData = maskImage.get_image_data()
 	data = maskImageData.get_data('I', maskImage.width)
-	totalHits = 0
-	for n in range(len(data)):
-		if not data[n] == 0:
-			totalHits += 1 #print("n: %d contains %d" % (n, data[n]))
-	print("Total hits: " + str(totalHits))
-	print("Length of data: " + str(len(data)))
+
 	hexCount = 0
 	for row in hexGrid:
 		for nextHex in row:
@@ -147,6 +142,7 @@ def findMarkedHexes(hexGrid):
 				# Indicate hex is water
 				nextHex.isWater = True
 				waterHexes[nextHex.hexIndex] = nextHex
+			#print("hexCount: " + str(hexCount))
 			hexCount += 1
 	print("Finished finding masked hexes")
 
@@ -216,7 +212,7 @@ def drawDrainageRoutes(hexMap):
 def on_draw():
 	global gridChanged
 	global hexGrid
-	hexesInRow = 50
+	hexesInRow = 40
 	if gridChanged:
 		window.clear()
 		if False:
@@ -244,7 +240,8 @@ def on_draw():
 
 		gridChanged = False
 	drawHexGrid(hexGrid, drawHexEdges=False, drawHexFills=True, drawHexCentres=False)
-	if True:
+
+	if False:
 		drawDrainageRoutes(landHexes)
 	if True:
 		for island in islands:

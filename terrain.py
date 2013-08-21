@@ -46,7 +46,7 @@ def assignRegionVertexAltitudesFromCoast(hexRegion):
 		altitudes = []
 		for point in nextHex.points:
 			if not point.altitude:
-				closestBorderVertex = hexRegion.vertexBorderDistances[(point.x, point.y)]
+				closestBorderVertex = hexRegion.vertexBorderDistances[ point.id ]
 				distanceFromCoast = point.distanceFrom(closestBorderVertex)
 				#print("Altitude: %f/%f" % (distanceFromCoast, largestDist))
 				point.altitude = 0 if hexRegion.largestVertexBorderDistance == 0 else (distanceFromCoast**2)/(hexRegion.largestVertexBorderDistance**2)

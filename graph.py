@@ -2,6 +2,7 @@ import math
 
 class Vertex():
 	def __init__(self, coordinates, hexes=[]):
+		self.id = next(vertexIdGen)
 		self.x = coordinates[0]
 		self.y = coordinates[1]
 		self.surroundingHexes = dict()
@@ -41,3 +42,12 @@ class Vertex():
 
 	def getCoords(self):
 		return [self.x, self.y]
+
+def vertexIdGenerator():
+	i = 0
+	while True:
+		yield i
+		i += 1
+
+# Initialise the generator
+vertexIdGen = vertexIdGenerator()

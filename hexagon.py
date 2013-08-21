@@ -4,6 +4,7 @@ from pyglet import image
 import random
 import copy
 from itertools import chain
+import struct
 
 import graph
 import drawUtils
@@ -295,33 +296,44 @@ class Hexagon():
 	def compareToMaskImage(self, maskImageData, imageWidth, passRate=0.4, attenuation=0.8, drawAttenuatedPoints=False):
 		# Perimeter points and centre point each get a 'vote'
 		# Check points against mask image, register votes if point and mask location match
-		totalVotes = 0
-		attenuatedPointsList = []
-		for point in self.points:
-			#print("Point: " + str(point))
-			# Attenuated positions are closer to the centre of the hex
-			attenuatedX = self.centre.x + (point.x - self.centre.x)*attenuation
-			attenuatedY = self.centre.y + (point.y - self.centre.y)*attenuation
+		if not self.isLand or self.isWater:
+			totalVotes = 0
+			attenuatedPointsList = []
+			for point in self.points:
+				#print("Point: " + str(point))
+				# Attenuated positions are closer to the centre of the hex
+				attenuatedX = int(self.centre.x + (point.x - self.centre.x)*attenuation)
+				attenuatedY = int(self.centre.y + (point.y - self.centre.y)*attenuation)
 
-			i = int(int(attenuatedX) + ((int(attenuatedY)-1) * imageWidth))-1
-			#print("Point [%f, %f] had an index of: %d" % (point[0], point[1], i))
-			
-			if maskImageData[i] > 0:
-				totalVotes += 1
+				i = int(int(attenuatedX) + ((int(attenuatedY)-1) * imageWidth))-1
+				#print("Point [%f, %f] had an index of: %d" % (point[0], point[1], i))
+				#if maskImageData[i] > 0:
+				#image_data = maskImageData.get_region(attenuatedX, attenuatedY, 1, 1).get_image_data()
+				# Extract intensity info
+				#data = image_data.get_data('I', 1)
+				data = maskImageData[i]
+				# Convert from byte to int
+				data = struct.unpack('<B', data)[0]
 
-			# If points are to be drawn, assemble them into a list
+				if data > 0:
+				#	print("Vote")
+				 	totalVotes += 1
+				# else:
+				# 	print("No votes")
+
+				# If points are to be drawn, assemble them into a list
+				if drawAttenuatedPoints:
+					attenuatedPointsList.extend([attenuatedX, attenuatedY])
+
 			if drawAttenuatedPoints:
-				attenuatedPointsList.extend([attenuatedX, attenuatedY])
+				pyglet.gl.glColor4f(1.0,0.0,0.0,1.0)
+				pyglet.graphics.draw(int(len(attenuatedPointsList)/2), pyglet.gl.GL_POINTS,
+					('v2f', attenuatedPointsList)
+				)
 
-		if drawAttenuatedPoints:
-			pyglet.gl.glColor4f(1.0,0.0,0.0,1.0)
-			pyglet.graphics.draw(int(len(attenuatedPointsList)/2), pyglet.gl.GL_POINTS,
-				('v2f', attenuatedPointsList)
-			)
-
-		if totalVotes >= passRate*len(self.points):
-			#print("Hex %s passed mask-match with %d votes (%d to pass)." % (self.hexIndex, totalVotes, passRate*len(self.points)))
-			return True
+			if totalVotes >= passRate*len(self.points):
+				#print("Hex %s passed mask-match with %d votes (%d to pass)." % (self.hexIndex, totalVotes, passRate*len(self.points)))
+				return True
 		return False
 
 	# Based on point altitudes, determine which neighbouring hex is the steeper descent

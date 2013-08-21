@@ -66,7 +66,7 @@ class Region():
 							break
 					if hasExternalNeighbour:
 						# Store point keyed on coordinates
-						self.borderVertices[ (point.x, point.y) ] = point
+						self.borderVertices[ point.id ] = point
 						# Draw diagnostic points if required
 						if drawBorderVertices:
 							drawUtils.drawSquare([point.x, point.y], 4, (1,0,1,1))						
@@ -102,9 +102,9 @@ class Region():
 				# Add point to list
 				borderList.append(currentPoint)
 				# Remove point from the list of remaining border vertices
-				if (currentPoint.x, currentPoint.y) in remainingBorderVertices:
+				if currentPoint.id in remainingBorderVertices:
 					#print("Removing point from remainingBorderVertices. Is %d in borderList %d." % (len(borderList)-1, len(self.orderedBorderVertices)))
-					del remainingBorderVertices[(currentPoint.x, currentPoint.y)]
+					del remainingBorderVertices[ currentPoint.id ]
 				# Attempt to determine if currentPoint straddles a second hex which should now be explored
 				i, indexFound = currentHex.getPointIndex(currentPoint)
 				if not indexFound:
@@ -158,7 +158,7 @@ class Region():
 				if distance > self.largestVertexBorderDistance:
 					self.largestVertexBorderDistance = distance
 				# Register point's distance to border
-				self.vertexBorderDistances[(nextPoint.x, nextPoint.y)] = closestBorderVertex
+				self.vertexBorderDistances[ nextPoint.id ] = closestBorderVertex
 
 	def doesPointBorderRegion(self, v0):
 		internalNeighbour = False
