@@ -39,7 +39,7 @@ def assignHexMapAltitudesFromCoast(hexRegion):
 		nextHex.centre.altitude = sum(altitudes)/len(altitudes)
 		#print("  Altitudes: %s, centre: %s" % (str(altitudes), str(nextHex.centre.altitude)))
 
-def assignRegionVertexAltitudesFromCoast(hexRegion):
+def assignRegionVertexAltitudesFromCoast(hexRegion, noiseArray):
 	minimumAltitude = 0.1
 	for nextHex in hexRegion.hexes.values():
 		#print("Altitudes for hex %s " % (str(nextHex.hexIndex)))
@@ -51,7 +51,15 @@ def assignRegionVertexAltitudesFromCoast(hexRegion):
 				#print("Altitude: %f/%f" % (distanceFromCoast, largestDist))
 				point.altitude = 0 if hexRegion.largestVertexBorderDistance == 0 else (distanceFromCoast**2)/(hexRegion.largestVertexBorderDistance**2)
 				# Add some randomness
-				point.altitude *= random.uniform(0.5, 1.5)
+				#point.altitude *= random.uniform(0.5, 1.5)
+				#print("Pre noise altitude: " + str(point.altitude))
+				#print("Point coordinates: " + str((int(point.x), int(point.y))))
+				# Set noise between -0.1 and 0.1
+				noise = ((noiseArray[int(point.y)-1][int(point.x)]) / 1.5) + 1
+				print(noise)
+				#print("Noise:")
+				#print(noise)
+				point.altitude *= noise
 				point.altitude += minimumAltitude
 			altitudes.append( point.altitude )
 		nextHex.centre.altitude = sum(altitudes)/len(altitudes)

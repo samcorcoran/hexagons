@@ -5,6 +5,10 @@ import hexagon
 import random
 import math
 import copy
+import struct
+
+# Import 2d Simplex Noise
+from noise import snoise2
 
 import graph
 import terrain
@@ -208,14 +212,49 @@ def drawDrainageRoutes(hexMap):
 		#nextHex.drawVertexDrainageRoute()
 		nextHex.drawDrainageRoute()
 
+def createNoiseList(width, height, inBytes=False):
+	octaves = 2
+	freq = 16.0 * octaves
+	# minZ= 0
+	# maxZ = 0
+	# cumulativeZ = 0
+	# count = 0
+	texels = [] #[0 for n in range(width*height)]
+	for y in range(height):
+		row = []
+		for x in range(width):
+			#z = int(snoise2(x / freq, y / freq, octaves) * 127.0 + 128.0)
+			# Noise between 0 and 1
+			z = snoise2(x / freq, y / freq, octaves)
+			if inBytes:
+				z = struct.pak('<B', z & 0xFFFF)
+
+			# if z < minZ:
+			# 	minZ = z
+			# if z > maxZ:
+			# 	maxZ = z
+			# cumulativeZ += z
+			# count += 1
+			
+			row.append(z)
+		texels.append(row)
+	# print("minZ: " + str(minZ))
+	# print("maxZ: " + str(maxZ))
+	# print("Average Z: " + (str(cumulativeZ/count)))
+	return texels
+
 @window.event
 def on_draw():
 	global gridChanged
 	global hexGrid
-	hexesInRow = 40
+
+	noiseTexture = image.Texture.create(screenWidth, screenHeight, GL_RGBA, True)
+	noiseTexData = noiseTexture.get_image_data()
+
+	hexesInRow = 80
 	if gridChanged:
 		window.clear()
-		if False:
+		if True:
 			maskImage.blit(0, 0)
 		hexGrid = createHexGridFromPoints(hexesInRow)
 		#countNeighbours(hexGrid)
@@ -228,6 +267,10 @@ def on_draw():
 		floodFillLandRegions(landHexes)
 		countHexesInGrid(hexGrid)
 
+		noiseArray = createNoiseList(screenWidth, screenHeight, inBytes=False)
+		#noiseTexData.set_data('I', 800, noiseArray)
+		#noiseTexData.blit_to_texture(noiseTexture, 1, 0, 0, 0)
+
 		for islandRegion in islands:
 			islandRegion.findBorderHexes()
 			islandRegion.calculateAllVertexBorderDistances()
@@ -236,12 +279,13 @@ def on_draw():
 			#terrain.assignEqualAltitudes(landHexes)
 			#terrain.assignHexMapAltitudes(landHexes)
 			#terrain.assignHexMapAltitudesFromCoast(islandRegion)
-			terrain.assignRegionVertexAltitudesFromCoast(islandRegion)
+			terrain.assignRegionVertexAltitudesFromCoast(islandRegion, noiseArray)
 
+		noiseTexData.blit(0,0)
 		gridChanged = False
 	drawHexGrid(hexGrid, drawHexEdges=False, drawHexFills=True, drawHexCentres=False)
-
-	if False:
+	#noiseTexture.blit(0,0)
+	if True:
 		drawDrainageRoutes(landHexes)
 	if True:
 		for island in islands:
