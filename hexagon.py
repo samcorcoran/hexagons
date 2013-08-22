@@ -15,6 +15,7 @@ class Hexagon():
 		self.centre = graph.Vertex( coordinates=centreCoordinates, hexes=[self])
 		self.radius = radius
 		self.points = []
+		self.lowestPoint = False
 		self.createVertices()
 		self.edges = dict()
 		self.regularHexPoints = copy.deepcopy(self.points)
@@ -336,16 +337,22 @@ class Hexagon():
 				return True
 		return False
 
+	def findLowestPoint(self, forceRecalculation=False):
+		# Check if it has already been calculated
+		if not self.lowestPoint or forceRecalculation:
+			# Find the lowest perimeter point in hex perimeter
+			self.lowestPoint = self.points[0]
+			for point in self.points:
+				if point.altitude < self.lowestPoint.altitude:
+					# A new lowest has been found
+					self.lowestPoint = point
+		return self.lowestPoint
+
 	# Based on point altitudes, determine which neighbouring hex is the steeper descent
 	# Used for drainage basin calculation
 	def findDrainageNeighbour(self):
 		if self.isLand == True:
-			# Find the lowest perimeter point in hex perimeter
-			lowestPoint = self.points[0]
-			for point in self.points:
-				if point.altitude < lowestPoint.altitude:
-					# A new lowest has been found
-					lowestPoint = point
+			lowestPoint = self.findLowestPoint()
 			# Determine which of the hexagons neighbouring this point has the lowest altitude
 			lowestHexes = [lowestPoint.surroundingHexes[0]]
 			for nextHex in lowestPoint.surroundingHexes.values():
