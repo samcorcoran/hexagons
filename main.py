@@ -13,6 +13,7 @@ from noise import snoise2
 import graph
 import terrain
 import regions
+import lands
 
 window = pyglet.window.Window()
 screenWidth = 800
@@ -98,6 +99,7 @@ def createHexGridFromPoints(hexesInRow=10, clipPointsToScreen=True):
 	return gridRows
 
 def screenClipGridHexagons(hexGrid):
+	print("Screen-clipping hexagons")
 	# Loop over boundary hexes, fixing their off-screen points to the screen boundary
 	# Check works on regular hexagon's points rather than jittered points
 	widthInterval = [0, screenWidth]
@@ -188,7 +190,8 @@ def floodFillLandRegions(hexMap):
 			# Apply some behaviour to hexes in region
 			gHex.fillColor = fillColor
 		# Create region with hexes and store as an island
-		islands.append(regions.Region(island))
+		global noiseArray
+		islands.append(lands.Land(regions.Region(island), noiseArray))
 
 # Check nextHex's neighbours for validity, return list of those which are valid
 def floodFillLandNeighbours(nextHex, remainingHexes):
@@ -212,46 +215,12 @@ def drawDrainageRoutes(hexMap):
 		#nextHex.drawVertexDrainageRoute()
 		nextHex.drawDrainageRoute()
 
-def createNoiseList(width, height, inBytes=False):
-	octaves = 2
-	freq = 16.0 * octaves
-	# minZ= 0
-	# maxZ = 0
-	# cumulativeZ = 0
-	# count = 0
-	texels = [] #[0 for n in range(width*height)]
-	for y in range(height):
-		row = []
-		for x in range(width):
-			#z = int(snoise2(x / freq, y / freq, octaves) * 127.0 + 128.0)
-			# Noise between 0 and 1
-			z = snoise2(x / freq, y / freq, octaves)
-			if inBytes:
-				z = struct.pak('<B', z & 0xFFFF)
-
-			# if z < minZ:
-			# 	minZ = z
-			# if z > maxZ:
-			# 	maxZ = z
-			# cumulativeZ += z
-			# count += 1
-			
-			row.append(z)
-		texels.append(row)
-	# print("minZ: " + str(minZ))
-	# print("maxZ: " + str(maxZ))
-	# print("Average Z: " + (str(cumulativeZ/count)))
-	return texels
-
 @window.event
 def on_draw():
 	global gridChanged
 	global hexGrid
 
-	noiseTexture = image.Texture.create(screenWidth, screenHeight, GL_RGBA, True)
-	noiseTexData = noiseTexture.get_image_data()
-
-	hexesInRow = 80
+	hexesInRow = 20
 	if gridChanged:
 		window.clear()
 		if True:
@@ -267,21 +236,6 @@ def on_draw():
 		floodFillLandRegions(landHexes)
 		countHexesInGrid(hexGrid)
 
-		noiseArray = createNoiseList(screenWidth, screenHeight, inBytes=False)
-		#noiseTexData.set_data('I', 800, noiseArray)
-		#noiseTexData.blit_to_texture(noiseTexture, 1, 0, 0, 0)
-
-		for islandRegion in islands:
-			islandRegion.findBorderHexes()
-			islandRegion.calculateAllVertexBorderDistances()
-
-			# Assign heights to land vertices
-			#terrain.assignEqualAltitudes(landHexes)
-			#terrain.assignHexMapAltitudes(landHexes)
-			#terrain.assignHexMapAltitudesFromCoast(islandRegion)
-			terrain.assignRegionVertexAltitudesFromCoast(islandRegion, noiseArray)
-
-		noiseTexData.blit(0,0)
 		gridChanged = False
 	drawHexGrid(hexGrid, drawHexEdges=False, drawHexFills=True, drawHexCentres=False)
 	#noiseTexture.blit(0,0)
@@ -289,8 +243,15 @@ def on_draw():
 		drawDrainageRoutes(landHexes)
 	if True:
 		for island in islands:
-			island.drawRegionBorder()
+			island.drawLand()
 
 print("Running app")
+noiseTexture = image.Texture.create(screenWidth, screenHeight, GL_RGBA, True)
+noiseTexData = noiseTexture.get_image_data()
+noiseArray = terrain.createNoiseList(screenWidth, screenHeight, inBytes=False)
+#noiseTexData.set_data('I', 800, noiseArray)
+#noiseTexData.blit_to_texture(noiseTexture, 1, 0, 0, 0)
+#noiseTexData.blit(0,0)
+
 pyglet.app.run()
 print("Ran app")

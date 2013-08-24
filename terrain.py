@@ -1,6 +1,8 @@
 import math
 import random
 
+from noise import snoise2
+
 import graph
 import regions
 import drawUtils
@@ -40,6 +42,7 @@ def assignHexMapAltitudesFromCoast(hexRegion):
 		#print("  Altitudes: %s, centre: %s" % (str(altitudes), str(nextHex.centre.altitude)))
 
 def assignRegionVertexAltitudesFromCoast(hexRegion, noiseArray):
+	print("Assigning region vertex altitudes")
 	minimumAltitude = 0.1
 	for nextHex in hexRegion.hexes.values():
 		#print("Altitudes for hex %s " % (str(nextHex.hexIndex)))
@@ -55,8 +58,7 @@ def assignRegionVertexAltitudesFromCoast(hexRegion, noiseArray):
 				#print("Pre noise altitude: " + str(point.altitude))
 				#print("Point coordinates: " + str((int(point.x), int(point.y))))
 				# Set noise between -0.1 and 0.1
-				noise = ((noiseArray[int(point.y)-1][int(point.x)]) / 1.5) + 1
-				print(noise)
+				noise = ((noiseArray[int(point.y)-1][int(point.x)]) / 2) + 1
 				#print("Noise:")
 				#print(noise)
 				point.altitude *= noise
@@ -70,3 +72,34 @@ def assignEqualAltitudes(hexMap):
 		for point in nextHex.points:
 			point.altitude = 1
 		nextHex.centre.altitude = 1
+
+def createNoiseList(width, height, inBytes=False):
+	octaves = 4
+	freq = 8.0 * octaves
+	# minZ= 0
+	# maxZ = 0
+	# cumulativeZ = 0
+	# count = 0
+	texels = [] #[0 for n in range(width*height)]
+	for y in range(height):
+		row = []
+		for x in range(width):
+			#z = int(snoise2(x / freq, y / freq, octaves) * 127.0 + 128.0)
+			# Noise between 0 and 1
+			z = snoise2(x / freq, y / freq, octaves)
+			if inBytes:
+				z = struct.pak('<B', z & 0xFFFF)
+
+			# if z < minZ:
+			# 	minZ = z
+			# if z > maxZ:
+			# 	maxZ = z
+			# cumulativeZ += z
+			# count += 1
+			
+			row.append(z)
+		texels.append(row)
+	# print("minZ: " + str(minZ))
+	# print("maxZ: " + str(maxZ))
+	# print("Average Z: " + (str(cumulativeZ/count)))
+	return texels
