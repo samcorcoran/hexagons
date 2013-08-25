@@ -52,26 +52,39 @@ def assignRegionVertexAltitudesFromCoast(hexRegion, noiseArray):
 				closestBorderVertex = hexRegion.vertexBorderDistances[ point.id ]
 				distanceFromCoast = point.distanceFrom(closestBorderVertex)
 				#print("Altitude: %f/%f" % (distanceFromCoast, largestDist))
-				point.altitude = 0 if hexRegion.largestVertexBorderDistance == 0 else (distanceFromCoast**2)/(hexRegion.largestVertexBorderDistance**2)
+				point.altitude = 0 if hexRegion.largestVertexBorderDistance == 0 else (distanceFromCoast**2.0)/(hexRegion.largestVertexBorderDistance**2.0)
 				# Add some randomness
 				#point.altitude *= random.uniform(0.5, 1.5)
 				#print("Pre noise altitude: " + str(point.altitude))
 				#print("Point coordinates: " + str((int(point.x), int(point.y))))
-				# Set noise between -0.1 and 0.1
-				noise = ((noiseArray[int(point.y)-1][int(point.x)]) / 2) + 1
-				#print("Noise:")
-				#print(noise)
-				point.altitude *= noise
+
 				point.altitude += minimumAltitude
+
+				if noiseArray:
+					# Set noise between 0.5 and 1, highest probability is around 0.75
+					noise = ((noiseArray[int(point.y)-1][int(point.x)]) / 4) + 0.75
+					#print("Noise:")
+					#print(noise)
+					point.altitude *= noise
+
 			altitudes.append( point.altitude )
 		nextHex.centre.altitude = sum(altitudes)/len(altitudes)
 		#print("  Altitudes: %s, centre: %s" % (str(altitudes), str(nextHex.centre.altitude)))
 
-def assignEqualAltitudes(hexMap):
-	for nextHex in hexMap.values():
+def assignEqualAltitudes(hexRegion):
+	for nextHex in hexRegion.hexes.values():
 		for point in nextHex.points:
 			point.altitude = 1
 		nextHex.centre.altitude = 1
+
+def assignNoisyAltitudes(hexRegion, noiseArray):
+	for nextHex in hexRegion.hexes.values():
+		cumulativeAltitude = 0
+		for point in nextHex.points:
+			# Set noise between 0.5 and 1, highest probability is around 0.75
+			point.altitude = ((noiseArray[int(point.y)-1][int(point.x)]) / 4) + 0.75
+			cumulativeAltitude += point.altitude
+		nextHex.centre.altitude = cumulativeAltitude / float(len(nextHex.points))
 
 def createNoiseList(width, height, inBytes=False):
 	octaves = 4

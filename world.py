@@ -122,7 +122,7 @@ class World():
 				# Apply some behaviour to hexes in region
 				gHex.fillColor = fillColor
 			# Create region with hexes and store as an island
-			self.islands.append(lands.Land(regions.Region(island), self.noise))
+			self.islands.append(lands.Land(self, regions.Region(island), self.noise))
 
 	# Check nextHex's neighbours for validity, return list of those which are valid
 	def floodFillLandNeighbours(self, nextHex, remainingHexes):
