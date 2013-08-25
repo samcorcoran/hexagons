@@ -33,6 +33,7 @@ def on_draw():
 	window.clear()
 	# Mask image for determining land shapes
 	if drawMaskImage:
+		pyglet.gl.glColor4f(1,1,1,1)
 		maskImage.blit(0, 0)
 	# Hexagon borders and fillings
 	if drawHexagons:
