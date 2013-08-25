@@ -77,25 +77,26 @@ class World():
 	# Examine mask image and tag hexagons as land or water
 	def findLandMarkedHexes(self):
 		print("Begun finding masked hexes")
-		maskImageData = self.landMask.get_image_data()
-		data = maskImageData.get_data('I', self.landMask.width)
+		if self.landMask:
+			maskImageData = self.landMask.get_image_data()
+			data = maskImageData.get_data('I', self.landMask.width)
 
-		hexCount = 0
-		for row in self.hexGrid:
-			for nextHex in row:
-				#print("Hex " + str(hexCount))
-				if nextHex.compareToMaskImage(data, self.landMask.width):
-					nextHex.fillColor = (1.0,0.0,0.0,1.0)
-					# Indicate that hex must be land
-					nextHex.land = True
-					self.landHexes[nextHex.hexIndex] = nextHex
-				else:
-					# Indicate hex is water
-					nextHex.water = True
-					self.waterHexes[nextHex.hexIndex] = nextHex
-				#print("hexCount: " + str(hexCount))
-				hexCount += 1
-		print("Finished finding masked hexes")
+			hexCount = 0
+			for row in self.hexGrid:
+				for nextHex in row:
+					#print("Hex " + str(hexCount))
+					if nextHex.compareToMaskImage(data, self.landMask.width):
+						nextHex.fillColor = (1.0,0.0,0.0,1.0)
+						# Indicate that hex must be land
+						nextHex.land = True
+						self.landHexes[nextHex.hexIndex] = nextHex
+					else:
+						# Indicate hex is water
+						nextHex.water = True
+						self.waterHexes[nextHex.hexIndex] = nextHex
+					#print("hexCount: " + str(hexCount))
+					hexCount += 1
+			print("Finished finding masked hexes")
 
 	# Using dict of landHexes, floodfilling finds distinct tracts of land from which regions can be created.
 	def createLandRegions(self):
