@@ -52,14 +52,11 @@ def assignRegionVertexAltitudesFromCoast(hexRegion, noiseArray):
 				closestBorderVertex = hexRegion.vertexBorderDistances[ point.id ]
 				distanceFromCoast = point.distanceFrom(closestBorderVertex)
 				#print("Altitude: %f/%f" % (distanceFromCoast, largestDist))
-				point.altitude = 0 if hexRegion.largestVertexBorderDistance == 0 else (distanceFromCoast**2.0)/(hexRegion.largestVertexBorderDistance**2.0)
-				# Add some randomness
-				#point.altitude *= random.uniform(0.5, 1.5)
-				#print("Pre noise altitude: " + str(point.altitude))
-				#print("Point coordinates: " + str((int(point.x), int(point.y))))
+				point.altitude = 0 if hexRegion.largestVertexBorderDistance == 0 else (distanceFromCoast**3.5)/(hexRegion.largestVertexBorderDistance**3.5)
 
 				point.altitude += minimumAltitude
 
+				# Add some randomness
 				if noiseArray:
 					# Set noise between 0.5 and 1, highest probability is around 0.75
 					noise = ((noiseArray[int(point.y)-1][int(point.x)]) / 4) + 0.75
