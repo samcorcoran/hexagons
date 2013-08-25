@@ -24,9 +24,9 @@ class Hexagon():
 		self.drainageNeighbour = False
 		self.drainedNeighbours = []
 		self.fillColor = False #(random.random(),random.random(),random.random(),0.5)
-		self.isLand = False
+		self.land = False
 		self.distanceFromWater = False
-		self.isWater = False
+		self.water = False
 		if jitterStrength:
 			self.jitterPoints(jitterStrength)
 		self.centre = self.calculateCentrePoint()
@@ -297,7 +297,7 @@ class Hexagon():
 	def compareToMaskImage(self, maskImageData, imageWidth, passRate=0.4, attenuation=0.8, drawAttenuatedPoints=False):
 		# Perimeter points and centre point each get a 'vote'
 		# Check points against mask image, register votes if point and mask location match
-		if not self.isLand or self.isWater:
+		if not self.land or self.water:
 			totalVotes = 0
 			attenuatedPointsList = []
 			for point in self.points:
@@ -351,7 +351,7 @@ class Hexagon():
 	# Based on point altitudes, determine which neighbouring hex is the steeper descent
 	# Used for drainage basin calculation
 	def findDrainageNeighbour(self):
-		if self.isLand == True:
+		if self.land == True:
 			lowestPoint = self.findLowestPoint()
 			# Determine which of the hexagons neighbouring this point has the lowest altitude
 			lowestHexes = [lowestPoint.surroundingHexes[0]]
@@ -379,7 +379,7 @@ class Hexagon():
 		if not self.drainageNeighbour:
 			# Calculate drainage neighbour if not already known
 			self.findDrainageNeighbour()
-		if self.drainageNeighbour == self or (drawMouthsAsSinks and not self.drainageNeighbour.isLand):
+		if self.drainageNeighbour == self or (drawMouthsAsSinks and not self.drainageNeighbour.land):
 			# Draw a square to indicate sink
 			drawUtils.drawSquare([self.centre.x, self.centre.y], 4, sinkColor)
 		else:
@@ -387,7 +387,7 @@ class Hexagon():
 
 	def drawVertexDrainageRoute(self, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), drawMouthsAsSinks=False):
 		#print("Drainage for hex %s..." % str(self.hexIndex))
-		if self.isLand == True:
+		if self.land == True:
 			lowestPoint = self.centre
 			terminates = False
 			while not terminates:
@@ -447,7 +447,7 @@ class Hexagon():
 					lowestPoint = chosenPoint
 		
 	def drawPerimeterDrainageRoutes(self, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), mouthColor=(0,0,1,1), drawSinks=True, drawMouths=True):
-		if self.isLand:
+		if self.land:
 			# If not already done, calculate the drainage direction for each point, and draw it 
 			for point in self.points:
 				if not point.isByWater():

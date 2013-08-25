@@ -33,7 +33,7 @@ class Vertex():
 
 	def isByWater(self):
 		for nextHex in self.surroundingHexes.values():
-			if nextHex.isWater:
+			if nextHex.water:
 				return True
 		return False
 

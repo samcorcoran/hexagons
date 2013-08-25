@@ -27,7 +27,7 @@ class Land():
 		#terrain.assignHexMapAltitudesFromCoast(islandRegion)
 		terrain.assignRegionVertexAltitudesFromCoast(self.region, self.noise)
 
-	def drawLand(self):
+	def drawLandBorder(self):
 		self.region.drawRegionBorder()
 
 #class Island(Land):
