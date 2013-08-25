@@ -21,7 +21,7 @@ class WeatherSystem():
 	def updateParticles(self, deltaTime=1):
 		for particle in self.particles:
 			newX = ((particle.position[0] + deltaTime * particle.velocity[0]) + self.systemWidth) % self.systemWidth
-			newY = ((particle.position[1] + deltaTime * particle.velocity[1]) + self.systemHeight) % self.systemHeight
+			newY = max(min((particle.position[1] + deltaTime * particle.velocity[1]), self.systemHeight), 0)
 			particle.position = (newX, newY)
 
 	def spawnMoistureParticles(self, totalParticles=1000):
@@ -38,17 +38,20 @@ class WeatherSystem():
 	def drawMoistureParticles(self):
 		particle_batch = pyglet.graphics.Batch()
 		verts = []
-		width = 4
+		width = 6
 		for particle in self.particles:
-			#particle.drawMoistureParticle()
-			verts.extend([particle.position[0]-width/2, particle.position[1]-width/2,
-				particle.position[0]+width/2, particle.position[1]-width/2,
-				particle.position[0]+width/2, particle.position[1]+width/2,
-				particle.position[0]-width/2, particle.position[1]-width/2,
-				particle.position[0]+width/2, particle.position[1]+width/2,
-				particle.position[0]-width/2, particle.position[1]+width/2
-			])
-		pyglet.gl.glColor4f(1, 1, 1, 0.5)
+			for i in range(random.randint(2,5)):
+				#particle.drawMoistureParticle()
+				xOffset = random.uniform(-2,2)
+				yOffset = random.uniform(-2,2)				
+				verts.extend([particle.position[0]-width/2+xOffset, particle.position[1]-width/2+yOffset,
+					particle.position[0]+width/2+xOffset, particle.position[1]-width/2+yOffset,
+					particle.position[0]+width/2+xOffset, particle.position[1]+width/2+yOffset,
+					particle.position[0]-width/2+xOffset, particle.position[1]-width/2+yOffset,
+					particle.position[0]+width/2+xOffset, particle.position[1]+width/2+yOffset,
+					particle.position[0]-width/2+xOffset, particle.position[1]+width/2+yOffset
+				])
+		pyglet.gl.glColor4f(1, 1, 1, 0.2)
 		pyglet.graphics.draw(len(verts)/2, pyglet.gl.GL_TRIANGLES,
 			('v2f', verts)
 		)
@@ -56,7 +59,7 @@ class WeatherSystem():
 class MoistureParticle():
 	def __init__(self, x, y, moisture):
 		self.position = (x, y)
-		velLimit = 10
+		velLimit = 100
 		self.velocity = (random.uniform(-velLimit, velLimit), random.uniform(-velLimit, velLimit))
 		self.moisture = moisture if moisture else random.random()
 	def changeVelocity(self, xChange, yChange):
