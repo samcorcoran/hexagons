@@ -1,4 +1,6 @@
 import pyglet
+from pyglet.gl import *
+
 import math
 
 def drawArrow(v0, v1, color):
@@ -29,7 +31,10 @@ def drawArrow(v0, v1, color):
 		('v2f', v1 + [firstBarbX, firstBarbY, secondBarbX, secondBarbY])
 	)
 
-def drawSquare(v0, width, color):
+def drawSquare(v0, width, color, blend=False):
+	if blend:
+		glEnable(GL_BLEND)
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 	pyglet.gl.glColor4f(*color)
 	pyglet.graphics.draw_indexed(4, pyglet.gl.GL_TRIANGLES,
 		[0, 1, 2, 0, 2, 3],

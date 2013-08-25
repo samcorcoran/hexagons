@@ -8,6 +8,7 @@ import regions
 import drawUtils
 import terrain
 import lands
+import weather
 
 class World():
 	def __init__(self, worldWidth, worldHeight, hexesInRow=10, clipPointsToWorldLimits=True, maskImage=False):
@@ -30,9 +31,10 @@ class World():
 		self.noise = terrain.createNoiseList(self.worldWidth, self.worldHeight, inBytes=False)
 		# Create land regions
 		self.islands = []
-		self.createLandRegions()
+		self.createLands()
 		# TODO: Create sea and lake regions
-		# Create world altitudes
+		# Create weather system
+		self.weatherSystem = weather.WeatherSystem(worldWidth, worldHeight)
 
 	# Build a hex grid, hex by hex, using points of neighbouring generated hexagons where possible
 	def createHexGridFromPoints(self, hexesInRow, clipPointsToWorldLimits=True):
@@ -99,7 +101,7 @@ class World():
 			print("Finished finding masked hexes")
 
 	# Using dict of landHexes, floodfilling finds distinct tracts of land from which regions can be created.
-	def createLandRegions(self):
+	def createLands(self):
 		# Copy map so this dict can have keys removed without losing items from other dict
 		unassignedHexes = copy.copy(self.landHexes)
 		while unassignedHexes:
@@ -203,13 +205,13 @@ class World():
 						linePoints.extend(nextCoordinates + nextCoordinates)
 					# Last point is first point, completing the loop
 					linePoints.extend(nextHex.getPointCoordinatesList(pointNumber=0))
-			print("linePoints length: " + str(len(linePoints)))
+			#print("linePoints length: " + str(len(linePoints)))
 			if drawHexEdges:
 				pyglet.gl.glColor4f(0.0,0.0,1.0,1.0)
 				pyglet.graphics.draw(int(len(linePoints)/2), pyglet.gl.GL_LINES,
 					('v2f', linePoints)
 				)
-			print("Finished drawing")
+			#print("Finished drawing")
 
 	# Use pyglet GL calls to draw drainage routes
 	def drawDrainageRoutes(self):

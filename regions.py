@@ -174,7 +174,7 @@ class Region():
 	def drawRegionBorder(self, borderColor=(0.8,0.5,0.1,1)):
 		if not self.orderedBorderVertices:
 			self.findOrderedBorderVertices()
-		print("Drawing region border...")
+		#print("Drawing region border...")
 		# Convert vertices into list of coordinates
 		for borderList in self.orderedBorderVertices:
 			pointsList = [x.getCoords() for x in borderList]

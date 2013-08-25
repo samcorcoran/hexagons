@@ -1,6 +1,7 @@
 import pyglet
 from pyglet.gl import *
 from pyglet import image
+from pyglet import clock
 import hexagon
 import random
 import math
@@ -21,10 +22,11 @@ window.set_size(screenWidth, screenHeight)
 maskImage = pyglet.resource.image('groundtruth5.bmp')
 
 # DRAW CONTROLS #
-drawMaskImage = True
+drawMaskImage = False
 drawHexagons = True
 drawDrainage = True
 drawIslandBorders = True
+drawWeatherFeatures = True
 
 @window.event
 def on_draw():
@@ -44,12 +46,17 @@ def on_draw():
 	# Land outlines
 	if drawIslandBorders:
 		newWorld.drawIslandBorders()
+	if drawWeatherFeatures:
+		newWorld.weatherSystem.drawMoistureParticles()
 	# Draw experimental noise texture
 	#noiseTexture.blit(0,0)
 
+def update(deltaTime):
+	newWorld.weatherSystem.updateParticles(deltaTime)
+
 print("Running app")
 # Create world
-hexesInRow = 50
+hexesInRow = 5
 newWorld = world.World(screenWidth, screenHeight, hexesInRow, True, maskImage)
 # Create local noise texture to blit
 noiseTexture = image.Texture.create(screenWidth, screenHeight, GL_RGBA, True)
@@ -59,5 +66,7 @@ noiseArray = terrain.createNoiseList(screenWidth, screenHeight, inBytes=False)
 #noiseTexData.blit_to_texture(noiseTexture, 1, 0, 0, 0)
 #noiseTexData.blit(0,0)
 
+# Call update 120 per second
+pyglet.clock.schedule_interval(update, 1/120.0)
 pyglet.app.run()
 print("Ran app")
