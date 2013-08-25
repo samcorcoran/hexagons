@@ -218,7 +218,7 @@ class World():
 		for nextHex in self.landHexes.values():
 			#nextHex.drawPerimeterDrainageRoutes()
 			#nextHex.drawVertexDrainageRoute()
-			nextHex.drawDrainageRoute()
+			drainage.drawDrainageRoute(nextHex)
 
 	# Draw borders of each distinct land region
 	def drawIslandBorders(self):
