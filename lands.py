@@ -6,8 +6,8 @@ import regions
 import drawUtils
 import terrain
 
-class Land():
-	def __init__(self, world, mainRegion, noise):
+class GeographicZone():
+	def __init__(self, world, mainRegion, noise=False):
 		# Store a reference to the world that contains this Land
 		self.world = world
 		# A dict of hexagons that makes up this region
@@ -23,6 +23,12 @@ class Land():
 		self.region.findBorderHexes()
 		self.region.calculateAllVertexBorderDistances()
 
+	def drawGeographicZoneBorder(self):
+		self.region.drawRegionBorder()
+
+class Land(GeographicZone):
+	#def __init__(self):
+
 	def assignLandHeights(self):
 		# Assign heights to land vertices
 		#terrain.assignEqualAltitudes(self.region)
@@ -31,8 +37,5 @@ class Land():
 		terrain.assignRegionVertexAltitudesFromCoast(self.region, self.world.noise)
 		#terrain.assignNoisyAltitudes(self.region, self.noise)
 
-	def drawLandBorder(self):
-		self.region.drawRegionBorder()
-
-#class Island(Land):
-	
+# class Water(GeographicZone):
+# 	def __init__(self):

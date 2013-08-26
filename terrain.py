@@ -5,7 +5,6 @@ from noise import snoise2
 
 import graph
 import regions
-import drawUtils
 
 def assignHexMapAltitudes(hexMap):
 	# Iterate over hexes in may

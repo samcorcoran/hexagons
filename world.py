@@ -9,6 +9,7 @@ import drawUtils
 import terrain
 import lands
 import weather
+import drainage
 
 class World():
 	def __init__(self, worldWidth, worldHeight, hexesInRow=10, clipPointsToWorldLimits=True, maskImage=False):
@@ -100,32 +101,42 @@ class World():
 					hexCount += 1
 			print("Finished finding masked hexes")
 
-	# Using dict of landHexes, floodfilling finds distinct tracts of land from which regions can be created.
 	def createLands(self):
-		# Copy map so this dict can have keys removed without losing items from other dict
 		unassignedHexes = copy.copy(self.landHexes)
 		while unassignedHexes:
-			# Choose a new land color
-			fillColor = (random.random(), random.random(), random.random(), 1.0)
-			# Take a hex from the list of unassigned
-			nextHex = unassignedHexes.pop(random.choice(list(unassignedHexes.keys())))
+			landRegion = self.createContiguousRegion(unassignedHexes)
+			self.islands.append(lands.Land(self, landRegion, self.noise))
 
-			groupedHexes = []
-			# Add it and its like-regioned neighbours to a list
-			explorableHexes = [nextHex]
-			while explorableHexes:
-				unexploredHex = explorableHexes.pop()
-				groupedHexes.append(unexploredHex)
-				# If there are still hexes left to find, check hex's neighbours
-				if unassignedHexes:
-					explorableHexes.extend(self.floodFillLandNeighbours(unexploredHex, unassignedHexes))
-			island = dict()
-			for gHex in groupedHexes:
-				island[gHex.hexIndex] = gHex
-				# Apply some behaviour to hexes in region
-				gHex.fillColor = fillColor
-			# Create region with hexes and store as an island
-			self.islands.append(lands.Land(self, regions.Region(island), self.noise))
+	def createWaters(self):
+		unassignedHexes = copy.copy(self.waterHexes)
+		while unassignedHexes:
+			waterRegion = self.createContiguousRegion(unassignedHexes)
+			self.islands.append(waterRegion)
+
+	# Using dict of landHexes, floodfilling finds distinct tracts of land from which regions can be created.
+	def createContiguousRegion(self, unassignedHexes):
+		# Copy map so this dict can have keys removed without losing items from other dict
+		# Choose a new land color
+		fillColor = (random.random(), random.random(), random.random(), 1.0)
+		# Take a hex from the list of unassigned
+		nextHex = unassignedHexes.pop(random.choice(list(unassignedHexes.keys())))
+
+		groupedHexes = []
+		# Add it and its like-regioned neighbours to a list
+		explorableHexes = [nextHex]
+		while explorableHexes:
+			unexploredHex = explorableHexes.pop()
+			groupedHexes.append(unexploredHex)
+			# If there are still hexes left to find, check hex's neighbours
+			if unassignedHexes:
+				explorableHexes.extend(self.floodFillLandNeighbours(unexploredHex, unassignedHexes))
+		island = dict()
+		for gHex in groupedHexes:
+			island[gHex.hexIndex] = gHex
+			# Apply some behaviour to hexes in region
+			gHex.fillColor = fillColor
+		# Create region with hexes and store as an island
+		return regions.Region(island)
 
 	# Check nextHex's neighbours for validity, return list of those which are valid
 	def floodFillLandNeighbours(self, nextHex, remainingHexes):
@@ -136,7 +147,7 @@ class World():
 		# Determine which neighbours are valid
 		for neighbour in nextHex.neighbours.values():
 			# If neighbour is tagged as land and exists in remainingHexes
-			if neighbour.hexIndex in remainingHexes and neighbour.land:
+			if neighbour.hexIndex in remainingHexes:
 				# Add this neighbour to group
 				groupedNeighbours.append(remainingHexes.pop(neighbour.hexIndex))
 		#print("Returning grouped neighbours:")
@@ -223,4 +234,4 @@ class World():
 	# Draw borders of each distinct land region
 	def drawIslandBorders(self):
 		for island in self.islands:
-			island.drawLandBorder()
+			island.drawGeographicZoneBorder()

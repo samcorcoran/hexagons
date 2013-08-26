@@ -26,7 +26,7 @@ drawMaskImage = False
 drawHexagons = True
 drawDrainage = True
 drawIslandBorders = True
-drawWeatherFeatures = True
+drawWeatherFeatures = False
 
 @window.event
 def on_draw():
@@ -52,11 +52,12 @@ def on_draw():
 	#noiseTexture.blit(0,0)
 
 def update(deltaTime):
-	newWorld.weatherSystem.updateParticles(deltaTime)
+	#newWorld.weatherSystem.updateParticles(deltaTime)
+	pass
 
 print("Running app")
 # Create world
-hexesInRow = 5
+hexesInRow = 10
 newWorld = world.World(screenWidth, screenHeight, hexesInRow, True, maskImage)
 # Create local noise texture to blit
 noiseTexture = image.Texture.create(screenWidth, screenHeight, GL_RGBA, True)
