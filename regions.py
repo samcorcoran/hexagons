@@ -17,7 +17,6 @@ class Region():
 		self.orderedBorderVertices = []
 		self.vertexBorderDistances = dict()
 		self.largestVertexBorderDistance = False
-		self.borderEdges = []
 
 	def findBorderHexes(self, ringDepth=False):
 		print("Finding all border hexes...")
@@ -129,6 +128,20 @@ class Region():
 						('v2f', point.getCoords())
 					)
 
+	def adoptBordersFromRegion(self, givenRegion):
+		# For each border of the given region, determine if it borders this region
+		if givenRegion.orderedBorderVertices:
+			for nextBorder in givenRegion.orderedBorderVertices:
+				# Examine neighbours for first border vertex in border list
+				for neighbour in nextBorder[0].surroundingHexes:
+					if neighbour in self.hexes:
+						# This vertex at nextBorder[0] borders both regions, so adopt entire border list
+						self.orderedBorderVertices.append(nextBorder)
+						# Break from iterating over neighbours
+						break
+		else:
+			print("Warning: Tried to share border information between regions, but border data was not found.")
+
 	def findClosestBorderVertex(self, v1):
 		if self.borderVertices:
 			# Get any item from dictionary
@@ -161,17 +174,21 @@ class Region():
 				self.vertexBorderDistances[ nextPoint.id ] = closestBorderVertex
 
 	def doesPointBorderRegion(self, v0):
+		# Internal neighbour is a hex in this region, assumed not to exist
 		internalNeighbour = False
-		externalNeighbour = True
+		# External neighbour is a hex in a different region, assumed not to exist
+		externalNeighbour = False
 		for neighbour in v0.surroundingHexes.values():
 			if neighbour.hexIndex in self.hexes:
+				# This discovery proves at this point either is in or borders the region
 				internalNeighbour = True
 			else:
+				# This discovery proves that this point either borders the region or is not in it
 				externalNeighbour = True
-		# Returns false if either is false
+		# Point borders region iff both conditions are true
 		return (internalNeighbour and externalNeighbour)
 
-	def drawRegionBorder(self, borderColor=(0.8,0.5,0.1,1)):
+	def drawRegionBorders(self, borderColor=(0.8,0.5,0.1,1)):
 		if not self.orderedBorderVertices:
 			self.findOrderedBorderVertices()
 		#print("Drawing region border...")

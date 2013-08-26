@@ -30,10 +30,15 @@ class World():
 		self.findLandMarkedHexes()
 		# Create noise for world altitudes
 		self.noise = terrain.createNoiseList(self.worldWidth, self.worldHeight, inBytes=False)
-		# Create land regions
+		# Create lands - creation process involves finding borders
 		self.islands = []
 		self.createLands()
-		# TODO: Create sea and lake regions
+		# Create oceans/seas and lakes
+		self.waters = []
+		self.createWaters()
+		# Use land borders to avoid recomputing the same vertex sequences
+		for water in self.waters:
+			water.receiveBordersFromLands(self.islands)
 		# Create weather system
 		self.weatherSystem = weather.WeatherSystem(worldWidth, worldHeight)
 
@@ -111,7 +116,7 @@ class World():
 		unassignedHexes = copy.copy(self.waterHexes)
 		while unassignedHexes:
 			waterRegion = self.createContiguousRegion(unassignedHexes)
-			self.islands.append(waterRegion)
+			self.waters.append( lands.GeographicZone(self, waterRegion, self.noise) )
 
 	# Using dict of landHexes, floodfilling finds distinct tracts of land from which regions can be created.
 	def createContiguousRegion(self, unassignedHexes):
@@ -234,4 +239,9 @@ class World():
 	# Draw borders of each distinct land region
 	def drawIslandBorders(self):
 		for island in self.islands:
-			island.drawGeographicZoneBorder()
+			island.drawGeographicZoneBorders()
+
+	# Draw borders of each distinct waters region
+	def drawWatersBorders(self):
+		for water in self.waters:
+			water.drawGeographicZoneBorders()

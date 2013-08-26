@@ -14,20 +14,28 @@ class GeographicZone():
 		self.region = mainRegion
 		# Noise information unique to Land
 		self.noise = noise
-		# Borders
-		self.computeBorders()
-		# Altitudes
-		self.assignLandHeights()
 		
 	def computeBorders(self):
 		self.region.findBorderHexes()
 		self.region.calculateAllVertexBorderDistances()
+		self.region.findOrderedBorderVertices()
 
-	def drawGeographicZoneBorder(self):
-		self.region.drawRegionBorder()
+	def drawGeographicZoneBorders(self):
+		self.region.drawRegionBorders()
+
+	def receiveBordersFromLands(self, geoZones):
+		for geoZone in geoZones:
+			self.region.adoptBordersFromRegion(geoZone.region)
 
 class Land(GeographicZone):
-	#def __init__(self):
+	def __init__(self, world, mainRegion, noise=False):
+		# Initialise base class
+		GeographicZone.__init__(self, world, mainRegion, noise=False)
+		# Borders
+		self.computeBorders()
+		# Altitudes
+		self.assignLandHeights()
+
 
 	def assignLandHeights(self):
 		# Assign heights to land vertices
@@ -37,5 +45,7 @@ class Land(GeographicZone):
 		terrain.assignRegionVertexAltitudesFromCoast(self.region, self.world.noise)
 		#terrain.assignNoisyAltitudes(self.region, self.noise)
 
-# class Water(GeographicZone):
-# 	def __init__(self):
+class Water(GeographicZone):
+	def __init__(self, world, mainRegion, noise=False):
+		# Initialise base class
+		super(Water, self).__init__(world, mainRegion, noise=False)
