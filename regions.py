@@ -201,3 +201,11 @@ class Region():
 			pyglet.graphics.draw(len(borderList), pyglet.gl.GL_LINE_LOOP,
 				('v2f', pointsList)
 			)
+
+	def drawBorderHexes(self):
+		for borderHex in self.borderHexes[0].values():
+			borderHex.drawFilledHex( (1,0,0,1.0) )
+
+	def createRivers(self):
+		for borderHex in self.borderHexes:
+			pass

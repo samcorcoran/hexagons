@@ -25,8 +25,11 @@ maskImage = pyglet.resource.image('groundtruth5.bmp')
 drawMaskImage = False
 drawHexagons = True
 drawDrainage = True
+
 drawIslandBorders = False
 drawWatersBorders = True
+drawLandBorderHexes = False
+
 drawWeatherFeatures = False
 
 @window.event
@@ -53,6 +56,10 @@ def on_draw():
 	# Draw moisture/cloud particles
 	if drawWeatherFeatures:
 		newWorld.weatherSystem.drawMoistureParticles()
+
+	if drawLandBorderHexes:
+		for island in newWorld.islands:
+			island.drawGeographicZoneBorderHexes()
 	# Draw experimental noise texture
 	#noiseTexture.blit(0,0)
 
@@ -62,7 +69,7 @@ def update(deltaTime):
 
 print("Running app")
 # Create world
-hexesInRow = 10
+hexesInRow = 40
 newWorld = world.World(screenWidth, screenHeight, hexesInRow, True, maskImage)
 # Create local noise texture to blit
 noiseTexture = image.Texture.create(screenWidth, screenHeight, GL_RGBA, True)

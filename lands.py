@@ -23,6 +23,9 @@ class GeographicZone():
 	def drawGeographicZoneBorders(self):
 		self.region.drawRegionBorders()
 
+	def drawGeographicZoneBorderHexes(self):
+		self.region.drawBorderHexes()
+
 	def receiveBordersFromLands(self, geoZones):
 		for geoZone in geoZones:
 			self.region.adoptBordersFromRegion(geoZone.region)
