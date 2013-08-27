@@ -46,7 +46,7 @@ class World():
 	def createHexGridFromPoints(self, hexesInRow, clipPointsToWorldLimits=True):
 		print("Creating hex grid from points (hexesInRow: %d)" % (hexesInRow))
 		# Width of hexagons (w=root3*Radius/2) is calculated from self.worldWidth, which then determines hex radius
-		hexWidth = (self.worldWidth/hexesInRow)
+		hexWidth = float(self.worldWidth)/float(hexesInRow)
 		hexRadius = (hexWidth) / math.sqrt(3) # Also edge length
 
 		gridRows = []
