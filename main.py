@@ -40,7 +40,7 @@ def on_draw():
 		maskImage.blit(0, 0)
 	# Hexagon borders and fillings
 	if drawHexagons:
-		newWorld.drawHexGrid(drawHexEdges=False, drawHexFills=True, drawHexCentres=False)
+		newWorld.drawHexGrid(drawHexEdges=False, drawHexFills=True, drawHexCentres=False, drawLand=False, drawWater=True)
 	# Drainage routes and sink locations
 	if drawDrainage:
 		newWorld.drawDrainageRoutes()
@@ -62,7 +62,7 @@ def update(deltaTime):
 
 print("Running app")
 # Create world
-hexesInRow = 75
+hexesInRow = 10
 newWorld = world.World(screenWidth, screenHeight, hexesInRow, True, maskImage)
 # Create local noise texture to blit
 noiseTexture = image.Texture.create(screenWidth, screenHeight, GL_RGBA, True)

@@ -100,6 +100,7 @@ class World():
 						self.landHexes[nextHex.hexIndex] = nextHex
 					else:
 						# Indicate hex is water
+						nextHex.fillColor = (0.0,0.0,1.0,1.0)
 						nextHex.water = True
 						self.waterHexes[nextHex.hexIndex] = nextHex
 					#print("hexCount: " + str(hexCount))
@@ -196,31 +197,32 @@ class World():
 		return False
 
 	# Use pyglet GL calls to draw hexagons
-	def drawHexGrid(self, drawHexEdges=True, drawHexFills=True, drawHexCentres=False, drawRegularGrid=False):
+	def drawHexGrid(self, drawHexEdges=True, drawHexFills=True, drawHexCentres=False, drawRegularGrid=False, drawLand=False, drawWater=True):
 		if self.hexGrid:
 			linePoints = []
 			for row in self.hexGrid:
 				for nextHex in row:
-					if drawHexFills:
-						# Draw hexagon fill
-						nextHex.drawFilledHex()
-					# Draw hexagon edges and/or points
-					#nextHex.drawHex()
-					if drawHexCentres:
-						# Draw hexagon centres
-						#nextHex.drawHexCentrePoint()
-						nextHex.drawHexCentrePoint(True, (0,1,1,1))
-					# Draw regular hexagon grid
-					if drawRegularGrid:
-						nextHex.drawHex(True, True, False, (0.0, 0.0, 1.0, 1.0), True)
-					# Compile points of hexagon into list for batch rendering of gl_lines
-					linePoints.extend(nextHex.getPointCoordinatesList(pointNumber=0))
-					for i in range(len(nextHex.points)):
-						# Enter each point twice, for the two consecutive lines
-						nextCoordinates = nextHex.getPointCoordinatesList(pointNumber=i)
-						linePoints.extend(nextCoordinates + nextCoordinates)
-					# Last point is first point, completing the loop
-					linePoints.extend(nextHex.getPointCoordinatesList(pointNumber=0))
+					if drawLand and nextHex.land or drawWater and nextHex.water:
+						if drawHexFills:
+							# Draw hexagon fill
+							nextHex.drawFilledHex()
+						# Draw hexagon edges and/or points
+						#nextHex.drawHex()
+						if drawHexCentres:
+							# Draw hexagon centres
+							#nextHex.drawHexCentrePoint()
+							nextHex.drawHexCentrePoint(True, (0,1,1,1))
+						# Draw regular hexagon grid
+						if drawRegularGrid:
+							nextHex.drawHex(True, True, False, (0.0, 0.0, 1.0, 1.0), True)
+						# Compile points of hexagon into list for batch rendering of gl_lines
+						linePoints.extend(nextHex.getPointCoordinatesList(pointNumber=0))
+						for i in range(len(nextHex.points)):
+							# Enter each point twice, for the two consecutive lines
+							nextCoordinates = nextHex.getPointCoordinatesList(pointNumber=i)
+							linePoints.extend(nextCoordinates + nextCoordinates)
+						# Last point is first point, completing the loop
+						linePoints.extend(nextHex.getPointCoordinatesList(pointNumber=0))
 			#print("linePoints length: " + str(len(linePoints)))
 			if drawHexEdges:
 				pyglet.gl.glColor4f(0.0,0.0,1.0,1.0)

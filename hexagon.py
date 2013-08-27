@@ -233,8 +233,13 @@ class Hexagon():
 			pointsList.extend(firstPoint)
 			# Draw filled polygon
 			# Scale opacity by centre point's altitude
-			color = tuple([self.centre.altitude * fillColor[x] for x in range(3)] + [fillColor[3]])
-			#pyglet.gl.glColor4f(fillColor[0], fillColor[1], fillColor[2], fillColor[3]*self.centre.altitude)
+			color = tuple()
+			if self.land:
+				color = tuple([self.centre.altitude * fillColor[x] for x in range(3)] + [fillColor[3]])
+				#pyglet.gl.glColor4f(fillColor[0], fillColor[1], fillColor[2], fillColor[3]*self.centre.altitude)
+			else: 
+				# Not land, so do not colour by altitude
+				color = tuple(fillColor)
 			pyglet.gl.glColor4f(*color)
 			# Polygon is always drawn as fullHex
 			glEnable(GL_BLEND)
