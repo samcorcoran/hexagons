@@ -10,7 +10,7 @@ class Vertex():
 		self.addHexNeighbours(hexes)
 		self.altitude = False
 		# Neighbouring vertex which is drained into from this vertex
-		self.drainageNeighbour = False
+		self.drainingNeighbour = False
 		# Neighbouring vertices which drain into this vertex
 		self.drainedNeighbours = []
 		self.minBorderDistance = False

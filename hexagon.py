@@ -17,12 +17,15 @@ class Hexagon():
 		self.points = []
 		self.lowestPoint = False
 		self.createVertices()
-		self.edges = dict()
 		self.regularHexPoints = copy.deepcopy(self.points)
 		self.regularHexCentre = copy.deepcopy(self.centre)
 		self.neighbours = dict()
-		self.drainageNeighbour = False
+		# Hex that drains from this one
+		self.drainingNeighbour = False
+		# Hexes which drain into this one
 		self.drainedNeighbours = []
+		# Amount of water drained
+		self.quantityDrained = 0
 		self.fillColor = False #(random.random(),random.random(),random.random(),0.5)
 		self.land = False
 		self.distanceFromWater = False
@@ -46,13 +49,6 @@ class Hexagon():
 		self.points.append( graph.Vertex( coordinates=(self.centre.x-innerRadius, self.centre.y-(self.radius/2)), hexes=[self] ))
 		#NW
 		self.points.append( graph.Vertex( coordinates=(self.centre.x-innerRadius, self.centre.y+(self.radius/2)), hexes=[self] ))
-
-	def createEdges(self):
-		# Create an edge for each pair of points
-		for i in range(len(self.points)-1):
-			self.edges.append(graph.Edge( vertices=(self.points[i], self.points[i+1]), hexes=[self] ))
-		# Edge departing from last point returns to first point
-		self.edges.append(graph.Edge( vertices=(self.points[5], self.points[0]), hexes=[self] ))
 
 	def getSuccessivePoint(self, v0):
 		#print("getSuccessivePoint calling get point index")
