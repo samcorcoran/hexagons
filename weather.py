@@ -26,7 +26,7 @@ class WeatherSystem():
 
 	def spawnMoistureParticles(self, totalParticles=1000):
 		print("Generating particles of moisture for weather system...")
-		# Using poisson discs, randomly place a 
+		# Using poisson discs, randomly place a moisture particle
 		for i in range(totalParticles):
 			x, y = self.generatePoint()
 			self.particles.add( MoistureParticle( x, y, moisture=random.random() ) )

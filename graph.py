@@ -43,11 +43,11 @@ class Vertex():
 	def getCoords(self):
 		return [self.x, self.y]
 
-def vertexIdGenerator():
+def idGenerator():
 	i = 0
 	while True:
 		yield i
 		i += 1
 
 # Initialise the generator
-vertexIdGen = vertexIdGenerator()
+vertexIdGen = idGenerator()

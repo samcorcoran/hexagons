@@ -5,6 +5,7 @@ import graph
 import regions
 import drawUtils
 import terrain
+import drainage
 
 class GeographicZone():
 	def __init__(self, world, mainRegion, noise=False):
@@ -34,11 +35,17 @@ class Land(GeographicZone):
 	def __init__(self, world, mainRegion, noise=False):
 		# Initialise base class
 		GeographicZone.__init__(self, world, mainRegion, noise=False)
+		self.id = next(landIdGen)
 		# Borders
 		self.computeBorders()
 		# Altitudes
 		self.assignLandHeights()
-
+		# Rivers
+		self.drainageBasins = set()
+		# Drainage routes
+		self.calculateDrainageRoutes()
+		# Basins
+		self.createDrainageBasins()
 
 	def assignLandHeights(self):
 		# Assign heights to land vertices
@@ -47,6 +54,30 @@ class Land(GeographicZone):
 		#terrain.assignHexMapAltitudesFromCoast(self.region)
 		terrain.assignRegionVertexAltitudesFromCoast(self.region, self.world.noise)
 		#terrain.assignNoisyAltitudes(self.region, self.noise)
+
+	def calculateDrainageRoutes(self):
+		for nextHex in self.region.hexes.values():
+			drainage.findDrainingNeighbour(nextHex)
+
+	def createDrainageBasins(self, volumeThreshold=0):
+		# Examine all hexes which border water
+		for borderHex in self.region.borderHexes[0].values():
+			# Check if borderHex is above threshold
+			#print("borderHex quantity drained = %d" % (borderHex.quantityDrained))
+			if borderHex.quantityDrained >= volumeThreshold:
+				# Consider this a river
+				newBasin = drainage.DrainageBasin(borderHex)
+				#print("adding a basin")
+				self.drainageBasins.add(newBasin)
+
+	def drawDrainageBasins(self):
+		#print("Drawing basins for region %d" % (self.id))
+		for basin in self.drainageBasins:
+			#print("drawing basin")
+			basin.drawDrainageBasin()
+
+# Initialise a generator for 
+landIdGen = graph.idGenerator()
 
 class Water(GeographicZone):
 	def __init__(self, world, mainRegion, noise=False):

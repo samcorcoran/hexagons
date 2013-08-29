@@ -10,6 +10,7 @@ import drawUtils
 
 class Region():
 	def __init__(self, hexes):
+		self.id = next(regionIdGen)
 		self.hexes = copy.copy(hexes)
 		self.borderHexes = []
 		self.hexBorderDistances = dict()
@@ -188,7 +189,7 @@ class Region():
 		# Point borders region iff both conditions are true
 		return (internalNeighbour and externalNeighbour)
 
-	def drawRegionBorders(self, borderColor=(0.8,0.5,0.1,1)):
+	def drawRegionBorders(self, borderColor=(0.8,0.5,0.1,0.5)):
 		if not self.orderedBorderVertices:
 			self.findOrderedBorderVertices()
 		#print("Drawing region border...")
@@ -206,6 +207,5 @@ class Region():
 		for borderHex in self.borderHexes[0].values():
 			borderHex.drawFilledHex( (1,0,0,1.0) )
 
-	def createRivers(self):
-		for borderHex in self.borderHexes:
-			pass
+# Initialise a generator for regions
+regionIdGen = graph.idGenerator()

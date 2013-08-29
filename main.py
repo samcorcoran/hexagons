@@ -31,6 +31,7 @@ drawWatersBorders = True
 drawLandBorderHexes = False
 
 drawWeatherFeatures = False
+drawDrainageBasins = True
 
 @window.event
 def on_draw():
@@ -43,7 +44,7 @@ def on_draw():
 		maskImage.blit(0, 0)
 	# Hexagon borders and fillings
 	if drawHexagons:
-		newWorld.drawHexGrid(drawHexEdges=False, drawHexFills=True, drawHexCentres=False, drawLand=False, drawWater=True)
+		newWorld.drawHexGrid(drawHexEdges=False, drawHexFills=True, drawHexCentres=False, drawLand=False, drawWater=False)
 	# Drainage routes and sink locations
 	if drawDrainage:
 		newWorld.drawDrainageRoutes()
@@ -60,6 +61,10 @@ def on_draw():
 	if drawLandBorderHexes:
 		for island in newWorld.islands:
 			island.drawGeographicZoneBorderHexes()
+
+	if drawDrainageBasins:
+		for island in newWorld.islands:
+			island.drawDrainageBasins()
 	# Draw experimental noise texture
 	#noiseTexture.blit(0,0)
 
@@ -69,7 +74,7 @@ def update(deltaTime):
 
 print("Running app")
 # Create world
-hexesInRow = 40
+hexesInRow = 20
 newWorld = world.World(screenWidth, screenHeight, hexesInRow, True, maskImage)
 # Create local noise texture to blit
 noiseTexture = image.Texture.create(screenWidth, screenHeight, GL_RGBA, True)

@@ -14,6 +14,9 @@ class Hexagon():
 		self.hexIndex = hexIndex
 		self.centre = graph.Vertex( coordinates=centreCoordinates, hexes=[self])
 		self.radius = radius
+		# The innerRadius = (sqrt(3) * self.radius) / 2 = (1.73205080757 / 2) * self.radius = 0.866025403785 * self.radius
+		self.innerRadius = 0.8660254 * self.radius # aka hexagon width
+
 		self.points = []
 		self.lowestPoint = False
 		self.createVertices()
@@ -24,6 +27,8 @@ class Hexagon():
 		self.drainingNeighbour = False
 		# Hexes which drain into this one
 		self.drainedNeighbours = []
+		self.hexesDrainedAbove = []
+		self.waterReceived = 1
 		# Amount of water drained
 		self.quantityDrained = 0
 		self.fillColor = False #(random.random(),random.random(),random.random(),0.5)
@@ -35,20 +40,22 @@ class Hexagon():
 		self.centre = self.calculateCentrePoint()
 	
 	def createVertices(self):
-		sqrtThree = 1.73205080757
-		innerRadius = (sqrtThree*self.radius)/2
+		radius = self.radius
+		innerRadius = self.innerRadius
+		x = self.centre.x
+		y = self.centre.y
 		#N, Top point
-		self.points.append( graph.Vertex( coordinates=(self.centre.x, self.centre.y+self.radius), hexes=[self] ))
+		self.points.append( graph.Vertex( coordinates=(x, y+radius), hexes=[self] ))
 		#NE
-		self.points.append( graph.Vertex( coordinates=(self.centre.x+innerRadius, self.centre.y+(self.radius/2)), hexes=[self] ))
+		self.points.append( graph.Vertex( coordinates=(x+innerRadius, y+(radius/2)), hexes=[self] ))
 		#SE
-		self.points.append( graph.Vertex( coordinates=(self.centre.x+innerRadius, self.centre.y-(self.radius/2)), hexes=[self] ))
+		self.points.append( graph.Vertex( coordinates=(x+innerRadius, y-(radius/2)), hexes=[self] ))
 		#S
-		self.points.append( graph.Vertex( coordinates=(self.centre.x, self.centre.y-self.radius), hexes=[self] ))
+		self.points.append( graph.Vertex( coordinates=(x, y-radius), hexes=[self] ))
 		#SW
-		self.points.append( graph.Vertex( coordinates=(self.centre.x-innerRadius, self.centre.y-(self.radius/2)), hexes=[self] ))
+		self.points.append( graph.Vertex( coordinates=(x-innerRadius, y-(radius/2)), hexes=[self] ))
 		#NW
-		self.points.append( graph.Vertex( coordinates=(self.centre.x-innerRadius, self.centre.y+(self.radius/2)), hexes=[self] ))
+		self.points.append( graph.Vertex( coordinates=(x-innerRadius, y+(radius/2)), hexes=[self] ))
 
 	def getSuccessivePoint(self, v0):
 		#print("getSuccessivePoint calling get point index")
@@ -217,7 +224,7 @@ class Hexagon():
 				('v2f', pointsList)
 			)
 		
-	def drawFilledHex(self, fillColor=False, drawRegularHexGrid=False):
+	def drawFilledHex(self, fillColor=False, drawRegularHexGrid=False, weightByAltitude=True):
 		if not fillColor:
 			fillColor = self.fillColor
 		if fillColor:
@@ -230,7 +237,7 @@ class Hexagon():
 			# Draw filled polygon
 			# Scale opacity by centre point's altitude
 			color = tuple()
-			if self.land:
+			if self.land and weightByAltitude:
 				color = tuple([self.centre.altitude * fillColor[x] for x in range(3)] + [fillColor[3]])
 				#pyglet.gl.glColor4f(fillColor[0], fillColor[1], fillColor[2], fillColor[3]*self.centre.altitude)
 			else: 

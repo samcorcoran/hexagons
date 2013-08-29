@@ -9,9 +9,31 @@ import struct
 import graph
 import drawUtils
 
+class DrainageBasin():
+	def __init__(self, terminatingHex):
+		self.id = next(basinIdGen)
+		self.terminatingHex = terminatingHex
+		self.hexes = [terminatingHex] + terminatingHex.hexesDrainedAbove
+		self.basinColor = (random.random(), random.random(), random.random(), 0.2)
+
+	def drawDrainageBasin(self):
+		#print("Drawing hexes for basin %d" % (self.id))
+		for nextHex in self.hexes:
+			nextHex.drawFilledHex(self.basinColor, False, False)
+
+# class River():
+# 	def __init__(self, terminatingHex):
+# 		self.terminatingHex = terminatingHex
+
+# 	# River follows sequence of hexagons 
+# 	def traceFlow(self):
+
+# Initialise a generator for 
+basinIdGen = graph.idGenerator()
+
 # Based on point altitudes, determine which neighbouring hex is the steeper descent
 # Used for drainage basin calculation
-def findDrainageNeighbour(hexagon):
+def findDrainingNeighbour(hexagon):
 	if hexagon.land == True:
 		lowestPoint = hexagon.findLowestPoint()
 		# Determine which of the hexagons neighbouring this point has the lowest altitude
@@ -27,24 +49,31 @@ def findDrainageNeighbour(hexagon):
 		random.shuffle(lowestHexes)
 		for chosenHex in lowestHexes:
 			if not chosenHex == hexagon:
-				hexagon.drainageNeighbour = chosenHex
-				chosenHex.drainedNeighbours.append(hexagon)
+				# Update who drains whom
+				hexagon.drainingNeighbour = chosenHex
+				chosenHex.drainedNeighbours.extend([hexagon])
+				#print("Appended hexagon %s to hex%s's drainedNeighbours, now at: %d" % (str(hexagon.hexIndex), str(chosenHex.hexIndex), len(chosenHex.drainedNeighbours)))
+				chosenHex.hexesDrainedAbove.extend([hexagon] + hexagon.hexesDrainedAbove)
+				#print("Chosenhex %s now drains a total of %d hexes above it." % (str(chosenHex.hexIndex), len(chosenHex.hexesDrainedAbove)))
+				# Give draining hex the volume of water it receives from this hex
+				#print("Giving chosenHex wRec + qD, %d + %d" % (hexagon.waterReceived, hexagon.quantityDrained))
+				chosenHex.quantityDrained += hexagon.waterReceived + hexagon.quantityDrained
 				return chosenHex
 		# chosenHex must have been hexagon
-		hexagon.drainageNeighbour = hexagon
+		hexagon.drainingNeighbour = hexagon
 		return True
 	else:
 		return False
 
 def drawDrainageRoute(hexagon, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), drawMouthsAsSinks=False):
-	if not hexagon.drainageNeighbour:
+	if not hexagon.drainingNeighbour:
 		# Calculate drainage neighbour if not already known
-		findDrainageNeighbour(hexagon)
-	if hexagon.drainageNeighbour == hexagon or (drawMouthsAsSinks and not hexagon.drainageNeighbour.land):
+		findDrainingNeighbour(hexagon)
+	if hexagon.drainingNeighbour == hexagon or (drawMouthsAsSinks and not hexagon.drainingNeighbour.land):
 		# Draw a square to indicate sink
 		drawUtils.drawSquare([hexagon.centre.x, hexagon.centre.y], 4, sinkColor)
 	else:
-		drawUtils.drawArrow(hexagon.getCentreCoordinates(), hexagon.drainageNeighbour.getCentreCoordinates(), drainageRouteColor)
+		drawUtils.drawArrow(hexagon.getCentreCoordinates(), hexagon.drainingNeighbour.getCentreCoordinates(), drainageRouteColor)
 
 def drawVertexDrainageRoute(hexagon, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), drawMouthsAsSinks=False):
 	#print("Drainage for hex %s..." % str(hexagon.hexIndex))
@@ -113,7 +142,7 @@ def drawPerimeterDrainageRoutes(hexagon, drainageRouteColor=(1.0,0,0,1), sinkCol
 		for point in hexagon.points:
 			if not point.isByWater():
 				# Check if drainage has already been calculated
-				if not point.drainageNeighbour:
+				if not point.drainingNeighbour:
 					lowestPoints = [point]
 					for neighbouringPoint in point.neighbouringVertices:
 						if neighbouringPoint.altitude < lowestPoints[0].altitude:
@@ -127,7 +156,7 @@ def drawPerimeterDrainageRoutes(hexagon, drainageRouteColor=(1.0,0,0,1), sinkCol
 							drawUtils.drawSquare([chosenPoint.x, chosenPoint.y], 4, sinkColor)
 					else:
 						# This neighbour is the drainage neighbour
-						point.drainageNeighbour = chosenPoint
+						point.drainingNeighbour = chosenPoint
 						chosenPoint.drainedNeighbours.append(point)
 						# Draw drainage route
 						drawUtils.drawArrow([point.x, point.y], [chosenPoint.x, chosenPoint.y], drainageRouteColor)
