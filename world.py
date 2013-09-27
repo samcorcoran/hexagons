@@ -1,6 +1,7 @@
 import math
 import random
 import copy
+import pyglet
 
 import hexagon
 import graph
@@ -21,6 +22,7 @@ class World():
 		self.landHexes = dict()
 		self.waterHexes = dict()
 		# Create a hex grid
+		self.hexMap = dict()
 		self.hexGrid = self.createHexGridFromPoints(hexesInRow, clipPointsToWorldLimits)
 		if clipPointsToWorldLimits:
 			self.clipGridHexagonsToWorldDimensions()
@@ -73,6 +75,7 @@ class World():
 				totalHexes += 1
 				# Add hex to current top row of hex grid
 				gridRows[-1].append(hexPolygon)
+				self.hexMap[(col, row)] = hexPolygon
 				hexCentreX += hexWidth
 			#print("Length of nextRow: %d" % (len(nextRow)))
 			#gridRows.append(nextRow)
