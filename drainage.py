@@ -21,12 +21,22 @@ class DrainageBasin():
 		for nextHex in self.hexes:
 			nextHex.drawFilledHex(self.basinColor, False, False)
 
-# class River():
-# 	def __init__(self, terminatingHex):
-# 		self.terminatingHex = terminatingHex
+class River():
+ 	def __init__(self, terminatingHex):
+ 		self.terminatingHex = terminatingHex
+ 		self.routeHexes = list()
+ 		self.sourceHexes = set()
 
-# 	# River follows sequence of hexagons 
-# 	def traceFlow(self):
+ 	# River follows sequence of hexagons 
+ 	def traceFlow(self, currentHex):
+ 		self.routeHexes.add(currentHex)
+ 		if currentHex.drainedNeighbours:
+ 			# Depth first search of all included hexagons
+ 			for nextDrainedHex in currentHex.drainedNeighbours:
+ 				traceFlow(nextDrainedHex)
+ 		else:
+ 			# Drains from no other hexes
+ 			self.sourceHexes.add(currentHex)
 
 # Initialise a generator for 
 basinIdGen = graph.idGenerator()
@@ -53,17 +63,20 @@ def findDrainingNeighbour(hexagon):
 				hexagon.drainingNeighbour = chosenHex
 				chosenHex.drainedNeighbours.extend([hexagon])
 				#print("Appended hexagon %s to hex%s's drainedNeighbours, now at: %d" % (str(hexagon.hexIndex), str(chosenHex.hexIndex), len(chosenHex.drainedNeighbours)))
-				chosenHex.hexesDrainedAbove.extend([hexagon] + hexagon.hexesDrainedAbove)
-				#print("Chosenhex %s now drains a total of %d hexes above it." % (str(chosenHex.hexIndex), len(chosenHex.hexesDrainedAbove)))
 				# Give draining hex the volume of water it receives from this hex
 				#print("Giving chosenHex wRec + qD, %d + %d" % (hexagon.waterReceived, hexagon.quantityDrained))
 				chosenHex.quantityDrained += hexagon.waterReceived + hexagon.quantityDrained
 				return chosenHex
 		# chosenHex must have been hexagon
 		hexagon.drainingNeighbour = hexagon
-		return True
-	else:
-		return False
+	# Return none if hexagon is water, or drains to itself (is sink)
+	return None
+
+def findHexesDrainedAbove(hexagon):
+	if hexagon.drainedNeighbours:
+		for nextHex in hexagon.drainedNeighbours:
+			hexagon.hexesDrainedAbove.extend(findHexesDrainedAbove(nextHex))
+	return [hexagon] + hexagon.hexesDrainedAbove
 
 def drawDrainageRoute(hexagon, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), drawMouthsAsSinks=False):
 	if not hexagon.drainingNeighbour:

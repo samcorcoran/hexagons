@@ -41,7 +41,10 @@ class Land(GeographicZone):
 		# Altitudes
 		self.assignLandHeights()
 		# Rivers
+		self.sinks = set()
+		self.outflows = set()
 		self.drainageBasins = set()
+		self.rivers = set()
 		# Drainage routes
 		self.calculateDrainageRoutes()
 		# Basins
@@ -57,18 +60,31 @@ class Land(GeographicZone):
 
 	def calculateDrainageRoutes(self):
 		for nextHex in self.region.hexes.values():
-			drainage.findDrainingNeighbour(nextHex)
+			drainingNeighbour = drainage.findDrainingNeighbour(nextHex)
+			if drainingNeighbour:
+				if drainingNeighbour.water:
+					# hexagon nextHex drains to a body of water and so must be an outflow
+					self.outflows.add(nextHex)
+			else:
+				# hexagon nextHex is a sink for an endorheic drainage basin
+				self.sinks.add(nextHex)
+		for nextTermination in (self.outflows | self.sinks):
+			drainage.findHexesDrainedAbove(nextTermination)
+
 
 	def createDrainageBasins(self, volumeThreshold=0):
 		# Examine all hexes which border water
-		for borderHex in self.region.borderHexes[0].values():
+		for terminationHex in (self.outflows | self.sinks):
 			# Check if borderHex is above threshold
 			#print("borderHex quantity drained = %d" % (borderHex.quantityDrained))
-			if borderHex.quantityDrained >= volumeThreshold:
+			if terminationHex.quantityDrained >= volumeThreshold:
 				# Consider this a river
-				newBasin = drainage.DrainageBasin(borderHex)
+				newBasin = drainage.DrainageBasin(terminationHex)
 				#print("adding a basin")
 				self.drainageBasins.add(newBasin)
+		for nextHex in self.outflows:
+			river = drainage.River(nextHex)
+			self.rivers.add(river)
 
 	def drawDrainageBasins(self):
 		#print("Drawing basins for region %d" % (self.id))
