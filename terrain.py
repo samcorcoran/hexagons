@@ -21,28 +21,9 @@ def assignHexMapAltitudes(hexMap):
 		nextHex.centre.altitude = cumulativeAltitude/len(nextHex.points)
 		#print("Hex %s centre altitude is %f" % (str(nextHex.hexIndex), nextHex.centre.altitude))
 
-def assignHexMapAltitudesFromCoast(hexRegion):
-	minimumAltitude = 0.1
-	for nextHex in hexRegion.hexes.values():
-		#print("Altitudes for hex %s " % (str(nextHex.hexIndex)))
-		altitudes = []
-		for point in nextHex.points:
-			if not point.altitude:
-				distanceFromCoast = hexRegion.hexBorderDistances[nextHex.hexIndex]+1
-				# Plus one to offset zero indexing, plus another to prevent altitudes of 1
-				largestDist = len(hexRegion.borderHexes)+1
-				#print("Altitude: %f/%f" % (distanceFromCoast, largestDist)) 
-				point.altitude = 0 if largestDist == 0 else (distanceFromCoast**2)/(largestDist**2)
-				# Add some randomness
-				point.altitude *= random.triangular(0.5, 1.5, 1)
-				point.altitude += minimumAltitude
-			altitudes.append( point.altitude )
-		nextHex.centre.altitude = sum(altitudes)/len(altitudes)
-		#print("  Altitudes: %s, centre: %s" % (str(altitudes), str(nextHex.centre.altitude)))
-
 def assignRegionVertexAltitudesFromCoast(hexRegion, noiseArray):
 	print("Assigning region vertex altitudes")
-	minimumAltitude = 0.1
+	minimumAltitude = 0.0
 	for nextHex in hexRegion.hexes.values():
 		#print("Altitudes for hex %s " % (str(nextHex.hexIndex)))
 		altitudes = []
@@ -51,14 +32,14 @@ def assignRegionVertexAltitudesFromCoast(hexRegion, noiseArray):
 				closestBorderVertex = hexRegion.vertexBorderDistances[ point.id ]
 				distanceFromCoast = point.distanceFrom(closestBorderVertex)
 				#print("Altitude: %f/%f" % (distanceFromCoast, largestDist))
-				point.altitude = 0 if hexRegion.largestVertexBorderDistance == 0 else (distanceFromCoast**3.5)/(hexRegion.largestVertexBorderDistance**3.5)
+				point.altitude = 0 if hexRegion.largestVertexBorderDistance == 0 else (distanceFromCoast**5.5)/(hexRegion.largestVertexBorderDistance**5.5)
 
 				point.altitude += minimumAltitude
 
 				# Add some randomness
 				if noiseArray:
 					# Set noise between 0.5 and 1, highest probability is around 0.75
-					noise = ((noiseArray[int(point.y)-1][int(point.x)]) / 4) + 0.75
+					noise = ((noiseArray[int(point.y)-1][int(point.x)]) / 2) + 0.75
 					#print("Noise:")
 					#print(noise)
 					point.altitude *= noise

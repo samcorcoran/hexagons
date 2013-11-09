@@ -54,7 +54,6 @@ class Land(GeographicZone):
 		# Assign heights to land vertices
 		#terrain.assignEqualAltitudes(self.region)
 		#terrain.assignHexMapAltitudes(self.region)
-		#terrain.assignHexMapAltitudesFromCoast(self.region)
 		terrain.assignRegionVertexAltitudesFromCoast(self.region, self.world.noise)
 		#terrain.assignNoisyAltitudes(self.region, self.noise)
 
