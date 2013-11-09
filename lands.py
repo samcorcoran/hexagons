@@ -18,7 +18,7 @@ class GeographicZone():
 		
 	def computeBorders(self):
 		self.region.findBorderHexes()
-		self.region.calculateAllVertexBorderDistances()
+		self.region.calculateAllClosestBorderVertex()
 		self.region.findOrderedBorderVertices()
 
 	def drawGeographicZoneBorders(self):

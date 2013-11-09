@@ -29,9 +29,11 @@ def assignRegionVertexAltitudesFromCoast(hexRegion, noiseArray):
 		altitudes = []
 		for point in nextHex.points:
 			if not point.altitude:
-				closestBorderVertex = hexRegion.vertexBorderDistances[ point.id ]
+				closestBorderVertex = hexRegion.closestBorderVertex[ point.id ]
 				distanceFromCoast = point.distanceFrom(closestBorderVertex)
+				point.directionToCoast = ( (closestBorderVertex.x-point.x), (closestBorderVertex.y-point.y) )
 				#print("Altitude: %f/%f" % (distanceFromCoast, largestDist))
+				# Create coastal altitudes of zero which increase at an increasingly rate towards 1 for highest point in region
 				point.altitude = 0 if hexRegion.largestVertexBorderDistance == 0 else (distanceFromCoast**5.5)/(hexRegion.largestVertexBorderDistance**5.5)
 
 				point.altitude += minimumAltitude

@@ -16,7 +16,7 @@ class Region():
 		self.hexBorderDistances = dict()
 		self.borderVertices = dict()
 		self.orderedBorderVertices = []
-		self.vertexBorderDistances = dict()
+		self.closestBorderVertex = dict()
 		self.largestVertexBorderDistance = False
 
 	def findBorderHexes(self, ringDepth=False):
@@ -156,7 +156,7 @@ class Region():
 			return closestVertex, shortestDistance
 		return False
 
-	def calculateAllVertexBorderDistances(self, drawArrowsToCoast=False):
+	def calculateAllClosestBorderVertex(self, drawArrowsToCoast=False):
 		print("Calculating all vertex border distances...")
 		if not self.borderVertices:
 			self.findBorderVertices()
@@ -172,7 +172,7 @@ class Region():
 				if distance > self.largestVertexBorderDistance:
 					self.largestVertexBorderDistance = distance
 				# Register point's distance to border
-				self.vertexBorderDistances[ nextPoint.id ] = closestBorderVertex
+				self.closestBorderVertex[ nextPoint.id ] = closestBorderVertex
 
 	def doesPointBorderRegion(self, v0):
 		# Internal neighbour is a hex in this region, assumed not to exist
