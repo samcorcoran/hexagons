@@ -78,7 +78,7 @@ def findHexesDrainedAbove(hexagon):
 			hexagon.hexesDrainedAbove.extend(findHexesDrainedAbove(nextHex))
 	return [hexagon] + hexagon.hexesDrainedAbove
 
-def drawDrainageRoute(hexagon, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), drawMouthsAsSinks=False):
+def drawDrainageRoute(hexagon, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), drawMouthsAsSinks=False, useSimpleRoutes=True):
 	if not hexagon.drainingNeighbour:
 		# Calculate drainage neighbour if not already known
 		findDrainingNeighbour(hexagon)
@@ -86,7 +86,13 @@ def drawDrainageRoute(hexagon, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,
 		# Draw a square to indicate sink
 		drawUtils.drawSquare([hexagon.centre.x, hexagon.centre.y], 4, sinkColor)
 	else:
-		drawUtils.drawArrow(hexagon.getCentreCoordinates(), hexagon.drainingNeighbour.getCentreCoordinates(), drainageRouteColor)
+		if useSimpleRoutes:
+			drawUtils.drawArrow(hexagon.getCentreCoordinates(), hexagon.drainingNeighbour.getCentreCoordinates(), drainageRouteColor)
+		else:
+			# Draw drainage to lowest point in current hex
+			drawUtils.drawArrow(hexagon.getCentreCoordinates(), hexagon.lowestPoint.getCoords(), drainageRouteColor)
+			# Draw drainge into draining hex
+			drawUtils.drawArrow(hexagon.lowestPoint.getCoords(), hexagon.drainingNeighbour.getCentreCoordinates(), drainageRouteColor)
 
 def drawVertexDrainageRoute(hexagon, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), drawMouthsAsSinks=False):
 	#print("Drainage for hex %s..." % str(hexagon.hexIndex))

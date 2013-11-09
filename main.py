@@ -47,7 +47,7 @@ def on_draw():
 		newWorld.drawHexGrid(drawHexEdges=True, drawHexFills=True, drawHexCentres=False, drawLand=True, drawWater=True)
 	# Drainage routes and sink locations
 	if drawDrainage:
-		newWorld.drawDrainageRoutes()
+		newWorld.drawDrainageRoutes(useSimpleRoutes=False)
 	# Land outlines
 	if drawIslandBorders:
 		newWorld.drawIslandBorders()
