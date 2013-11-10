@@ -81,9 +81,15 @@ class Land(GeographicZone):
 				newBasin = drainage.DrainageBasin(terminationHex)
 				#print("adding a basin")
 				self.drainageBasins.add(newBasin)
+		minRiverSize = 5
 		for nextHex in self.outflows:
 			river = drainage.River(nextHex)
-			self.rivers.add(river)
+			if len(river.routeHexes) > minRiverSize:
+				self.rivers.add(river)
+
+	def drawRivers(self, useSimpleRoutes):
+		for nextRiver in self.rivers:
+			nextRiver.drawRiver(useSimpleRoutes)
 
 	def drawDrainageBasins(self):
 		#print("Drawing basins for region %d" % (self.id))

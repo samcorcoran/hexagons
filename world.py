@@ -241,6 +241,11 @@ class World():
 			#nextHex.drawVertexDrainageRoute()
 			drainage.drawDrainageRoute(nextHex, useSimpleRoutes=useSimpleRoutes)
 
+	# Use pyglet GL calls to draw drainage routes for each river hex
+	def drawRivers(self, useSimpleRoutes):
+		for nextLand in self.islands:
+			nextLand.drawRivers(useSimpleRoutes)
+
 	# Draw borders of each distinct land region
 	def drawIslandBorders(self):
 		for island in self.islands:

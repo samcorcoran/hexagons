@@ -26,17 +26,22 @@ class River():
  		self.terminatingHex = terminatingHex
  		self.routeHexes = list()
  		self.sourceHexes = set()
+ 		self.traceFlow(self.terminatingHex)
 
  	# River follows sequence of hexagons 
  	def traceFlow(self, currentHex):
- 		self.routeHexes.add(currentHex)
+ 		self.routeHexes.append(currentHex)
  		if currentHex.drainedNeighbours:
  			# Depth first search of all included hexagons
  			for nextDrainedHex in currentHex.drainedNeighbours:
- 				traceFlow(nextDrainedHex)
+ 				self.traceFlow(nextDrainedHex)
  		else:
  			# Drains from no other hexes
  			self.sourceHexes.add(currentHex)
+
+ 	def drawRiver(self, useSimpleRoutes):
+ 		for nextHex in self.routeHexes:
+ 			drawDrainageRoute(nextHex, useSimpleRoutes=useSimpleRoutes)
 
 # Initialise a generator for 
 basinIdGen = graph.idGenerator()
