@@ -49,6 +49,8 @@ class Land(GeographicZone):
 		self.calculateDrainageRoutes()
 		# Basins
 		self.createDrainageBasins()
+		# Rivers objects
+		self.createRivers()
 
 	def assignLandHeights(self):
 		# Assign heights to land vertices
@@ -81,11 +83,31 @@ class Land(GeographicZone):
 				newBasin = drainage.DrainageBasin(terminationHex)
 				#print("adding a basin")
 				self.drainageBasins.add(newBasin)
-		minRiverSize = 5
+
+	def createRivers(self, minRiverSize=0, percentageOfRivers=0.2):
+		# A low-bar can be applied to river length acceptance
+		riverCandidates = []
 		for nextHex in self.outflows:
 			river = drainage.River(nextHex)
 			if len(river.routeHexes) > minRiverSize:
-				self.rivers.add(river)
+				riverCandidates.append(river)
+		# Percentage acceptance takes given percentage of longest rivers, and any others that share a length with those accepted
+		#   this is so rivers of equal length aren't arbitrarily accepted/discarded
+		riverCandidates.sort(key = lambda x: len(x.routeHexes))
+		lastRiverHexLength = len(riverCandidates[0].routeHexes)
+		totalCandidates = len(riverCandidates)
+		while riverCandidates:
+			nextRiver = riverCandidates.pop()
+			# Adding rivers stops if another would take the acceptance percentage too high
+			percentageTooHigh = (len(self.rivers)+1)/float(totalCandidates) > percentageOfRivers
+			# Unless next river is the same length as last, so is included anyway
+			shorterThanLastRiver = len(nextRiver.routeHexes) < lastRiverHexLength
+			if (percentageTooHigh and shorterThanLastRiver):
+				break
+			# Store only legitimate rivers in set
+			self.rivers.add(nextRiver)
+			lastRiverHexLength = len(nextRiver.routeHexes)
+		# What remains in riverCandidates are all failed candidates
 
 	def drawRivers(self, useSimpleRoutes):
 		for nextRiver in self.rivers:
