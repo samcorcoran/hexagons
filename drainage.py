@@ -39,9 +39,10 @@ class River():
  			# Drains from no other hexes
  			self.sourceHexes.add(currentHex)
 
- 	def drawRiver(self, useSimpleRoutes):
+	def drawRiver(self, useSimpleRoutes=True, minDrainedAbove=0):
  		for nextHex in self.routeHexes:
- 			drawDrainageRoute(nextHex, useSimpleRoutes=useSimpleRoutes)
+			if len(nextHex.hexesDrainedAbove) >= minDrainedAbove:
+				drawDrainageRoute(nextHex, useSimpleRoutes=useSimpleRoutes)
 
 # Initialise a generator for 
 basinIdGen = graph.idGenerator()

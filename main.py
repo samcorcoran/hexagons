@@ -51,7 +51,7 @@ def on_draw():
 		newWorld.drawDrainageRoutes(useSimpleRoutes=False)
 	# Rivers
 	if drawRivers:
-		newWorld.drawRivers(useSimpleRoutes=False)
+		newWorld.drawRivers(useSimpleRoutes=False, minDrainedAbove=1)
 	# Land outlines
 	if drawIslandBorders:
 		newWorld.drawIslandBorders()
