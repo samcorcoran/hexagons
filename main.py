@@ -36,49 +36,49 @@ drawDrainageBasins = True
 
 @window.event
 def on_draw():
-	global gridChanged
-	global hexGrid
-	window.clear()
-	# Mask image for determining land shapes
-	if drawMaskImage:
-		pyglet.gl.glColor4f(1,1,1,1)
-		maskImage.blit(0, 0)
-	# Hexagon borders and fillings
-	if drawHexagons:
-		newWorld.drawHexGrid(drawHexEdges=True, drawHexFills=True, drawHexCentres=False, drawLand=True, drawWater=True)
-	# Drainage routes and sink locations
-	if drawDrainage:
-		newWorld.drawDrainageRoutes(useSimpleRoutes=False)
-	# Rivers
-	if drawRivers:
-		newWorld.drawRivers(useSimpleRoutes=False, minDrainedAbove=1)
-	# Land outlines
-	if drawIslandBorders:
-		newWorld.drawIslandBorders()
-	# Water outlines (seas, lakes)
-	if drawWatersBorders:
-		newWorld.drawWatersBorders()
-	# Draw moisture/cloud particles
-	if drawWeatherFeatures:
-		newWorld.weatherSystem.drawMoistureParticles()
+    global gridChanged
+    global hexGrid
+    window.clear()
+    # Mask image for determining land shapes
+    if drawMaskImage:
+        pyglet.gl.glColor4f(1,1,1,1)
+        maskImage.blit(0, 0)
+    # Hexagon borders and fillings
+    if drawHexagons:
+        newWorld.drawHexGrid(drawHexEdges=False, drawHexFills=True, drawHexCentres=False, drawLand=True, drawWater=False)
+    # Drainage routes and sink locations
+    if drawDrainage:
+        newWorld.drawDrainageRoutes(useSimpleRoutes=False)
+    # Rivers
+    if drawRivers:
+        newWorld.drawRivers(useSimpleRoutes=False, minDrainedAbove=1)
+    # Land outlines
+    if drawIslandBorders:
+        newWorld.drawIslandBorders()
+    # Water outlines (seas, lakes)
+    if drawWatersBorders:
+        newWorld.drawWatersBorders()
+    # Draw moisture/cloud particles
+    if drawWeatherFeatures:
+        newWorld.weatherSystem.drawMoistureParticles()
 
-	if drawLandBorderHexes:
-		for island in newWorld.islands:
-			island.drawGeographicZoneBorderHexes()
+    if drawLandBorderHexes:
+        for island in newWorld.islands:
+            island.drawGeographicZoneBorderHexes()
 
-	if drawDrainageBasins:
-		for island in newWorld.islands:
-			island.drawDrainageBasins()
-	# Draw experimental noise texture
-	#noiseTexture.blit(0,0)
+    if drawDrainageBasins:
+        for island in newWorld.islands:
+            island.drawDrainageBasins()
+    # Draw experimental noise texture
+    #noiseTexture.blit(0,0)
 
 def update(deltaTime):
-	#newWorld.weatherSystem.updateParticles(deltaTime)
-	pass
+    #newWorld.weatherSystem.updateParticles(deltaTime)
+    pass
 
 print("Running app")
 # Create world
-hexesInRow = 5
+hexesInRow = 60
 newWorld = world.World(screenWidth, screenHeight, hexesInRow, True, maskImage)
 # Create local noise texture to blit
 noiseTexture = image.Texture.create(screenWidth, screenHeight, GL_RGBA, True)
