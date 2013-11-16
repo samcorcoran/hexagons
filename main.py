@@ -2,6 +2,9 @@ import pyglet
 from pyglet.gl import *
 from pyglet import image
 from pyglet import clock
+from pyglet import window
+from pyglet.window import mouse
+
 import hexagon
 import random
 import math
@@ -25,14 +28,24 @@ maskImage = pyglet.resource.image('groundtruth5.bmp')
 drawMaskImage = False
 drawHexagons = True
 drawDrainage = False
-drawRivers = True
+drawRivers = False
 
 drawIslandBorders = False
-drawWatersBorders = True
+drawWatersBorders = False
 drawLandBorderHexes = False
 
 drawWeatherFeatures = False
-drawDrainageBasins = True
+drawDrainageBasins = False
+
+mouseX = 0
+mouseY = 0
+
+@window.event
+def on_mouse_motion(x, y, dx, dy):
+    global mouseX
+    global mouseY
+    mouseX = x
+    mouseY = y
 
 @window.event
 def on_draw():
@@ -69,6 +82,19 @@ def on_draw():
     if drawDrainageBasins:
         for island in newWorld.islands:
             island.drawDrainageBasins()
+
+    # Spatial Grid
+    graph.spatialGrid.drawGridCells()
+    graph.spatialGrid.drawAllPoints()
+    # Draw closest vertex to mouse
+    #print("Mouse in draw: %f, %f" % (mouseX, mouseY))
+    closestVertex = graph.spatialGrid.findNearestVertex(mouseX, mouseY)
+    if closestVertex:
+        pyglet.gl.glColor4f(1, 1, 1, 1)
+        pyglet.graphics.draw(1, pyglet.gl.GL_POINTS,
+            ('v2f', (closestVertex.x, closestVertex.y))
+        )
+
     # Draw experimental noise texture
     #noiseTexture.blit(0,0)
 
@@ -78,7 +104,7 @@ def update(deltaTime):
 
 print("Running app")
 # Create world
-hexesInRow = 60
+hexesInRow = 10
 newWorld = world.World(screenWidth, screenHeight, hexesInRow, True, maskImage)
 # Create local noise texture to blit
 noiseTexture = image.Texture.create(screenWidth, screenHeight, GL_RGBA, True)
