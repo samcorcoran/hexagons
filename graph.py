@@ -1,11 +1,12 @@
 import math
 import pyglet
+import random
 
 class Vertex():
-    def __init__(self, coordinates, hexes=[]):
+    def __init__(self, coordinates, hexes=[], maxJitter=0 ):
         self.id = next(vertexIdGen)
-        self.x = coordinates[0]
-        self.y = coordinates[1]
+        self.x = coordinates[0] + random.uniform(-maxJitter, maxJitter)
+        self.y = coordinates[1] + random.uniform(-maxJitter, maxJitter)
         self.surroundingHexes = dict()
         self.neighbouringVertices = []
         self.addHexNeighbours(hexes)

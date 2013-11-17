@@ -21,7 +21,7 @@ class Hexagon():
         self.points = [None for a in range(6)]
         self.lowestPoint = False
         self.neighbours = dict()
-        self.createVertices(existingNeighbours)
+        self.createVertices(existingNeighbours, jitterStrength, isBorderHex)
         # Hex that drains from this one
         self.drainingNeighbour = False
         # Hexes which drain into this one
@@ -34,23 +34,27 @@ class Hexagon():
         self.land = False
         self.distanceFromWater = False
         self.water = False
-        if jitterStrength:
-            self.jitterPoints(jitterStrength, isBorderHex)
+        if jitterStrength and not isBorderHex:
             self.calculateCentrePoint()
     
-    def createVertices(self, existingNeighbours):
+    def createVertices(self, existingNeighbours, jitterStrength, isBorderHex):
         southeastNeighbour = existingNeighbours[0]
         southwestNeighbour = existingNeighbours[1]
         westNeighbour = existingNeighbours[2]
 
         radius = self.radius
         innerRadius = self.innerRadius
+
+        maxJitter = 0
+        if not isBorderHex:
+            maxJitter = self.radius*jitterStrength
+
         x = self.centre.x
         y = self.centre.y
         #N, Top point
-        self.points[0] = ( graph.Vertex( coordinates=(x, y+radius), hexes=[self] ))
+        self.points[0] = ( graph.Vertex( coordinates=(x, y+radius), hexes=[self], maxJitter=maxJitter ))
         #NE
-        self.points[1] = ( graph.Vertex( coordinates=(x+innerRadius, y+(radius/2)), hexes=[self] ))
+        self.points[1] = ( graph.Vertex( coordinates=(x+innerRadius, y+(radius/2)), hexes=[self], maxJitter=maxJitter ))
         #SE
         if southeastNeighbour:
             ### self SE point is seNeighbour's N point
@@ -67,7 +71,7 @@ class Hexagon():
             self.points[2].addVertexNeighbour(self.points[3])
         else:
             #print("No SE neighbour for hex %s." % (str(self.hexIndex)))
-            self.points[2] = ( graph.Vertex( coordinates=(self.centre.x+self.innerRadius, self.centre.y-(self.radius/2)), hexes=[self] ))    
+            self.points[2] = ( graph.Vertex( coordinates=(self.centre.x+self.innerRadius, self.centre.y-(self.radius/2)), hexes=[self], maxJitter=maxJitter ))    
 
         #SW
         if southwestNeighbour:
@@ -88,12 +92,12 @@ class Hexagon():
         else:
             # No swNeighbout guarantees no w neighbour either, so vertex must be created
             #print("No SW neighbour for hex %s." % (str(self.hexIndex)))
-            self.points[4] = ( graph.Vertex( coordinates=(self.centre.x-self.innerRadius, self.centre.y-(self.radius/2)), hexes=[self] ))
+            self.points[4] = ( graph.Vertex( coordinates=(self.centre.x-self.innerRadius, self.centre.y-(self.radius/2)), hexes=[self], maxJitter=maxJitter ))
 
         #S
         if not self.points[3]:
             # if it hasn't be set by se or sw neigbours
-            self.points[3] = ( graph.Vertex( coordinates=(x, y-radius), hexes=[self] ))
+            self.points[3] = ( graph.Vertex( coordinates=(x, y-radius), hexes=[self], maxJitter=maxJitter ))
 
         #NW
         if westNeighbour:
@@ -114,7 +118,7 @@ class Hexagon():
             self.points[4].addVertexNeighbour(self.points[5])
         else:
             #print("No W neighbour for hex %s." % (str(self.hexIndex)))
-            self.points[5] = ( graph.Vertex( coordinates=(self.centre.x-self.innerRadius, self.centre.y+(self.radius/2)), hexes=[self] ))
+            self.points[5] = ( graph.Vertex( coordinates=(self.centre.x-self.innerRadius, self.centre.y+(self.radius/2)), hexes=[self], maxJitter=maxJitter ))
 
     def getSuccessivePoint(self, v0):
         #print("getSuccessivePoint calling get point index")
@@ -146,15 +150,6 @@ class Hexagon():
 
     def getCentreCoordinates(self):
         return [self.centre.x, self.centre.y]
-
-    # Randomly shifts all point locations by a random value between +/-(edgeLength * jitterStrength)
-    def jitterPoints(self, jitterStrength=0.2, isBorderHex=False):
-        # Only jitter non-border hexes
-        if not isBorderHex:
-            maxJitter = jitterStrength*self.radius
-            for i in range(len(self.points)):
-                self.points[i].x += random.uniform(-maxJitter, maxJitter)
-                self.points[i].y += random.uniform(-maxJitter, maxJitter)
 
     def calculateCentrePoint(self):
         xSum = 0
