@@ -10,19 +10,18 @@ import graph
 import drawUtils
 
 class Hexagon():
-    def __init__(self, centreCoordinates, radius=20, hexIndex=False, jitterStrength=False):
+    def __init__(self, centreCoordinates, radius=20, hexIndex=False, jitterStrength=False, existingNeighbours=(None,None,None), isBorderHex=False):
         self.hexIndex = hexIndex
         self.centre = graph.Vertex( coordinates=centreCoordinates, hexes=[self])
+        #print("Creating hex with centre: %f, %f" % (self.centre.x, self.centre.y))
         self.radius = radius
         # The innerRadius = (sqrt(3) * self.radius) / 2 = (1.73205080757 / 2) * self.radius = 0.866025403785 * self.radius
         self.innerRadius = 0.8660254 * self.radius # aka hexagon width
 
-        self.points = []
+        self.points = [None for a in range(6)]
         self.lowestPoint = False
-        self.createVertices()
-        self.regularHexPoints = copy.deepcopy(self.points)
-        self.regularHexCentre = copy.deepcopy(self.centre)
         self.neighbours = dict()
+        self.createVertices(existingNeighbours)
         # Hex that drains from this one
         self.drainingNeighbour = False
         # Hexes which drain into this one
@@ -36,26 +35,86 @@ class Hexagon():
         self.distanceFromWater = False
         self.water = False
         if jitterStrength:
-            self.jitterPoints(jitterStrength)
-        self.centre = self.calculateCentrePoint()
+            self.jitterPoints(jitterStrength, isBorderHex)
+            self.calculateCentrePoint()
     
-    def createVertices(self):
+    def createVertices(self, existingNeighbours):
+        southeastNeighbour = existingNeighbours[0]
+        southwestNeighbour = existingNeighbours[1]
+        westNeighbour = existingNeighbours[2]
+
         radius = self.radius
         innerRadius = self.innerRadius
         x = self.centre.x
         y = self.centre.y
         #N, Top point
-        self.points.append( graph.Vertex( coordinates=(x, y+radius), hexes=[self] ))
+        self.points[0] = ( graph.Vertex( coordinates=(x, y+radius), hexes=[self] ))
         #NE
-        self.points.append( graph.Vertex( coordinates=(x+innerRadius, y+(radius/2)), hexes=[self] ))
+        self.points[1] = ( graph.Vertex( coordinates=(x+innerRadius, y+(radius/2)), hexes=[self] ))
         #SE
-        self.points.append( graph.Vertex( coordinates=(x+innerRadius, y-(radius/2)), hexes=[self] ))
-        #S
-        self.points.append( graph.Vertex( coordinates=(x, y-radius), hexes=[self] ))
+        if southeastNeighbour:
+            ### self SE point is seNeighbour's N point
+            self.points[2] = southeastNeighbour.points[0]
+            self.points[2].addHexNeighbours([self])
+            ### self S point is seNeighbour's NW point
+            self.points[3] = southeastNeighbour.points[5]
+            self.points[3].addHexNeighbours([self])
+            ## Log neighbour relationship
+            self.neighbours[2] = southeastNeighbour
+            southeastNeighbour.neighbours[5] = self
+            # Records points as neighbours to each other if not already
+            #  reciprocal relationship is automatically handled
+            self.points[2].addVertexNeighbour(self.points[3])
+        else:
+            #print("No SE neighbour for hex %s." % (str(self.hexIndex)))
+            self.points[2] = ( graph.Vertex( coordinates=(self.centre.x+self.innerRadius, self.centre.y-(self.radius/2)), hexes=[self] ))    
+
         #SW
-        self.points.append( graph.Vertex( coordinates=(x-innerRadius, y-(radius/2)), hexes=[self] ))
+        if southwestNeighbour:
+            ## Adopt SW neighbour's points
+            ### self SW point is neighbour's N point
+            self.points[4] = southwestNeighbour.points[0]
+            self.points[4].addHexNeighbours([self])
+            ## Log neighbour relationship
+            self.neighbours[3] = southwestNeighbour
+            southwestNeighbour.neighbours[0] = self
+            # If no seNeighbour existed, use swNeighbour to set southern vertex
+            if not southeastNeighbour:
+                self.points[3] = southwestNeighbour.points[1]
+                self.points[3].addHexNeighbours([self])
+            # Records points as neighbours to each other if not already
+            #  reciprocal relationship is automatically handled
+            self.points[3].addVertexNeighbour(self.points[4])
+        else:
+            # No swNeighbout guarantees no w neighbour either, so vertex must be created
+            #print("No SW neighbour for hex %s." % (str(self.hexIndex)))
+            self.points[4] = ( graph.Vertex( coordinates=(self.centre.x-self.innerRadius, self.centre.y-(self.radius/2)), hexes=[self] ))
+
+        #S
+        if not self.points[3]:
+            # if it hasn't be set by se or sw neigbours
+            self.points[3] = ( graph.Vertex( coordinates=(x, y-radius), hexes=[self] ))
+
         #NW
-        self.points.append( graph.Vertex( coordinates=(x-innerRadius, y+(radius/2)), hexes=[self] ))
+        if westNeighbour:
+            ## Adopt W neighbour's points
+            ### self NW point is neighbour's NE point
+            self.points[5] = westNeighbour.points[1]
+            self.points[5].addHexNeighbours([self])
+            ## Log neighbour relationship
+            self.neighbours[4] = westNeighbour
+            westNeighbour.neighbours[1] = self
+            ### self SW point is neighbour's SE point
+            # This may have already been added from the SW neighbour
+            if not southwestNeighbour:
+                self.points[4] = westNeighbour.points[2]
+                self.points[4].addHexNeighbours([self])
+            # Records points as neighbours to each other if not already
+            #  reciprocal relationship is automatically handled
+            self.points[4].addVertexNeighbour(self.points[5])
+        else:
+            #print("No W neighbour for hex %s." % (str(self.hexIndex)))
+            self.points[5] = ( graph.Vertex( coordinates=(self.centre.x-self.innerRadius, self.centre.y+(self.radius/2)), hexes=[self] ))
 
     def getSuccessivePoint(self, v0):
         #print("getSuccessivePoint calling get point index")
@@ -89,22 +148,24 @@ class Hexagon():
         return [self.centre.x, self.centre.y]
 
     # Randomly shifts all point locations by a random value between +/-(edgeLength * jitterStrength)
-    def jitterPoints(self, jitterStrength=0.2):
-        maxJitter = jitterStrength*self.radius
-        for i in range(len(self.points)):
-            self.points[i].x += random.uniform(-maxJitter, maxJitter)
-            self.points[i].y += random.uniform(-maxJitter, maxJitter)
+    def jitterPoints(self, jitterStrength=0.2, isBorderHex=False):
+        # Only jitter non-border hexes
+        if not isBorderHex:
+            maxJitter = jitterStrength*self.radius
+            for i in range(len(self.points)):
+                self.points[i].x += random.uniform(-maxJitter, maxJitter)
+                self.points[i].y += random.uniform(-maxJitter, maxJitter)
 
-    def calculateCentrePoint(self, points=False):
-        points = points if points else self.points
+    def calculateCentrePoint(self):
         xSum = 0
         ySum = 0
         totalPoints = 0
-        for point in points:
+        for point in self.points:
             xSum += point.x
             ySum += point.y
-            totalPoints += 1
-        return graph.Vertex( (xSum/totalPoints, ySum/totalPoints), hexes=[self] )
+            totalPoints += 1  
+        self.centre.x = xSum/float(totalPoints)
+        self.centre.y = ySum/float(totalPoints)
 
     def addHexToNeighbourhood(self, hexGrid, hexesInOddRow):
         #print("Adding hex %s to nhood..." % (str(self.hexIndex)))
@@ -195,8 +256,8 @@ class Hexagon():
             #print("No W neighbour for hex %s." % (str(self.hexIndex)))
             pass
 
-    def drawHex(self, fullHex=True, drawEdges=True, drawPoints=False, edgeColor=(1.0,0.0,0.0,1.0), pointColor=(0.0,1.0,0.0,1.0), drawRegularHexGrid=False):
-        pointsList = self.points if not drawRegularHexGrid else self.regularHexPoints
+    def drawHex(self, fullHex=True, drawEdges=True, drawPoints=False, edgeColor=(1.0,0.0,0.0,1.0), pointColor=(0.0,1.0,0.0,1.0)):
+        pointsList = self.points
         pointsList = list(chain.from_iterable(pointsList))
         numEdges = 6
         if not fullHex:
@@ -224,16 +285,13 @@ class Hexagon():
                 ('v2f', pointsList)
             )
         
-    def drawFilledHex(self, fillColor=False, drawRegularHexGrid=False, weightByAltitude=True):
+    def drawFilledHex(self, fillColor=False, weightByAltitude=True):
         if not fillColor:
             fillColor = self.fillColor
         if fillColor:
-            pointsList = self.regularHexPoints if drawRegularHexGrid else self.points
-            centrePoint = self.regularHexCentre if drawRegularHexGrid else self.centre
-            firstPoint = [pointsList[0].x, pointsList[0].y]
             # Polygon centre point coordinates are first values
-            pointsList = [centrePoint.x, centrePoint.y] + self.getPerimeterCoordinatesList()
-            pointsList.extend(firstPoint)
+            pointsList = [self.centre.x, self.centre.y] + self.getPerimeterCoordinatesList()
+            pointsList.extend([self.points[0].x, self.points[0].y])
             # Draw filled polygon
             # Scale opacity by centre point's altitude
             color = tuple()
@@ -251,45 +309,40 @@ class Hexagon():
                 ('v2f', pointsList)
             )       
 
-    def drawHexCentrePoint(self, drawRegularHexCentre=False, pointColor=(1.0,0.0,1.0,1.0)):
-        point = self.regularHexCentre if drawRegularHexCentre else self.centre
+    def drawHexCentrePoint(self, pointColor=(1.0,0.0,1.0,1.0)):
+        point = self.centre
         pyglet.gl.glColor4f(*pointColor)
         pyglet.graphics.draw(1, pyglet.gl.GL_POINTS,
             ('v2f', point)
         )
 
-    def clipPointsToScreen(self, widthInterval=[0,800], heightInterval=[0,600], useRegularPoints=True):
+    def clipPointsToScreen(self, widthInterval=[0,800], heightInterval=[0,600]):
         #print("Clipping hex " + str(self.hexIndex))
-        if useRegularPoints:
-            # Even if regular points are being clipped, jittered must be clipped first
-            # this accomodates scenario where the regular point was valid but was jittered out
-            # of bounds. 
-            self.clipPointsToScreen(widthInterval, heightInterval, False)
-        # Regular hexagon points can be used to avoid jittering causing gaps around perimeter
-        hexPoints = self.regularHexPoints if useRegularPoints else self.points
-        for i in range(len(hexPoints)):
-            #print(" p%d: (%f, %f)" % (i, hexPoints[i][0], hexPoints[i][1]))
+        #print("self.points:")
+        #print(self.points)
+        for i, nextPoint in enumerate(self.points):
+            #print(" p%d: (%f, %f)" % (i, self.points[i].x, self.points[i].y))
             clipped = False
             # Clip y values to screen
-            if hexPoints[i].y >= heightInterval[1]:
-                #print(" ..clipped hexpoints[%d][1] (%d) to heightInterval[1] %d" % (i, hexPoints[i][1], heightInterval[1]))
+            if self.points[i].y >= heightInterval[1]:
+                #print(" ..clipped self.points[%d].y (%f) to heightInterval[1] %d" % (i, self.points[i].y, heightInterval[1]))
                 clipped = True
                 # Set y to top edge of screen
                 self.points[i].y = heightInterval[1]
-            elif hexPoints[i].y <=  heightInterval[0]:
-                #print(" ..clipped hexpoints[%d][1] (%d) to heightInterval[0] %d" % (i, hexPoints[i][1],heightInterval[0]))
+            elif self.points[i].y <=  heightInterval[0]:
+                #print(" ..clipped self.points[%d].y (%f) to heightInterval[0] %d" % (i, self.points[i].y,heightInterval[0]))
                 clipped = True
                 # Set y to bottom of screen
                 self.points[i].y =  heightInterval[0]
 
             # Clip x values to screen
-            if hexPoints[i].x >= widthInterval[1]:
-                #print(" ..clipped hexpoints[%d][0] (%d) to widthInterval[1] %d" % (i, hexPoints[i][0],widthInterval[1]))
+            if self.points[i].x >= widthInterval[1]:
+                #print(" ..clipped self.points[%d].x (%f) to widthInterval[1] %d" % (i, self.points[i].x,widthInterval[1]))
                 clipped = True
                 # Set x to east edge of screen
                 self.points[i].x = widthInterval[1]
-            elif hexPoints[i].x <=  widthInterval[0]:
-                #print(" ..clipped hexpoints[%d][0] (%d) to widthInterval[0] %d" % (i, hexPoints[i][0],widthInterval[0]))               
+            elif self.points[i].x <=  widthInterval[0]:
+                #print(" ..clipped self.points[%d].x (%f) to widthInterval[0] %d" % (i, self.points[i].x,widthInterval[0]))               
                 clipped = True
                 # Set x to west edge of screen
                 self.points[i].x =  widthInterval[0]
@@ -300,7 +353,9 @@ class Hexagon():
             else:
                 #print(" no clipping required, point:"  + str(self.points[i]))
                 pass
-        self.centre = self.calculateCentrePoint(self.points)
+        #print("Hex index: ")
+        #print(self.hexIndex)
+        self.calculateCentrePoint()
 
     def compareToMaskImage(self, maskImageData, imageWidth, passRate=0.4, attenuation=0.8, drawAttenuatedPoints=False):
         # Perimeter points and centre point each get a 'vote'

@@ -13,19 +13,22 @@ import weather
 import drainage
 
 class World():
-    def __init__(self, worldWidth, worldHeight, hexesInRow=10, clipPointsToWorldLimits=True, maskImage=False):
+    def __init__(self, worldWidth, worldHeight, hexesInOddRow=10, clipPointsToWorldLimits=True, maskImage=False):
         # World dimensions
         self.worldWidth = worldWidth
         self.worldHeight = worldHeight
-        self.hexesInRow = hexesInRow
+        self.hexesInOddRow = hexesInOddRow
         # Structures for holding hexes
         self.landHexes = dict()
         self.waterHexes = dict()
         # Create a hex grid
         self.hexMap = dict()
-        self.hexGrid = self.createHexGridFromPoints(hexesInRow, clipPointsToWorldLimits)
+        self.hexGrid = self.createHexGridFromPoints(clipPointsToWorldLimits)
         if clipPointsToWorldLimits:
             self.clipGridHexagonsToWorldDimensions()
+        # Add verts to spatial grid
+        self.spatialGrid = graph.SpatialGrid(0, 0, self.worldWidth, self.worldHeight, int(0.75*hexesInOddRow))
+        self.addVertsToSpatialGrid()
         # Tag hexagons/vertices according to masks
         self.landMask = maskImage
         ## Collect land and water hexagons
@@ -45,10 +48,10 @@ class World():
         self.weatherSystem = weather.WeatherSystem(worldWidth, worldHeight)
 
     # Build a hex grid, hex by hex, using points of neighbouring generated hexagons where possible
-    def createHexGridFromPoints(self, hexesInRow, clipPointsToWorldLimits=True):
-        print("Creating hex grid from points (hexesInRow: %d)" % (hexesInRow))
+    def createHexGridFromPoints(self, clipPointsToWorldLimits=True):
+        print("Creating hex grid from points (hexesInOddRow: %d)" % (self.hexesInOddRow))
         # Width of hexagons (w=root3*Radius/2) is calculated from self.worldWidth, which then determines hex radius
-        hexWidth = float(self.worldWidth)/float(hexesInRow)
+        hexWidth = float(self.worldWidth)/float(self.hexesInOddRow)
         hexRadius = (hexWidth) / math.sqrt(3) # Also edge length
 
         gridRows = []
@@ -67,11 +70,14 @@ class World():
             # Add another row to gridRows
             gridRows.append([])
             # Draw one less hex on odd-numbered rows
-            for col in range(hexesInRow+1-(row%2)):
-                #print("Hex %d in row %d" % (col, row))
+            hexesInThisRow = self.hexesInOddRow+1-(row%2)
+            for col in range(hexesInThisRow):
+                #print("Hex (%d, %d)" % (col, row))
                 #print("Creating hex %d, with (col,row): (%d, %d)" % (totalHexes, col, row))
-                hexPolygon = hexagon.Hexagon((hexCentreX, hexCentreY), hexRadius, hexIndex=(col, row), jitterStrength=0.2)
-                hexPolygon.addHexToNeighbourhood(gridRows, hexesInRow)
+                isBorderHex = row == 0 or col == 0 or row == hexesInThisRow or (hexCentreY+(0.5*hexRadius) >= self.worldHeight)
+                neighbours = self.getExistingNeighbours(gridRows, col, row)
+                hexPolygon = hexagon.Hexagon((hexCentreX, hexCentreY), hexRadius, hexIndex=(col, row), jitterStrength=0.2, existingNeighbours=neighbours, isBorderHex=isBorderHex)
+                #hexPolygon.addHexToNeighbourhood(gridRows, hexesInThisRow)
                 totalHexes += 1
                 # Add hex to current top row of hex grid
                 gridRows[-1].append(hexPolygon)
@@ -81,9 +87,50 @@ class World():
             #gridRows.append(nextRow)
             row += 1
             hexCentreY += hexRadius * 1.5
+        print("Created all hexagons.")
 
         print("Created a hexGrid with %d rows. Odd rows are length %d and even are %d." % (len(gridRows), len(gridRows[0]), len(gridRows[1])))
         return gridRows
+
+    def getExistingNeighbours(self, gridRows, currentX, currentY):
+        rowIsOdd = currentY%2 == 1
+
+        seNeighbour = None
+        # Identify SE neighbouring hex, if one exists
+        # If hex isn't last in row, or row is odd, then it has a SE neighbour, excluding first row hexes
+        hasSENeighbour = currentX < self.hexesInOddRow or rowIsOdd
+        if currentY == 0:
+            hasSENeighbour = False
+        # Not last column, unless this row is odd (previous row is therefore longer)
+        if hasSENeighbour:
+            x = currentX+1 if rowIsOdd else currentX
+            y = currentY-1
+            #print("SE Neighbour of Hex %s has x,y: (%d, %d)" % ((currentX, currentY), x, y))
+            seNeighbour = gridRows[y][x]
+
+        swNeighbour = None
+        # Identify SW neighbouring hex, if one exists
+        # If hex isn't first in row, or row is odd then has SW neighbour, unless its on the first row
+        hasSWNeighbour = currentX > 0 or rowIsOdd
+        if currentY == 0:
+            hasSWNeighbour = False
+        # Not first column, unless this row is even (previous row is therefore longer)
+        if hasSWNeighbour:
+            x = currentX-1 if not rowIsOdd else currentX
+            y = currentY-1
+            #print("SW Neighbour of Hex %s has x,y: (%d, %d)" % ((currentX, currentY), x, y))
+            swNeighbour = gridRows[y][x]
+
+        wNeighbour = None
+        # Identify W neighbouring hex, if one exists
+        # Not first column...
+        if currentX > 0:
+            x = currentX-1
+            y = currentY
+            #print("W Neighbour of Hex %s has x,y: (%d, %d)" % ((currentX, currentY), x, y))
+            wNeighbour = gridRows[y][x]
+
+        return (seNeighbour, swNeighbour, wNeighbour)
 
     # Examine mask image and tag hexagons as land or water
     def findLandMarkedHexes(self):
@@ -165,9 +212,9 @@ class World():
 
     # Hexagons which are created with points outside of world limits which must have their OOB points shifted to the perimeter
     def clipGridHexagonsToWorldDimensions(self, printOOBChecks=False):
-        print("Screen-clipping hexagons")
+        #print("Screen-clipping hexagons")
         # Loop over boundary hexes, fixing their off-screen points to the screen boundary
-        # Check works on regular hexagon's points rather than jittered points
+        # Border hexes are not jittered, so points will definitely create an off-screen boundary that needs clipping
         widthInterval = [0, self.worldWidth]
         heightInterval = [0, self.worldHeight]
         # Bottom row
@@ -186,6 +233,14 @@ class World():
         if printOOBChecks:
             self.checkForOutOfBounds()
 
+    def addVertsToSpatialGrid(self):
+        for row in self.hexGrid:
+            for nextHex in row:
+                for vertex in nextHex.points:
+                    self.spatialGrid.addVertex(vertex)
+                self.spatialGrid.addVertex(nextHex.centre)
+
+
     # Utility function to optionally run after clipping to be informed of any vertices which continue to be out of bounds
     def checkForOutOfBounds(self):
         hexCount = 0
@@ -200,7 +255,7 @@ class World():
         return False
 
     # Use pyglet GL calls to draw hexagons
-    def drawHexGrid(self, drawHexEdges=True, drawHexFills=True, drawHexCentres=False, drawRegularGrid=False, drawLand=False, drawWater=True):
+    def drawHexGrid(self, drawHexEdges=True, drawHexFills=True, drawHexCentres=False, drawLand=False, drawWater=True):
         if self.hexGrid:
             linePoints = []
             for row in self.hexGrid:
@@ -215,9 +270,6 @@ class World():
                             # Draw hexagon centres
                             #nextHex.drawHexCentrePoint()
                             nextHex.drawHexCentrePoint(True, (0,1,1,1))
-                        # Draw regular hexagon grid
-                        if drawRegularGrid:
-                            nextHex.drawHex(True, True, False, (0.0, 0.0, 1.0, 1.0), True)
                         # Compile points of hexagon into list for batch rendering of gl_lines
                         linePoints.extend(nextHex.getPointCoordinatesList(pointNumber=0))
                         for i in range(len(nextHex.points)):

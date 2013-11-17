@@ -17,7 +17,6 @@ class Vertex():
         # Neighbouring vertices which drain into this vertex
         self.drainedNeighbours = []
         self.minBorderDistance = False
-        spatialGrid.addVertex(self)
 
     def addHexNeighbours(self, hexes):
         for nextHex in hexes:
@@ -84,7 +83,12 @@ class SpatialGrid():
         xIndex = self.getNearestXIndex(vertex.x)
         yIndex = self.getNearestYIndex(vertex.y)
         #print("Adding vertex (%f, %f) to index: %d, %d" % (vertex.x, vertex.y, xIndex, yIndex))
-        self.cells[xIndex][yIndex].append(vertex)
+        alreadyExists = False
+        for nextVertex in self.cells[xIndex][yIndex]:
+            if vertex == nextVertex:
+                alreadyExists = True
+        if not alreadyExists:
+            self.cells[xIndex][yIndex].append(vertex)
 
     def getNearestXIndex(self, x):
         # x below zero defaults xIndex to zero
@@ -106,7 +110,7 @@ class SpatialGrid():
 
     # Finds closest vertex stored in spatial grid through distance comparisons to nearby vertices
     #  Note: Assumes there will be a vertex within the nine-cell-block
-    def findNearestVertex(self, x, y):
+    def findNearestVertex(self, x, y, drawCandidateVertices=False):
         verts = []
         vertCount = 0
         #print("Finding nearest vertex to: %f, %f" % (x, y))
@@ -115,38 +119,41 @@ class SpatialGrid():
         #print("Indices: %d, %d" % (xIndex, yIndex))
         # Compare point to vertices held in this
         closestVertex = None
-        minDist = max(self.width+1, self.height+1)
-        #for xOffset in range(-1,2):
-        for xOffset in range(1):
-            #for yOffset in range(-1,2):
-            for yOffset in range(1):
+        minDist = max(self.width+1, self.height+1)**2
+        for xOffset in range(-1,2):
+        #for xOffset in range(1):
+            for yOffset in range(-1,2):
+            #for yOffset in range(1):
                 xNeighbour = xIndex + xOffset
                 if xNeighbour < 0 or xNeighbour > self.cellsAlongEdge-1:
                     continue
                 yNeighbour = yIndex + yOffset
                 if yNeighbour < 0 or yNeighbour > self.cellsAlongEdge-1:
                     continue
-                print("Neighbours in index: (%d, %d)" % (xNeighbour, yNeighbour))
+                #print("Neighbours in index: (%d, %d)" % (xNeighbour, yNeighbour))
                 v = 0
                 for nextVertex in self.cells[xNeighbour][yNeighbour]:
-                    print(" vertex: %f, %f" % (nextVertex.x, nextVertex.y))
                     dist = (x-nextVertex.x)**2 + (y-nextVertex.y)**2
+                    #print(" vertex: %f, %f (dist %f)" % (nextVertex.x, nextVertex.y, math.sqrt(dist)))
                     # Replace selected point
                     if dist < minDist:
                         closestVertex = nextVertex
+                        minDist = dist
                     verts.extend([nextVertex.x, nextVertex.y])
                     vertCount += 1
                     v+=1
-                print(v)
-        pyglet.gl.glColor4f(0.0, 1.0, 0.2, 0.2)
-        pyglet.graphics.draw(vertCount, pyglet.gl.GL_POINTS,
-            ('v2f', verts)
-        )
+                    #print("Closest vertex: %f, %f" % (closestVertex.x, closestVertex.y))
+                #print("Num candidates considered for nearest: %d" % v)
+        if drawCandidateVertices:
+            pyglet.gl.glColor4f(0.0, 1.0, 0.2, 0.2)
+            pyglet.graphics.draw(vertCount, pyglet.gl.GL_POINTS,
+                ('v2f', verts)
+            )
         return closestVertex
 
     # Draws faint spatial grid to help indicate which cell different vertices fall into
     def drawGridCells(self):
-        pyglet.gl.glColor4f(1.0, 1.0, 1.0, 0.2)
+        pyglet.gl.glColor4f(1.0, 1.0, 1.0, 0.1)
         x = 0.0
         while x < self.maxX:
             pyglet.graphics.draw(2, pyglet.gl.GL_LINES,
@@ -172,6 +179,3 @@ class SpatialGrid():
         pyglet.graphics.draw(vertCount, pyglet.gl.GL_POINTS,
             ('v2f', verts)
         )
-
-
-spatialGrid = SpatialGrid(0, 0, 800, 600, 10)
