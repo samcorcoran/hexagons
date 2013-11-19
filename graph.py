@@ -125,8 +125,10 @@ class SpatialGrid():
         yIndex = self.getNearestYIndex(y)
         #print("Indices: %d, %d" % (xIndex, yIndex))
         # Compare point to vertices held in this
-        closestVertex = None
-        minDist = max(self.width+1, self.height+1)**2
+        closestPerimeterVertex = None
+        closestCentreVertex = None
+        perimeterMinDist = max(self.width+1, self.height+1)**2
+        centreMinDist = max(self.width+1, self.height+1)**2
         for xOffset in range(-1,2):
         #for xOffset in range(1):
             for yOffset in range(-1,2):
@@ -142,21 +144,46 @@ class SpatialGrid():
                 for nextVertex in self.cells[xNeighbour][yNeighbour]:
                     dist = (x-nextVertex.x)**2 + (y-nextVertex.y)**2
                     #print(" vertex: %f, %f (dist %f)" % (nextVertex.x, nextVertex.y, math.sqrt(dist)))
-                    # Replace selected point
-                    if dist < minDist:
-                        closestVertex = nextVertex
-                        minDist = dist
+                    if len(nextVertex.surroundingHexes) > 1:
+                        #print("Found border vertex")
+                        # Replace selected point
+                        if dist < perimeterMinDist:
+                            closestPerimeterVertex = nextVertex
+                            perimeterMinDist = dist
+                    elif len(nextVertex.surroundingHexes) == 1:
+                        #print("Found hex centre vertex")
+                        if dist < centreMinDist:
+                            closestCentreVertex = nextVertex
+                            centreMinDist = dist
+                    else:
+                        print("Vertex was neither perimeter nor centre")
+                        pass
                     verts.extend([nextVertex.x, nextVertex.y])
                     vertCount += 1
                     v+=1
-                    #print("Closest vertex: %f, %f" % (closestVertex.x, closestVertex.y))
+                    #print("Closest vertex: %f, %f" % (closestPerimeterVertex.x, closestPerimeterVertex.y))
                 #print("Num candidates considered for nearest: %d" % v)
         if drawCandidateVertices:
             pyglet.gl.glColor4f(0.0, 1.0, 0.2, 0.2)
             pyglet.graphics.draw(vertCount, pyglet.gl.GL_POINTS,
                 ('v2f', verts)
             )
-        return closestVertex
+        return closestPerimeterVertex, perimeterMinDist, closestCentreVertex, centreMinDist
+
+    def findNearestHexAndVertex(self, x, y):
+        closestVertex = None
+        closestHex = None
+        closestPerimeterVertex, perimeterMinDist, closestCentreVertex, centreMinDist = self.findNearestVertex(x, y)
+
+        if closestCentreVertex and closestCentreVertex.surroundingHexes:
+            closestHex = closestCentreVertex.surroundingHexes.values()[0]
+
+        if perimeterMinDist >= centreMinDist:
+            closestVertex = closestCentreVertex
+        elif centreMinDist > perimeterMinDist:
+            closestVertex = closestPerimeterVertex
+
+        return closestHex, closestVertex
 
     # Draws faint spatial grid to help indicate which cell different vertices fall into
     def drawGridCells(self):

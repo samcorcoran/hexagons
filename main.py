@@ -30,8 +30,8 @@ drawHexagons = True
 drawDrainage = False
 drawRivers = False
 
-drawIslandBorders = False
-drawWatersBorders = False
+drawIslandBorders = True
+drawWatersBorders = True
 drawLandBorderHexes = False
 
 drawWeatherFeatures = False
@@ -58,7 +58,7 @@ def on_draw():
         maskImage.blit(0, 0)
     # Hexagon borders and fillings
     if drawHexagons:
-        newWorld.drawHexGrid(drawHexEdges=True, drawHexFills=True, drawHexCentres=False, drawLand=True, drawWater=False)
+        newWorld.drawHexGrid(drawHexEdges=False, drawHexFills=True, drawHexCentres=False, drawLand=True, drawWater=True)
     # Drainage routes and sink locations
     if drawDrainage:
         newWorld.drawDrainageRoutes(useSimpleRoutes=False)
@@ -88,12 +88,11 @@ def on_draw():
     #newWorld.spatialGrid.drawAllPoints()
     # Draw closest vertex to mouse
     #print("Mouse in draw: %f, %f" % (mouseX, mouseY))
-    closestVertex = newWorld.spatialGrid.findNearestVertex(mouseX, mouseY)
+    closestHex, closestVertex = newWorld.spatialGrid.findNearestHexAndVertex(mouseX, mouseY)
+    if closestHex:
+        closestHex.drawHex(edgeColor=(1.0,0.0,0.0,1.0), pointColor=(0.0,1.0,0.0,1.0))
     if closestVertex:
-        pyglet.gl.glColor4f(1, 1, 1, 1)
-        pyglet.graphics.draw(1, pyglet.gl.GL_POINTS,
-            ('v2f', (closestVertex.x, closestVertex.y))
-        )
+        closestVertex.drawVertex()
 
     # Draw experimental noise texture
     #noiseTexture.blit(0,0)
@@ -104,7 +103,7 @@ def update(deltaTime):
 
 print("Running app")
 # Create world
-hexesInOddRow = 20
+hexesInOddRow = 80
 newWorld = world.World(screenWidth, screenHeight, hexesInOddRow, True, maskImage)
 # Create local noise texture to blit
 noiseTexture = image.Texture.create(screenWidth, screenHeight, GL_RGBA, True)
