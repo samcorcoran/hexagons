@@ -252,8 +252,9 @@ class Hexagon():
             pass
 
     def drawHex(self, fullHex=True, drawEdges=True, drawPoints=False, edgeColor=(1.0,0.0,0.0,1.0), pointColor=(0.0,1.0,0.0,1.0)):
-        pointsList = self.points
-        pointsList = list(chain.from_iterable(pointsList))
+        pointsList = []
+        for point in self.points:
+            pointsList.extend([point.x, point.y])
         numEdges = 6
         if not fullHex:
             numEdges = 4

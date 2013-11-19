@@ -47,6 +47,12 @@ class Vertex():
     def getCoords(self):
         return [self.x, self.y]
 
+    def drawVertex(self, color=(1,1,1,1)):
+        pyglet.gl.glColor4f(*color)
+        pyglet.graphics.draw(1, pyglet.gl.GL_POINTS,
+            ('v2f', (self.x, self.y))
+        )
+
 def idGenerator():
     i = 0
     while True:
