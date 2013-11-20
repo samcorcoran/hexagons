@@ -27,8 +27,8 @@ maskImage = pyglet.resource.image('groundtruth5.bmp')
 # DRAW CONTROLS #
 drawMaskImage = False
 drawHexagons = True
-drawDrainage = True
-drawRivers = False
+drawDrainage = False
+drawRivers = True
 
 drawIslandBorders = True
 drawWatersBorders = True
@@ -65,8 +65,8 @@ def on_draw():
     if drawDrainage:
         newWorld.drawDrainageRoutes(useSimpleRoutes=False, minHexesDrainedAbove=3)
     # Rivers
-    if drawRivers and False:
-        newWorld.drawRivers(useSimpleRoutes=False, minDrainedAbove=9)
+    if drawRivers:
+        newWorld.drawRivers(useSimpleRoutes=False, minDrainedAbove=1, minTotalDrainedAtMouth=10)
     # Land outlines
     if drawIslandBorders:
         newWorld.drawIslandBorders()

@@ -295,9 +295,9 @@ class World():
             drainage.drawDrainageRoute(nextHex, useSimpleRoutes=useSimpleRoutes, minHexesDrainedAbove=minHexesDrainedAbove)
 
     # Use pyglet GL calls to draw drainage routes for each river hex
-    def drawRivers(self, useSimpleRoutes=True, minDrainedAbove=0):
+    def drawRivers(self, useSimpleRoutes=True, minDrainedAbove=0, minTotalDrainedAtMouth=False):
         for nextLand in self.islands:
-            nextLand.drawRivers(useSimpleRoutes, minDrainedAbove)
+            nextLand.drawRivers(useSimpleRoutes, minDrainedAbove, minTotalDrainedAtMouth)
 
     # Draw borders of each distinct land region
     def drawIslandBorders(self):

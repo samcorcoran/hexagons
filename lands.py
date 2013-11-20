@@ -109,9 +109,9 @@ class Land(GeographicZone):
             lastRiverHexLength = len(nextRiver.routeHexes)
         # What remains in riverCandidates are all failed candidates
 
-    def drawRivers(self, useSimpleRoutes=True, minDrainedAbove=0):
+    def drawRivers(self, useSimpleRoutes=True, minDrainedAbove=0, minTotalDrainedAtMouth=False):
         for nextRiver in self.rivers:
-            nextRiver.drawRiver(useSimpleRoutes, minDrainedAbove)
+            nextRiver.drawRiver(useSimpleRoutes, minDrainedAbove, minTotalDrainedAtMouth)
 
     def drawDrainageBasins(self):
         #print("Drawing basins for region %d" % (self.id))
