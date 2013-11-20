@@ -13,7 +13,7 @@ import weather
 import drainage
 
 class World():
-    def __init__(self, worldWidth, worldHeight, hexesInOddRow=10, clipPointsToWorldLimits=True, maskImage=False):
+    def __init__(self, worldWidth, worldHeight, hexesInOddRow=10, clipPointsToWorldLimits=True, maskImage=False, createWeather=False):
         # World dimensions
         self.worldWidth = worldWidth
         self.worldHeight = worldHeight
@@ -45,7 +45,8 @@ class World():
         for water in self.waters:
             water.receiveBordersFromLands(self.islands)
         # Create weather system
-        self.weatherSystem = weather.WeatherSystem(worldWidth, worldHeight)
+        if createWeather:
+            self.weatherSystem = weather.WeatherSystem(worldWidth, worldHeight)
 
     # Build a hex grid, hex by hex, using points of neighbouring generated hexagons where possible
     def createHexGridFromPoints(self, clipPointsToWorldLimits=True):
@@ -287,11 +288,11 @@ class World():
             #print("Finished drawing")
 
     # Use pyglet GL calls to draw drainage routes
-    def drawDrainageRoutes(self, useSimpleRoutes=True):
+    def drawDrainageRoutes(self, useSimpleRoutes=True, minHexesDrainedAbove=False):
         for nextHex in self.landHexes.values():
             #nextHex.drawPerimeterDrainageRoutes()
             #nextHex.drawVertexDrainageRoute()
-            drainage.drawDrainageRoute(nextHex, useSimpleRoutes=useSimpleRoutes)
+            drainage.drawDrainageRoute(nextHex, useSimpleRoutes=useSimpleRoutes, minHexesDrainedAbove=minHexesDrainedAbove)
 
     # Use pyglet GL calls to draw drainage routes for each river hex
     def drawRivers(self, useSimpleRoutes=True, minDrainedAbove=0):

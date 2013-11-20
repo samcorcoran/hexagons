@@ -27,7 +27,7 @@ maskImage = pyglet.resource.image('groundtruth5.bmp')
 # DRAW CONTROLS #
 drawMaskImage = False
 drawHexagons = True
-drawDrainage = False
+drawDrainage = True
 drawRivers = False
 
 drawIslandBorders = True
@@ -36,6 +36,8 @@ drawLandBorderHexes = False
 
 drawWeatherFeatures = False
 drawDrainageBasins = False
+
+createWeather = False
 
 mouseX = 0
 mouseY = 0
@@ -58,18 +60,18 @@ def on_draw():
         maskImage.blit(0, 0)
     # Hexagon borders and fillings
     if drawHexagons:
-        newWorld.drawHexGrid(drawHexEdges=False, drawHexFills=True, drawHexCentres=False, drawLand=True, drawWater=True)
+        newWorld.drawHexGrid(drawHexEdges=False, drawHexFills=True, drawHexCentres=False, drawLand=True, drawWater=False)
     # Drainage routes and sink locations
     if drawDrainage:
-        newWorld.drawDrainageRoutes(useSimpleRoutes=False)
+        newWorld.drawDrainageRoutes(useSimpleRoutes=False, minHexesDrainedAbove=3)
     # Rivers
-    if drawRivers:
-        newWorld.drawRivers(useSimpleRoutes=False, minDrainedAbove=1)
+    if drawRivers and False:
+        newWorld.drawRivers(useSimpleRoutes=False, minDrainedAbove=9)
     # Land outlines
     if drawIslandBorders:
         newWorld.drawIslandBorders()
     # Water outlines (seas, lakes)
-    if drawWatersBorders:
+    if drawWatersBorders and createWeather:
         newWorld.drawWatersBorders()
     # Draw moisture/cloud particles
     if drawWeatherFeatures:
@@ -104,7 +106,7 @@ def update(deltaTime):
 print("Running app")
 # Create world
 hexesInOddRow = 80
-newWorld = world.World(screenWidth, screenHeight, hexesInOddRow, True, maskImage)
+newWorld = world.World(screenWidth, screenHeight, hexesInOddRow, True, maskImage, createWeather)
 # Create local noise texture to blit
 noiseTexture = image.Texture.create(screenWidth, screenHeight, GL_RGBA, True)
 noiseTexData = noiseTexture.get_image_data()
