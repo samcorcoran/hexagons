@@ -3,6 +3,7 @@ from pyglet.gl import *
 from pyglet import image
 import random
 import copy
+import time
 from itertools import chain
 
 import graph
@@ -20,7 +21,7 @@ class Region():
         self.largestVertexBorderDistance = False
 
     def findBorderHexes(self, ringDepth=False):
-        print("Finding all border hexes...")
+        #print("Finding all border hexes...")
         unassignedHexes = copy.copy(self.hexes)
         borderHexes = []
         ringNumber = 0
@@ -44,7 +45,8 @@ class Region():
                 self.borderHexes.append(nextRing)
 
     def findBorderVertices(self, drawBorderVertices=False):
-        print("Finding all border vertices...")
+        t0 = time.clock()
+        #print("Finding all border vertices...")
         if not self.borderHexes:
             # Find the outer ring of region hexes if not already known
             self.findBorderHexes()
@@ -73,9 +75,12 @@ class Region():
                     else:
                         #print("point had no neighbours outside of region")
                         pass
+        t1 = time.clock()
+        print("     - LAND BORDERS finding border vertices: ", t1-t0)
+
 
     def findOrderedBorderVertices(self, drawBorderVertices=True, borderVertexColor=(0.1, 0.5, 0.5, 1)):
-        print("Finding all border vertices and storing them as an ordered sequence...")
+        #print("Finding all border vertices and storing them as an ordered sequence...")
         if not self.borderVertices:
             # Find the outer ring of region hexes if not already known
             self.findBorderVertices()
@@ -157,7 +162,7 @@ class Region():
         return False
 
     def calculateAllClosestBorderVertex(self, drawArrowsToCoast=False):
-        print("Calculating all vertex border distances...")
+        #print("Calculating all vertex border distances...")
         if not self.borderVertices:
             self.findBorderVertices()
         # Search border vertices for closest point

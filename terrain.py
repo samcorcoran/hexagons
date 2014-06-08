@@ -22,7 +22,7 @@ def assignHexMapAltitudes(hexMap):
         #print("Hex %s centre altitude is %f" % (str(nextHex.hexIndex), nextHex.centre.altitude))
 
 def assignRegionVertexAltitudesFromCoast(hexRegion, noiseArray):
-    print("Assigning region vertex altitudes")
+    #print("Assigning region vertex altitudes")
     minimumAltitude = 0.0
     for nextHex in hexRegion.hexes.values():
         #print("Altitudes for hex %s " % (str(nextHex.hexIndex)))
