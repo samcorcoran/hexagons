@@ -162,24 +162,31 @@ class Region():
             return closestVertex, shortestDistance
         return False
 
-    def calculateAllClosestBorderVertex(self, drawArrowsToCoast=False):
+    def calculateAllClosestBorderVertex(self, drawArrowsToCoast=False, useKdTree=True):
         #print("Calculating all vertex border distances...")
         if not self.borderVertices:
             self.findBorderVertices()
 
-        # Create kdtree of border vertices
-        points = []
-        for nextV in self.borderVertices.items():
-            points.append((nextV[1].x,nextV[1].y))
-        tree = spatial.KDTree(points)
+        print("Total border vertices: %d" % (len(self.borderVertices)))
+
+        if useKdTree:
+            # Create kdtree of border vertices
+            points = []
+            for nextV in self.borderVertices.items():
+                points.append((nextV[1].x,nextV[1].y))
+            tree = spatial.KDTree(points)
 
         # Search border vertices for closest point
         for nextHex in self.hexes.values():
             for nextPoint in nextHex.points:
                 # Store point's distance to border in dict with point coordinates as key
-                ##closestBorderVertex, distance = self.findClosestBorderVertex(nextPoint)
-                distance, closestVertexId = tree.query([nextPoint.x, nextPoint.y], k=1)
-                closestBorderVertex = self.borderVertices.items()[closestVertexId][1]
+                closestBorderVertex = None
+                distance = None
+                if useKdTree:
+                    distance, closestVertexId = tree.query([nextPoint.x, nextPoint.y], k=1)
+                    closestBorderVertex = self.borderVertices.items()[closestVertexId][1]
+                else:
+                    closestBorderVertex, distance = self.findClosestBorderVertex(nextPoint)
                 # Draw diagnostic arrows from region points to nearest coastal points if required
                 if drawArrowsToCoast:
                     drawUtils.drawArrow([nextPoint.x, nextPoint.y], [closestBorderVertex.x, closestBorderVertex.y], (0,1,0,1))
