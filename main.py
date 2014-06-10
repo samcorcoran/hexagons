@@ -106,7 +106,10 @@ def update(deltaTime):
 print("Running app")
 # Create world
 hexesInOddRow = 80
+t0 = time.clock()
 newWorld = world.World(screenWidth, screenHeight, hexesInOddRow, True, maskImage, createWeather)
+t1 = time.clock()
+print("Total world gen time: ", t1-t0)
 # Create local noise texture to blit
 noiseTexture = image.Texture.create(screenWidth, screenHeight, GL_RGBA, True)
 noiseTexData = noiseTexture.get_image_data()

@@ -22,6 +22,7 @@ class GeographicZone():
         self.region.findBorderHexes()
         t1 = time.clock()
         print("     - LAND BORDERS finding border hexes: ", t1-t0)
+        print("     - Total border hexes: %d" % (len(self.region.borderHexes)))
         t0 = time.clock()
         self.region.calculateAllClosestBorderVertex()
         t1 = time.clock()

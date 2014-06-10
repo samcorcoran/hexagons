@@ -5,6 +5,7 @@ import random
 import copy
 import time
 from itertools import chain
+import scipy.spatial as spatial
 
 import graph
 import drawUtils
@@ -165,11 +166,20 @@ class Region():
         #print("Calculating all vertex border distances...")
         if not self.borderVertices:
             self.findBorderVertices()
+
+        # Create kdtree of border vertices
+        points = []
+        for nextV in self.borderVertices.items():
+            points.append((nextV[1].x,nextV[1].y))
+        tree = spatial.KDTree(points)
+
         # Search border vertices for closest point
         for nextHex in self.hexes.values():
             for nextPoint in nextHex.points:
                 # Store point's distance to border in dict with point coordinates as key
-                closestBorderVertex, distance = self.findClosestBorderVertex(nextPoint)
+                ##closestBorderVertex, distance = self.findClosestBorderVertex(nextPoint)
+                distance, closestVertexId = tree.query([nextPoint.x, nextPoint.y], k=1)
+                closestBorderVertex = self.borderVertices.items()[closestVertexId][1]
                 # Draw diagnostic arrows from region points to nearest coastal points if required
                 if drawArrowsToCoast:
                     drawUtils.drawArrow([nextPoint.x, nextPoint.y], [closestBorderVertex.x, closestBorderVertex.y], (0,1,0,1))
