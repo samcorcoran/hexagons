@@ -22,7 +22,7 @@ window = pyglet.window.Window()
 screenWidth = 800
 screenHeight = 600
 window.set_size(screenWidth, screenHeight)
-maskImage = pyglet.resource.image('groundtruth5.bmp')
+maskImage = pyglet.resource.image('similarAreas.bmp')
 
 # DRAW CONTROLS #
 drawMaskImage = False

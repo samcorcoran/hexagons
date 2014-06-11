@@ -167,34 +167,56 @@ class Region():
         if not self.borderVertices:
             self.findBorderVertices()
 
-        print("Total border vertices: %d" % (len(self.borderVertices)))
+        #useKdTree = len(self.borderVertices) > 300
 
+        firstBorderVertex = self.borderVertices.items()[0][1]
+        print(firstBorderVertex.x, firstBorderVertex.y)
+        if firstBorderVertex.y > 280:
+            if firstBorderVertex.x > 330:
+                if firstBorderVertex.x > 530:
+                    print("SHAPE C")
+                else:
+                    print("SHAPE B")
+            else:
+                print("SHAPE A")
+        else:
+            print("SHAPE D")
         if useKdTree:
+            t0 = time.clock()
             # Create kdtree of border vertices
             points = []
             for nextV in self.borderVertices.items():
                 points.append((nextV[1].x,nextV[1].y))
             tree = spatial.KDTree(points)
+            t1 = time.clock()
+            print("KdTree construction of %d points took %f" % (len(points), t1-t0))
 
+        t0 = time.clock()
+        pointCount = 0
         # Search border vertices for closest point
         for nextHex in self.hexes.values():
             for nextPoint in nextHex.points:
-                # Store point's distance to border in dict with point coordinates as key
-                closestBorderVertex = None
-                distance = None
-                if useKdTree:
-                    distance, closestVertexId = tree.query([nextPoint.x, nextPoint.y], k=1)
-                    closestBorderVertex = self.borderVertices.items()[closestVertexId][1]
-                else:
-                    closestBorderVertex, distance = self.findClosestBorderVertex(nextPoint)
-                # Draw diagnostic arrows from region points to nearest coastal points if required
-                if drawArrowsToCoast:
-                    drawUtils.drawArrow([nextPoint.x, nextPoint.y], [closestBorderVertex.x, closestBorderVertex.y], (0,1,0,1))
-                # Keep track of longest distance, for possible normalisation purposes
-                if distance > self.largestVertexBorderDistance:
-                    self.largestVertexBorderDistance = distance
-                # Register point's distance to border
-                self.closestBorderVertex[ nextPoint.id ] = closestBorderVertex
+                if nextPoint.id not in self.closestBorderVertex.keys():
+                    pointCount += 1
+                    # Store point's distance to border in dict with point coordinates as key
+                    closestBorderVertex = None
+                    distance = None
+                    if useKdTree:
+                        distance, closestVertexId = tree.query([nextPoint.x, nextPoint.y], k=1)
+                        closestBorderVertex = self.borderVertices.items()[closestVertexId][1]
+                    else:
+                        closestBorderVertex, distance = self.findClosestBorderVertex(nextPoint)
+                    # Draw diagnostic arrows from region points to nearest coastal points if required
+                    if drawArrowsToCoast:
+                        drawUtils.drawArrow([nextPoint.x, nextPoint.y], [closestBorderVertex.x, closestBorderVertex.y], (0,1,0,1))
+                    # Keep track of longest distance, for possible normalisation purposes
+                    if distance > self.largestVertexBorderDistance:
+                        self.largestVertexBorderDistance = distance
+                    # Register point's distance to border
+                    self.closestBorderVertex[ nextPoint.id ] = closestBorderVertex
+        t1 = time.clock()
+        print("Time spent finding closest border verts: %f" % (t1-t0))
+        print("Total border vertices: %d, total vertices: %d, total hexes: %d" % (len(self.borderVertices), pointCount, len(self.hexes.values())))
 
     def doesPointBorderRegion(self, v0):
         # Internal neighbour is a hex in this region, assumed not to exist
