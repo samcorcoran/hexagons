@@ -17,6 +17,7 @@ import terrain
 import regions
 import lands
 import world
+import time
 
 window = pyglet.window.Window()
 screenWidth = 800
