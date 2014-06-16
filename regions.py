@@ -181,13 +181,15 @@ class Region():
                 print("SHAPE A")
         else:
             print("SHAPE D")
+
+        tree = None
         if useKdTree:
             t0 = time.clock()
             # Create kdtree of border vertices
             points = []
             for nextV in self.borderVertices.items():
                 points.append((nextV[1].x,nextV[1].y))
-            tree = spatial.KDTree(points)
+            tree = spatial.cKDTree(points)
             t1 = time.clock()
             print("KdTree construction of %d points took %f" % (len(points), t1-t0))
 
