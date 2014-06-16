@@ -44,3 +44,11 @@ def drawSquare(v0, width, color, blend=False):
             v0[0]-width/2, v0[1]+width/2
             ])
     )
+
+def drawRivers(verts, arrowHeads=False):
+    if len(verts) > 0:
+        pyglet.gl.glColor4f(0.0, 0.1, 1.0, 1.0)
+        numVerts = len(verts)/2
+        pyglet.graphics.draw(numVerts, pyglet.gl.GL_LINES,
+            ('v2f', verts)
+        )

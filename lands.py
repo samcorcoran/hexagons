@@ -139,8 +139,13 @@ class Land(GeographicZone):
             lastRiverHexLength = len(nextRiver.routeHexes)
         # What remains in riverCandidates are all failed candidates
 
-    def drawRivers(self, useSimpleRoutes=True, minDrainedAbove=0, minTotalDrainedAtMouth=False):
+    def getRiverPoints(self, riverPoints, minDrainedAbove=0, minTotalDrainedAtMouth=False):
         for nextRiver in self.rivers:
+            nextRiver.getRiverPoints(riverPoints, minDrainedAbove, minTotalDrainedAtMouth)
+
+    def drawRivers(self, riverPoints, useSimpleRoutes=True, minDrainedAbove=0, minTotalDrainedAtMouth=False):
+        for nextRiver in self.rivers:
+            nextRiver.getRiverPoints(riverPoints, useSimpleRoutes, minDrainedAbove, minTotalDrainedAtMouth)
             nextRiver.drawRiver(useSimpleRoutes, minDrainedAbove, minTotalDrainedAtMouth)
 
     def drawDrainageBasins(self):

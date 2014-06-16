@@ -19,7 +19,7 @@ class DrainageBasin():
     def drawDrainageBasin(self):
         #print("Drawing hexes for basin %d" % (self.id))
         for nextHex in self.hexes:
-            nextHex.drawFilledHex(self.basinColor, False, False)
+            nextHex.drawFilledHex(self.basinColor, False)
 
 class River():
     def __init__(self, terminatingHex):
@@ -38,6 +38,12 @@ class River():
         else:
             # Drains from no other hexes
             self.sourceHexes.add(currentHex)
+
+    def getRiverPoints(self, riverPoints, minDrainedAbove=0, minTotalDrainedAtMouth=False):
+        if len(self.terminatingHex.hexesDrainedAbove) > minTotalDrainedAtMouth:
+            for nextHex in self.routeHexes:
+                if len(nextHex.hexesDrainedAbove) >= minDrainedAbove:
+                    getDrainageRoutePoints(riverPoints, nextHex, minDrainedAbove)
 
     def drawRiver(self, useSimpleRoutes=True, minDrainedAbove=0, minTotalDrainedAtMouth=False):
         if len(self.terminatingHex.hexesDrainedAbove) > minTotalDrainedAtMouth:
@@ -84,6 +90,18 @@ def findHexesDrainedAbove(hexagon):
         for nextHex in hexagon.drainedNeighbours:
             hexagon.hexesDrainedAbove.extend(findHexesDrainedAbove(nextHex))
     return [hexagon] + hexagon.hexesDrainedAbove
+
+def getDrainageRoutePoints(riverPoints, hexagon, minHexesDrainedAbove):
+    if not hexagon.drainingNeighbour:
+        # Calculate drainage neighbour if not already known
+        findDrainingNeighbour(hexagon)
+    if len(hexagon.hexesDrainedAbove) > minHexesDrainedAbove:
+        # Drainage to lowest point in current hex
+        riverPoints.extend(hexagon.getCentreCoordinates())
+        riverPoints.extend(hexagon.lowestPoint.getCoords())
+        # Drainage into draining hex
+        riverPoints.extend(hexagon.lowestPoint.getCoords())
+        riverPoints.extend(hexagon.drainingNeighbour.getCentreCoordinates())
 
 def drawDrainageRoute(hexagon, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), drawMouthsAsSinks=False, useSimpleRoutes=True, minHexesDrainedAbove=False):
     if not hexagon.drainingNeighbour:
