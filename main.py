@@ -52,22 +52,25 @@ class GameWindow(pyglet.window.Window):
     def on_draw(self):
         global gridChanged
         global hexGrid
-        window.clear()
+        self.clear()
+        # Render GUI
+        kytten.KyttenRenderGUI()
+
         # Mask image for determining land shapes
-        if drawMaskImage:
+        if kytten.GetObjectfromName("cb_drawMask").get_value():
             pyglet.gl.glColor4f(1,1,1,1)
             maskImage.blit(0, 0)
         # Hexagon borders and fillings
-        if drawHexagons:
+        if kytten.GetObjectfromName("cb_drawHexagons").get_value():
             newWorld.drawHexGrid(drawHexEdges=False, drawHexFills=True, drawHexCentres=False, drawLand=True, drawWater=False)
         # Drainage routes and sink locations
-        if drawDrainage:
+        if kytten.GetObjectfromName("cb_drawDrainage").get_value():
             newWorld.drawDrainageRoutes(useSimpleRoutes=False, minHexesDrainedAbove=3)
         # Rivers
-        if drawRivers:
+        if kytten.GetObjectfromName("cb_drawRivers").get_value():
             newWorld.drawRivers(useSimpleRoutes=False, minDrainedAbove=1, minTotalDrainedAtMouth=10)
         # Land outlines
-        if drawIslandBorders:
+        if kytten.GetObjectfromName("cb_drawIslandBorders").get_value():
             newWorld.drawIslandBorders()
         # Water outlines (seas, lakes)
         if drawWatersBorders and createWeather:
@@ -106,13 +109,40 @@ if __name__ == '__main__':
     print("Running app")
     screenWidth = 800
     screenHeight = 600
-    window = GameWindow(screenWidth, screenHeight, caption="Hexagons", resizable=True, vsync=False)
+    uiPanelWidth = 224
+    window = GameWindow(screenWidth+uiPanelWidth, screenHeight, caption="Hexagons", resizable=True, vsync=False)
     # Initialize GUI library
     kytten.SetWindow(window)
 
+    # GUI Theme
+    Theme = kytten.Theme('C:/Programming/Kytten/KyttenParashurama/theme', override={
+        "gui_color": [200, 200, 200, 255],
+        "text_color": [0,100,255,255],
+        "font_size": 10
+    })
+
+    # UI Panel
+    dialog = kytten.Dialog(
+        kytten.TitleFrame('Terrain Controls',
+            kytten.VerticalLayout([
+                kytten.Label("Draw controls:"),
+                kytten.VerticalLayout([
+                    kytten.Checkbox(name="cb_drawHexagons", text="Draw Hexagons"),
+                    kytten.Checkbox(name="cb_drawRivers", text="Draw Rivers"),
+                    kytten.Checkbox(name="cb_drawDrainage", text="Draw Drainage"),
+                    kytten.Checkbox(name="cb_drawIslandBorders", text="Draw Island Borders"),
+                    kytten.Checkbox(name="cb_drawMask", text="Draw Mask"),
+                ], align=kytten.ANCHOR_LEFT),
+            ], minwidth=192, minheight=550),
+        ),
+        window=window, batch=kytten.KyttenManager, group=kytten.KyttenManager.foregroup,
+        anchor=kytten.ANCHOR_TOP_RIGHT,
+        theme=Theme,
+        movable=False)
+
     # Create world
     maskImage = pyglet.resource.image('groundtruth5.jpg')
-    hexesInOddRow = 80
+    hexesInOddRow = 40
     t0 = time.clock()
     newWorld = world.World(screenWidth, screenHeight, hexesInOddRow, True, maskImage, createWeather)
     t1 = time.clock()
