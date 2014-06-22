@@ -299,7 +299,7 @@ class World():
             for land in self.islands:
                 for landHex in land.region.hexes.values():
                     if drawHexEdges:
-                        hexEdgeVerts.extend(landHex.getPerimeterCoordinatesList())
+                        hexEdgeVerts.extend(landHex.getPerimeterEdgeVerts())
                     if drawHexCentres:
                         hexCentreVerts.extend(landHex.getCentreCoordinates())
                     if drawHexFills:

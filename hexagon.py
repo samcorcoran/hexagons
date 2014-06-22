@@ -156,6 +156,10 @@ class Hexagon():
     def getPerimeterCoordinatesList(self):
         return list(chain.from_iterable( [(self.points[n].x, self.points[n].y) for n in range(len(self.points))]))
 
+    # Lists perimeter verts with duplicates to facilitate line drawing
+    def getPerimeterEdgeVerts(self):
+        return list(chain.from_iterable( [(self.points[n].x, self.points[n].y, self.points[n-1].x, self.points[n-1].y) for n in range(len(self.points))]))
+
     def getCentreCoordinates(self):
         return [self.centre.x, self.centre.y]
 
