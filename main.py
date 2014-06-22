@@ -138,8 +138,14 @@ if __name__ == '__main__':
                 kytten.VerticalLayout([
                     kytten.FoldingSection("Hexagon Drawing",
                         kytten.VerticalLayout([
-                            kytten.Checkbox(name="cb_drawHexagons", text="Draw Hexagons"),
-                            kytten.Checkbox(name="cb_drawHexFills", text="Draw Fills"),
+                            kytten.Checkbox(name="cb_drawHexagons",
+                                            text="Draw Hexagons",
+                                            is_checked=True
+                            ),
+                            kytten.Checkbox(name="cb_drawHexFills",
+                                            text="Draw Fills",
+                                            is_checked=True
+                            ),
                             kytten.Checkbox(name="cb_drawHexCentres", text="Draw Centres"),
                             kytten.Checkbox(name="cb_drawHexEdges", text="Draw Edges"),
                         ], align=kytten.ANCHOR_LEFT)
@@ -150,9 +156,15 @@ if __name__ == '__main__':
                             kytten.Checkbox(name="cb_drawDrainage", text="Draw Drainage"),
                         ], align=kytten.ANCHOR_LEFT)
                     ),
-                    kytten.Checkbox(name="cb_drawLand", text="Draw Land Hexes"),
+                    kytten.Checkbox(name="cb_drawLand",
+                                    text="Draw Land Hexes",
+                                    is_checked=True
+                    ),
                     kytten.Checkbox(name="cb_drawWater", text="Draw Water Hexes"),
-                    kytten.Checkbox(name="cb_drawIslandBorders", text="Draw Island Borders"),
+                    kytten.Checkbox(name="cb_drawIslandBorders",
+                                    text="Draw Island Borders",
+                                    is_checked=True
+                    ),
                     kytten.Checkbox(name="cb_drawMask", text="Draw Mask"),
                     kytten.Checkbox(name="cb_displayFPS", text="Show FPS"),
                 ], align=kytten.ANCHOR_LEFT),
