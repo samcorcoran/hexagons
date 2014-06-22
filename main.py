@@ -53,6 +53,7 @@ class GameWindow(pyglet.window.Window):
         global gridChanged
         global hexGrid
         self.clear()
+        print(pyglet.clock.get_fps())
         # Render GUI
         kytten.KyttenRenderGUI()
 
