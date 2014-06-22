@@ -306,7 +306,7 @@ class Hexagon():
             )       
 
     def drawHexCentrePoint(self, pointColor=(1.0,0.0,1.0,1.0)):
-        point = self.centre
+        point = [self.centre.x, self.centre.y]
         pyglet.gl.glColor4f(*pointColor)
         pyglet.graphics.draw(1, pyglet.gl.GL_POINTS,
             ('v2f', point)

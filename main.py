@@ -63,7 +63,7 @@ class GameWindow(pyglet.window.Window):
             maskImage.blit(0, 0)
         # Hexagon borders and fillings
         if kytten.GetObjectfromName("cb_drawHexagons").get_value():
-            newWorld.drawHexGrid(drawHexEdges=False, drawHexFills=True, drawHexCentres=False, drawLand=True, drawWater=False)
+            newWorld.drawHexGrid(drawHexEdges=False, drawHexFills=True, drawHexCentres=True, drawLand=True, drawWater=False)
         # Drainage routes and sink locations
         if kytten.GetObjectfromName("cb_drawDrainage").get_value():
             newWorld.drawDrainageRoutes(useSimpleRoutes=False, minHexesDrainedAbove=3)

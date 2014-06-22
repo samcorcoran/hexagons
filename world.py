@@ -301,7 +301,7 @@ class World():
                         if drawHexCentres:
                             # Draw hexagon centres
                             #nextHex.drawHexCentrePoint()
-                            nextHex.drawHexCentrePoint(True, (0,1,1,1))
+                            nextHex.drawHexCentrePoint((0,1,1,1))
                         # Compile points of hexagon into list for batch rendering of gl_lines
                         linePoints.extend(nextHex.getPointCoordinatesList(pointNumber=0))
                         for i in range(len(nextHex.points)):
