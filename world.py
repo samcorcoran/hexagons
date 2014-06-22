@@ -288,35 +288,28 @@ class World():
 
     # Use pyglet GL calls to draw hexagons
     def drawHexGrid(self, drawHexEdges=True, drawHexFills=True, drawHexCentres=False, drawLand=False, drawWater=True):
+        if drawLand:
+            self.drawLandHexes(drawHexEdges, drawHexFills, drawHexCentres)
+
+    def drawLandHexes(self, drawHexEdges=True, drawHexFills=True, drawHexCentres=False):
+        hexEdgeVerts = []
+        hexCentreVerts = []
+        hexTriangleVerts = []
         if self.hexGrid:
-            linePoints = []
-            for row in self.hexGrid:
-                for nextHex in row:
-                    if drawLand and nextHex.land or drawWater and nextHex.water:
-                        if drawHexFills:
-                            # Draw hexagon fill
-                            nextHex.drawFilledHex()
-                        # Draw hexagon edges and/or points
-                        #nextHex.drawHex()
-                        if drawHexCentres:
-                            # Draw hexagon centres
-                            #nextHex.drawHexCentrePoint()
-                            nextHex.drawHexCentrePoint((0,1,1,1))
-                        # Compile points of hexagon into list for batch rendering of gl_lines
-                        linePoints.extend(nextHex.getPointCoordinatesList(pointNumber=0))
-                        for i in range(len(nextHex.points)):
-                            # Enter each point twice, for the two consecutive lines
-                            nextCoordinates = nextHex.getPointCoordinatesList(pointNumber=i)
-                            linePoints.extend(nextCoordinates + nextCoordinates)
-                        # Last point is first point, completing the loop
-                        linePoints.extend(nextHex.getPointCoordinatesList(pointNumber=0))
-            #print("linePoints length: " + str(len(linePoints)))
-            if drawHexEdges:
-                pyglet.gl.glColor4f(0.0,0.0,1.0,1.0)
-                pyglet.graphics.draw(int(len(linePoints)/2), pyglet.gl.GL_LINES,
-                    ('v2f', linePoints)
-                )
-            #print("Finished drawing")
+            for land in self.islands:
+                for landHex in land.region.hexes.values():
+                    if drawHexEdges:
+                        hexEdgeVerts.extend(landHex.getPerimeterCoordinatesList())
+                    if drawHexCentres:
+                        hexCentreVerts.extend(landHex.getCentreCoordinates())
+                    if drawHexFills:
+                        landHex.getTriangleVertsList(hexTriangleVerts)
+        if drawHexFills:
+            drawUtils.drawHexagonBatch(hexTriangleVerts)
+        if drawHexCentres:
+            drawUtils.drawPointBatch(hexCentreVerts)
+        if drawHexEdges:
+            drawUtils.drawLineBatch(hexEdgeVerts)
 
     # Use pyglet GL calls to draw drainage routes
     def drawDrainageRoutes(self, useSimpleRoutes=True, minHexesDrainedAbove=False):
@@ -350,9 +343,5 @@ class World():
         for island in self.islands:
             island.getGeographicZoneBorderHexTrianglePoints(points)
         # Draw points as a batch
-        pyglet.gl.glColor4f(1.0, 1.0, 0.2, 0.2)
-        pyglet.graphics.draw(len(points)/2, pyglet.gl.GL_TRIANGLES,
-            ('v2f', points)
-        )
-
+        drawUtils.drawHexagonBatch(points)
 

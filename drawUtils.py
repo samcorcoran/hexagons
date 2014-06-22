@@ -2,6 +2,7 @@ import pyglet
 from pyglet.gl import *
 
 import math
+import random
 
 def drawArrow(v0, v1, color):
     pyglet.gl.glColor4f(*color)
@@ -52,3 +53,25 @@ def drawRivers(verts, arrowHeads=False):
         pyglet.graphics.draw(numVerts, pyglet.gl.GL_LINES,
             ('v2f', verts)
         )
+
+def drawHexagonBatch(verts):
+    glEnable(GL_BLEND)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+    pyglet.gl.glColor4f(random.random(), random.random(), random.random(), 0.3)
+    pyglet.graphics.draw(len(verts)/2, pyglet.gl.GL_TRIANGLES,
+        ('v2f', verts)
+    )
+
+def drawPointBatch(verts):
+    pyglet.gl.glColor4f(random.random(), random.random(), random.random(), 0.3)
+    pyglet.graphics.draw(len(verts)/2, pyglet.gl.GL_POINTS,
+        ('v2f', verts)
+    )
+
+def drawLineBatch(verts):
+    pyglet.gl.glColor4f(random.random(), random.random(), random.random(), 0.3)
+    pyglet.graphics.draw(len(verts)/2, pyglet.gl.GL_LINES,
+        ('v2f', verts)
+    )
+
+
