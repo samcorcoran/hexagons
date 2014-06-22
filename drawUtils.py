@@ -62,10 +62,13 @@ def drawHexagonBatch(verts):
         ('v2f', verts)
     )
 
-def drawPointBatch(verts):
-    pyglet.gl.glColor4f(random.random(), random.random(), random.random(), 0.3)
-    pyglet.graphics.draw(len(verts)/2, pyglet.gl.GL_POINTS,
-        ('v2f', verts)
+def drawPointBatch(verts, colours = []):
+    numVerts = len(verts)/2
+    if len(colours) == 0:
+        colours = [255,255,255,255]*numVerts
+    pyglet.graphics.draw(numVerts, pyglet.gl.GL_POINTS,
+        ('v2f', verts),
+        ('c4B', colours)
     )
 
 def drawLineBatch(verts):
