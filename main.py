@@ -53,7 +53,9 @@ class GameWindow(pyglet.window.Window):
         global gridChanged
         global hexGrid
         self.clear()
-        print(pyglet.clock.get_fps())
+        # Display FPS on screen
+        if kytten.GetObjectfromName("cb_displayFPS").get_value():
+            fps_display.draw()
         # Render GUI
         kytten.KyttenRenderGUI()
 
@@ -111,6 +113,8 @@ if __name__ == '__main__':
     screenHeight = 600
     uiPanelWidth = 224
     window = GameWindow(screenWidth+uiPanelWidth, screenHeight, caption="Hexagons", resizable=True, vsync=False)
+    # Pyglet FPS Overlay
+    fps_display = pyglet.clock.ClockDisplay()
     # Initialize GUI library
     kytten.SetWindow(window)
 
@@ -132,6 +136,7 @@ if __name__ == '__main__':
                     kytten.Checkbox(name="cb_drawDrainage", text="Draw Drainage"),
                     kytten.Checkbox(name="cb_drawIslandBorders", text="Draw Island Borders"),
                     kytten.Checkbox(name="cb_drawMask", text="Draw Mask"),
+                    kytten.Checkbox(name="cb_displayFPS", text="Show FPS"),
                 ], align=kytten.ANCHOR_LEFT),
             ], minwidth=192, minheight=550),
         ),
