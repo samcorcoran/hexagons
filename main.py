@@ -65,7 +65,12 @@ class GameWindow(pyglet.window.Window):
             maskImage.blit(0, 0)
         # Hexagon borders and fillings
         if kytten.GetObjectfromName("cb_drawHexagons").get_value():
-            newWorld.drawHexGrid(drawHexEdges=False, drawHexFills=True, drawHexCentres=True, drawLand=True, drawWater=False)
+            newWorld.drawHexGrid(drawHexEdges=kytten.GetObjectfromName("cb_drawHexEdges").get_value(),
+                                 drawHexFills=kytten.GetObjectfromName("cb_drawHexFills").get_value(),
+                                 drawHexCentres=kytten.GetObjectfromName("cb_drawHexCentres").get_value(),
+                                 drawLand=kytten.GetObjectfromName("cb_drawLand").get_value(),
+                                 drawWater=kytten.GetObjectfromName("cb_drawWater").get_value())
+
         # Drainage routes and sink locations
         if kytten.GetObjectfromName("cb_drawDrainage").get_value():
             newWorld.drawDrainageRoutes(useSimpleRoutes=False, minHexesDrainedAbove=3)
@@ -131,9 +136,22 @@ if __name__ == '__main__':
             kytten.VerticalLayout([
                 kytten.Label("Draw controls:"),
                 kytten.VerticalLayout([
-                    kytten.Checkbox(name="cb_drawHexagons", text="Draw Hexagons"),
-                    kytten.Checkbox(name="cb_drawRivers", text="Draw Rivers"),
-                    kytten.Checkbox(name="cb_drawDrainage", text="Draw Drainage"),
+                    kytten.FoldingSection("Hexagon Drawing",
+                        kytten.VerticalLayout([
+                            kytten.Checkbox(name="cb_drawHexagons", text="Draw Hexagons"),
+                            kytten.Checkbox(name="cb_drawHexFills", text="Draw Fills"),
+                            kytten.Checkbox(name="cb_drawHexCentres", text="Draw Centres"),
+                            kytten.Checkbox(name="cb_drawHexEdges", text="Draw Edges"),
+                        ], align=kytten.ANCHOR_LEFT)
+                    ),
+                    kytten.FoldingSection("River Drawing",
+                        kytten.VerticalLayout([
+                            kytten.Checkbox(name="cb_drawRivers", text="Draw Rivers"),
+                            kytten.Checkbox(name="cb_drawDrainage", text="Draw Drainage"),
+                        ], align=kytten.ANCHOR_LEFT)
+                    ),
+                    kytten.Checkbox(name="cb_drawLand", text="Draw Land Hexes"),
+                    kytten.Checkbox(name="cb_drawWater", text="Draw Water Hexes"),
                     kytten.Checkbox(name="cb_drawIslandBorders", text="Draw Island Borders"),
                     kytten.Checkbox(name="cb_drawMask", text="Draw Mask"),
                     kytten.Checkbox(name="cb_displayFPS", text="Show FPS"),
