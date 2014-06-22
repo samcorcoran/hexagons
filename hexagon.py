@@ -145,6 +145,14 @@ class Hexagon():
             return [self.points[pointNumber].x, self.points[pointNumber].y]
         return False
 
+    def getTriangleVertsList(self, verts):
+        centreX = self.centre.x
+        centreY = self.centre.y
+        for n in range(len(self.points)):
+            verts.extend([self.points[n].x, self.points[n].y,
+                         self.points[n-1].x, self.points[n-1].y,
+                         centreX, centreY])
+
     def getPerimeterCoordinatesList(self):
         return list(chain.from_iterable( [(self.points[n].x, self.points[n].y) for n in range(len(self.points))]))
 

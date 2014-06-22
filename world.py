@@ -343,3 +343,16 @@ class World():
     def drawWatersBorders(self):
         for water in self.waters:
             water.drawGeographicZoneBorders()
+
+    def drawGeographicZoneBorderHexes(self):
+        points = []
+        # Accumulate hex vert coordinates
+        for island in self.islands:
+            island.getGeographicZoneBorderHexTrianglePoints(points)
+        # Draw points as a batch
+        pyglet.gl.glColor4f(1.0, 1.0, 0.2, 0.2)
+        pyglet.graphics.draw(len(points)/2, pyglet.gl.GL_TRIANGLES,
+            ('v2f', points)
+        )
+
+

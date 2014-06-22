@@ -81,8 +81,7 @@ class GameWindow(pyglet.window.Window):
             newWorld.weatherSystem.drawMoistureParticles()
 
         if drawLandBorderHexes:
-            for island in newWorld.islands:
-                island.drawGeographicZoneBorderHexes()
+            newWorld.drawGeographicZoneBorderHexes()
 
         if drawDrainageBasins:
             for island in newWorld.islands:

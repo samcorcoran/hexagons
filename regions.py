@@ -241,13 +241,17 @@ class Region():
         #print("Drawing region border...")
         # Convert vertices into list of coordinates
         for borderList in self.orderedBorderVertices:
-            pointsList = [x.getCoords() for x in borderList]
+            pointsList = [v.getCoords() for v in borderList]
             pointsList = list(chain.from_iterable(pointsList))
             # Draw line loop
             pyglet.gl.glColor4f(*borderColor)
             pyglet.graphics.draw(len(borderList), pyglet.gl.GL_LINE_LOOP,
                 ('v2f', pointsList)
             )
+
+    def getRegionBorderHexTrianglePoints(self, points):
+        for borderHex in self.borderHexes[0].values():
+            borderHex.getTriangleVertsList(points)
 
     def drawBorderHexes(self):
         for borderHex in self.borderHexes[0].values():
