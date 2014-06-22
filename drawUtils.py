@@ -54,12 +54,16 @@ def drawRivers(verts, arrowHeads=False):
             ('v2f', verts)
         )
 
-def drawHexagonBatch(verts):
+def drawHexagonBatch(verts, colours = []):
+    numVerts = len(verts)/2
+    if len(colours) == 0:
+        colours = [100,200,100,100]*numVerts
     glEnable(GL_BLEND)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     pyglet.gl.glColor4f(random.random(), random.random(), random.random(), 0.3)
-    pyglet.graphics.draw(len(verts)/2, pyglet.gl.GL_TRIANGLES,
-        ('v2f', verts)
+    pyglet.graphics.draw(numVerts, pyglet.gl.GL_TRIANGLES,
+        ('v2f', verts),
+        ('c4B', colours)
     )
 
 def drawPointBatch(verts, colours = []):
