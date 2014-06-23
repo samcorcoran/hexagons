@@ -3,6 +3,7 @@ import random
 import copy
 import pyglet
 import time
+from itertools import chain
 
 import hexagon
 import graph
