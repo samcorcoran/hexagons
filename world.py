@@ -16,6 +16,9 @@ import drainage
 
 class World():
     def __init__(self, worldWidth, worldHeight, hexesInOddRow=10, clipPointsToWorldLimits=True, maskImage=False, createWeather=False):
+        self.hexEdge_vertex_list = None
+        self.hexCentre_vertex_list = None
+        self.hexFills_vertex_list = None
         # World dimensions
         self.worldWidth = worldWidth
         self.worldHeight = worldHeight
@@ -299,21 +302,48 @@ class World():
         hexCentreColours = []
         hexTriangleVerts = []
         hexFillColours = []
-        if self.hexGrid:
+        if not self.hexCentre_vertex_list or not self.hexEdge_vertex_list or not self.hexFills_vertex_list:
             for land in self.islands:
                 for landHex in land.region.hexes.values():
-                    if drawHexEdges:
+                    # Populate hex edge vert and colour lists
+                    if drawHexEdges and not self.hexEdge_vertex_list:
                         landHex.getPerimeterEdgeVerts(hexEdgeVerts, hexEdgeColours)
-                    if drawHexCentres:
+                    # Populate hex centres vert and colour lists
+                    if drawHexCentres and not self.hexCentre_vertex_list:
                         landHex.getCentreCoordinatesVerts(hexCentreVerts, hexCentreColours)
-                    if drawHexFills:
+                    # Populate hex triangles vert and colour lists
+                    if drawHexFills and not self.hexFills_vertex_list:
                         landHex.getTriangleVerts(hexTriangleVerts, hexFillColours)
+            # Format centre point vertex list
+            if not self.hexCentre_vertex_list and hexCentreVerts:
+
+                numHexCentreVerts = len(hexCentreVerts)/2
+                self.hexCentre_vertex_list = pyglet.graphics.vertex_list(numHexCentreVerts,
+                    ('v2f/static', hexCentreVerts),
+                    ('c4B/static', hexCentreColours)
+                )
+            # Format edge point vertex list
+            if not self.hexEdge_vertex_list and hexEdgeVerts:
+                numHexEdgeVerts = len(hexEdgeVerts)/2
+                self.hexEdge_vertex_list = pyglet.graphics.vertex_list(numHexEdgeVerts,
+                    ('v2f/static', hexEdgeVerts),
+                    ('c4B/static', list(chain.from_iterable(hexEdgeColours)))
+                )
+            # Format centre point vertex list
+            if not self.hexFills_vertex_list and hexTriangleVerts:
+                numHexFillsVerts = len(hexTriangleVerts)/2
+                self.hexFills_vertex_list = pyglet.graphics.vertex_list(numHexFillsVerts,
+                    ('v2f/static', hexTriangleVerts),
+                    ('c4B/static', list(chain.from_iterable(hexFillColours)))
+                )
+        # Draw vertex lists
         if drawHexFills:
-            drawUtils.drawHexagonBatch(hexTriangleVerts, list(chain.from_iterable(hexFillColours)))
+            self.hexFills_vertex_list.draw(pyglet.gl.GL_TRIANGLES)
         if drawHexCentres:
-            drawUtils.drawPointBatch(hexCentreVerts, hexCentreColours)
+            self.hexCentre_vertex_list.draw(pyglet.gl.GL_POINTS)
         if drawHexEdges:
-            drawUtils.drawLineBatch(hexEdgeVerts, list(chain.from_iterable(hexEdgeColours)))
+            self.hexEdge_vertex_list.draw(pyglet.gl.GL_LINES)
+
 
     # Use pyglet GL calls to draw drainage routes
     def drawDrainageRoutes(self, useSimpleRoutes=True, minHexesDrainedAbove=False):
