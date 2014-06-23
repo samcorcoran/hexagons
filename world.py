@@ -205,7 +205,7 @@ class World():
     def createContiguousRegion(self, unassignedHexes):
         # Copy map so this dict can have keys removed without losing items from other dict
         # Choose a new land color
-        fillColor = (random.random(), random.random(), random.random(), 1.0)
+        fillColor = (random.randint(0,255), random.randint(0,255), random.randint(0,255), 255)
         # Take a hex from the list of unassigned
         nextHex = unassignedHexes.pop(random.choice(list(unassignedHexes.keys())))
 
@@ -293,23 +293,26 @@ class World():
 
     def drawLandHexes(self, drawHexEdges=True, drawHexFills=True, drawHexCentres=False):
         hexEdgeVerts = []
+        hexEdgeColours = []
         hexCentreVerts = []
+        hexCentreColours = []
         hexTriangleVerts = []
+        hexFillColours = []
         if self.hexGrid:
             for land in self.islands:
                 for landHex in land.region.hexes.values():
                     if drawHexEdges:
-                        hexEdgeVerts.extend(landHex.getPerimeterEdgeVerts())
+                        landHex.getPerimeterEdgeVerts(hexEdgeVerts, hexEdgeColours)
                     if drawHexCentres:
-                        hexCentreVerts.extend(landHex.getCentreCoordinates())
+                        landHex.getCentreCoordinatesVerts(hexCentreVerts, hexCentreColours)
                     if drawHexFills:
-                        landHex.getTriangleVertsList(hexTriangleVerts)
+                        landHex.getTriangleVerts(hexTriangleVerts, hexFillColours)
         if drawHexFills:
-            drawUtils.drawHexagonBatch(hexTriangleVerts)
+            drawUtils.drawHexagonBatch(hexTriangleVerts, list(chain.from_iterable(hexFillColours)))
         if drawHexCentres:
-            drawUtils.drawPointBatch(hexCentreVerts)
+            drawUtils.drawPointBatch(hexCentreVerts, hexCentreColours)
         if drawHexEdges:
-            drawUtils.drawLineBatch(hexEdgeVerts)
+            drawUtils.drawLineBatch(hexEdgeVerts, list(chain.from_iterable(hexEdgeColours)))
 
     # Use pyglet GL calls to draw drainage routes
     def drawDrainageRoutes(self, useSimpleRoutes=True, minHexesDrainedAbove=False):
@@ -339,9 +342,10 @@ class World():
 
     def drawGeographicZoneBorderHexes(self):
         points = []
+        colours = []
         # Accumulate hex vert coordinates
         for island in self.islands:
-            island.getGeographicZoneBorderHexTrianglePoints(points)
+            island.getGeographicZoneBorderHexTrianglePoints(points, colours)
         # Draw points as a batch
-        drawUtils.drawHexagonBatch(points)
+        drawUtils.drawHexagonBatch(points, colours)
 

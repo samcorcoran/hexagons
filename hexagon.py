@@ -145,23 +145,29 @@ class Hexagon():
             return [self.points[pointNumber].x, self.points[pointNumber].y]
         return False
 
-    def getTriangleVertsList(self, verts):
+    def getTriangleVerts(self, verts, colours=[]):
         centreX = self.centre.x
         centreY = self.centre.y
         for n in range(len(self.points)):
             verts.extend([self.points[n].x, self.points[n].y,
                          self.points[n-1].x, self.points[n-1].y,
                          centreX, centreY])
+        colours.extend([self.fillColor for n in range(len(self.points)*3)])
 
     def getPerimeterCoordinatesList(self):
         return list(chain.from_iterable( [(self.points[n].x, self.points[n].y) for n in range(len(self.points))]))
 
     # Lists perimeter verts with duplicates to facilitate line drawing
-    def getPerimeterEdgeVerts(self):
-        return list(chain.from_iterable( [(self.points[n].x, self.points[n].y, self.points[n-1].x, self.points[n-1].y) for n in range(len(self.points))]))
+    def getPerimeterEdgeVerts(self, points, colours):
+        points.extend(list(chain.from_iterable( [(self.points[n].x, self.points[n].y, self.points[n-1].x, self.points[n-1].y) for n in range(len(self.points))])))
+        colours.extend([self.fillColor for n in range(len(self.points)*2)])
 
     def getCentreCoordinates(self):
         return [self.centre.x, self.centre.y]
+
+    def getCentreCoordinatesVerts(self, points, centreColours = []):
+        points.extend([self.centre.x, self.centre.y])
+        centreColours.extend(self.fillColor)
 
     def calculateCentrePoint(self):
         xSum = 0

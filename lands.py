@@ -35,8 +35,8 @@ class GeographicZone():
     def drawGeographicZoneBorders(self):
         self.region.drawRegionBorders()
 
-    def getGeographicZoneBorderHexTrianglePoints(self, points):
-        self.region.getRegionBorderHexTrianglePoints(points)
+    def getGeographicZoneBorderHexTrianglePoints(self, points, colours):
+        self.region.getRegionBorderHexTrianglePoints(points, colours)
 
     def drawGeographicZoneBorderHexes(self):
         self.region.drawBorderHexes()

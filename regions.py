@@ -249,9 +249,9 @@ class Region():
                 ('v2f', pointsList)
             )
 
-    def getRegionBorderHexTrianglePoints(self, points):
+    def getRegionBorderHexTrianglePoints(self, points, colours):
         for borderHex in self.borderHexes[0].values():
-            borderHex.getTriangleVertsList(points)
+            borderHex.getTriangleVertsList(points, colours)
 
     def drawBorderHexes(self):
         for borderHex in self.borderHexes[0].values():
