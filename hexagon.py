@@ -298,37 +298,6 @@ class Hexagon():
             pyglet.graphics.draw(numEdges, pyglet.gl.GL_POINTS,
                 ('v2f', pointsList)
             )
-        
-    def drawFilledHex(self, fillColor=False, weightByAltitude=True):
-        if not fillColor:
-            fillColor = self.fillColor
-        if fillColor:
-            # Polygon centre point coordinates are first values
-            pointsList = [self.centre.x, self.centre.y] + self.getPerimeterCoordinatesList()
-            pointsList.extend([self.points[0].x, self.points[0].y])
-            # Draw filled polygon
-            # Scale opacity by centre point's altitude
-            color = tuple()
-            if self.land and weightByAltitude:
-                color = tuple([self.centre.altitude * fillColor[x] for x in range(3)] + [fillColor[3]])
-                #pyglet.gl.glColor4f(fillColor[0], fillColor[1], fillColor[2], fillColor[3]*self.centre.altitude)
-            else: 
-                # Not land, so do not colour by altitude
-                color = tuple(fillColor)
-            pyglet.gl.glColor4f(*color)
-            # Polygon is always drawn as fullHex
-            glEnable(GL_BLEND)
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            pyglet.graphics.draw(int(len(pointsList)/2), pyglet.gl.GL_TRIANGLE_FAN,
-                ('v2f', pointsList)
-            )       
-
-    def drawHexCentrePoint(self, pointColor=(1.0,0.0,1.0,1.0)):
-        point = [self.centre.x, self.centre.y]
-        pyglet.gl.glColor4f(*pointColor)
-        pyglet.graphics.draw(1, pyglet.gl.GL_POINTS,
-            ('v2f', point)
-        )
 
     def clipPointsToScreen(self, widthInterval=[0,800], heightInterval=[0,600]):
         #print("Clipping hex " + str(self.hexIndex))
