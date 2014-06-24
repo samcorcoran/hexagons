@@ -152,7 +152,11 @@ class Hexagon():
             verts.extend([self.points[n].x, self.points[n].y,
                          self.points[n-1].x, self.points[n-1].y,
                          centreX, centreY])
-        colours.extend([self.fillColor for n in range(len(self.points)*3)])
+        altitudeScale = self.centre.altitude
+        if not altitudeScale:
+            altitudeScale = 1.0
+        vertColour = [int(self.fillColor[i]*altitudeScale) for i in range(len(self.fillColor))]
+        colours.extend([vertColour for n in range(len(self.points)*3)])
 
     def getPerimeterCoordinatesList(self):
         return list(chain.from_iterable( [(self.points[n].x, self.points[n].y) for n in range(len(self.points))]))
