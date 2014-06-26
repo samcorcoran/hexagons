@@ -5,6 +5,7 @@ from pyglet import clock
 from pyglet import window
 from pyglet.window import mouse
 import kytten
+import string
 
 import hexagon
 import random
@@ -49,16 +50,9 @@ class GameWindow(pyglet.window.Window):
         mouseX = x
         mouseY = y
 
-    def on_draw(self):
+    def renderWorld(self):
         global gridChanged
         global hexGrid
-        self.clear()
-        # Display FPS on screen
-        if kytten.GetObjectfromName("cb_displayFPS").get_value():
-            fps_display.draw()
-        # Render GUI
-        kytten.KyttenRenderGUI()
-
         # Mask image for determining land shapes
         if kytten.GetObjectfromName("cb_drawMask").get_value():
             pyglet.gl.glColor4f(1,1,1,1)
@@ -108,6 +102,17 @@ class GameWindow(pyglet.window.Window):
         # Draw experimental noise texture
         #noiseTexture.blit(0,0)
 
+    def on_draw(self):
+        global newWorld
+        self.clear()
+        # Display FPS on screen
+        if kytten.GetObjectfromName("cb_displayFPS").get_value():
+            fps_display.draw()
+        # Render GUI
+        kytten.KyttenRenderGUI()
+        if newWorld:
+            self.renderWorld()
+
     def update(self, deltaTime):
         #newWorld.weatherSystem.updateParticles(deltaTime)
         pass
@@ -130,11 +135,28 @@ if __name__ == '__main__':
         "font_size": 10
     })
 
+    hexesInOddRow = 60
+    newWorld = None
+    def generate_new_world(btn):
+        global newWorld
+        print("Generating a new world...")
+        hexesInOddRow = int(kytten.GetObjectfromName("txt_mapSize").get_value())
+        t0 = time.clock()
+        newWorld = world.World(screenWidth, screenHeight, hexesInOddRow, True, maskImage, createWeather)
+        t1 = time.clock()
+        print("Total world gen time: ", t1-t0)
+
     # UI Panel
     dialog = kytten.Dialog(
         kytten.TitleFrame('Terrain Controls',
             kytten.VerticalLayout([
-                kytten.Label("Draw controls:"),
+                kytten.FoldingSection("Generation:",
+                    kytten.VerticalLayout([
+                        kytten.Label("Map size:"),
+                        kytten.Input(str(hexesInOddRow), name="txt_mapSize"),
+                        kytten.Button("Generate", on_click=generate_new_world),
+                    ]),
+                ),
                 kytten.VerticalLayout([
                     kytten.FoldingSection("Hexagon Drawing",
                         kytten.VerticalLayout([
@@ -177,11 +199,6 @@ if __name__ == '__main__':
 
     # Create world
     maskImage = pyglet.resource.image('groundtruth5.jpg')
-    hexesInOddRow = 40
-    t0 = time.clock()
-    newWorld = world.World(screenWidth, screenHeight, hexesInOddRow, True, maskImage, createWeather)
-    t1 = time.clock()
-    print("Total world gen time: ", t1-t0)
     # Create local noise texture to blit
     noiseTexture = image.Texture.create(screenWidth, screenHeight, GL_RGBA, True)
     noiseTexData = noiseTexture.get_image_data()
