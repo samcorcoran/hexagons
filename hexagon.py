@@ -397,3 +397,7 @@ class Hexagon():
                     # A new lowest has been found
                     self.lowestPoint = point
         return self.lowestPoint
+
+    def isPointInsideHexRadius(self, x, y):
+        distSq = (self.centre.x - x)**2 + (self.centre.y - y)**2
+        return distSq <= self.radius**2

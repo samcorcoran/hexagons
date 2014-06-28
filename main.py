@@ -10,6 +10,7 @@ import string
 import hexagon
 import random
 import math
+import string
 
 # Import 2d Simplex Noise
 from noise import snoise2
@@ -39,6 +40,18 @@ createWeather = False
 mouseX = 0
 mouseY = 0
 
+hex_inspector_dialog = None
+
+selectedHex = None
+selectedVertex = None
+
+# GUI Theme
+Theme = kytten.Theme('C:/Programming/Kytten/KyttenParashurama/theme', override={
+    "gui_color": [200, 200, 200, 255],
+    "text_color": [0,100,255,255],
+    "font_size": 10
+})
+
 class GameWindow(pyglet.window.Window):
     def __init__(self, *args, **kwargs):
         pyglet.window.Window.__init__(self, *args, **kwargs)
@@ -50,9 +63,44 @@ class GameWindow(pyglet.window.Window):
         mouseX = x
         mouseY = y
 
+    def update_hex_inspector(self):
+        if not hex_inspector_dialog:
+            return
+        if selectedHex:
+            kytten.GetObjectfromName("hexInsp_hexIndex").set_text(str(selectedHex.hexIndex))
+            kytten.GetObjectfromName("hexInsp_altitude").set_text(str(selectedHex.centre.altitude))
+        else:
+            kytten.GetObjectfromName("hexInsp_hexIndex").set_text("None")
+            kytten.GetObjectfromName("hexInsp_altitude").set_text("None")
+
+    def on_mouse_release(self, x, y, button, modifiers):
+        global selectedHex
+        global selectedVertex
+        if button == pyglet.window.mouse.LEFT:
+            if not newWorld:
+                return
+            # select/deselect closest hex
+            closestHex, closestVertex = newWorld.spatialGrid.findNearestHexAndVertex(x, y)
+            # store if mouse location was actually inside hex
+            if closestHex.isPointInsideHexRadius(x, y):
+                if closestHex:
+                    if closestHex != selectedHex:
+                        selectedHex = closestHex
+                        self.update_hex_inspector()
+                    else:
+                        selectedHex = None
+                if closestVertex:
+                    if closestVertex != selectedVertex:
+                        selectedVertex = closestVertex
+                    else:
+                        selectedVertex = None
+
     def renderWorld(self):
         global gridChanged
         global hexGrid
+        global selectedHex
+        global selectedVertex
+
         # Mask image for determining land shapes
         if kytten.GetObjectfromName("cb_drawMask").get_value():
             pyglet.gl.glColor4f(1,1,1,1)
@@ -98,6 +146,10 @@ class GameWindow(pyglet.window.Window):
             closestHex.drawHex(edgeColor=(1.0,0.0,0.0,1.0), pointColor=(0.0,1.0,0.0,1.0))
         if closestVertex:
             closestVertex.drawVertex()
+        if selectedHex:
+            selectedHex.drawHex(edgeColor=(1.0,1.0,0.0,1.0), pointColor=(0.0,1.0,1.0,1.0))
+        if selectedVertex:
+            selectedVertex.drawVertex()
 
         # Draw experimental noise texture
         #noiseTexture.blit(0,0)
@@ -128,23 +180,50 @@ if __name__ == '__main__':
     # Initialize GUI library
     kytten.SetWindow(window)
 
-    # GUI Theme
-    Theme = kytten.Theme('C:/Programming/Kytten/KyttenParashurama/theme', override={
-        "gui_color": [200, 200, 200, 255],
-        "text_color": [0,100,255,255],
-        "font_size": 10
-    })
-
-    hexesInOddRow = 60
+    hexesInOddRow = 30
     newWorld = None
     def generate_new_world(btn):
         global newWorld
+        selectedHex = None
+        selectedVertex = None
         print("Generating a new world...")
         hexesInOddRow = int(kytten.GetObjectfromName("txt_mapSize").get_value())
         t0 = time.clock()
         newWorld = world.World(screenWidth, screenHeight, hexesInOddRow, True, maskImage, createWeather)
         t1 = time.clock()
         print("Total world gen time: ", t1-t0)
+
+    def handle_hex_inspector_dialog(btn):
+        global hex_inspector_dialog
+        if not hex_inspector_dialog:
+            if selectedHex:
+                hexIndexVal = str(selectedHex.hexIndex) if selectedHex else "None"
+                altitudeVal = str(selectedHex.centre.altitude) if selectedHex else "None"
+                hex_inspector_dialog = kytten.Dialog(
+                    kytten.VerticalLayout([
+                        kytten.Label("Hex info:"),
+                        kytten.GridLayout([
+                            [kytten.Label("id: %s" % (str(selectedHex.hexIndex))),
+                                kytten.Label(hexIndexVal, name="hexInsp_hexIndex")],
+                            [kytten.Label("Centre Altitude: %s" % (str(selectedHex.centre.altitude))),
+                                kytten.Label(altitudeVal, name="hexInsp_altitude")],
+                        ]),
+                    ]),
+                window=window, batch=kytten.KyttenManager, group=kytten.KyttenManager.foregroup,
+                anchor=kytten.ANCHOR_BOTTOM_LEFT,
+                theme=Theme)
+            else:
+                hex_inspector_dialog = kytten.Dialog(
+                    kytten.VerticalLayout([
+                        kytten.Label("Hex info:"),
+                        kytten.Label("No hex selected"),
+                    ], align=kytten.ANCHOR_BOTTOM_LEFT),
+                window=window, batch=kytten.KyttenManager, group=kytten.KyttenManager.foregroup,
+                anchor=kytten.ANCHOR_BOTTOM_LEFT,
+                theme=Theme)
+        else:
+            hex_inspector_dialog.teardown()
+            hex_inspector_dialog = None
 
     # UI Panel
     dialog = kytten.Dialog(
@@ -155,6 +234,7 @@ if __name__ == '__main__':
                         kytten.Label("Map size:"),
                         kytten.Input(str(hexesInOddRow), name="txt_mapSize"),
                         kytten.Button("Generate", on_click=generate_new_world),
+                        kytten.Button("Open Hex Inspector", on_click=handle_hex_inspector_dialog),
                     ]),
                 ),
                 kytten.VerticalLayout([
