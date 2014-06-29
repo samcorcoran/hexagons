@@ -153,7 +153,7 @@ class Hexagon():
                          self.points[n-1].x, self.points[n-1].y,
                          centreX, centreY])
         altitudeScale = self.centre.altitude
-        if not altitudeScale:
+        if altitudeScale == None:
             altitudeScale = 1.0
         vertColour = [int(self.fillColor[i]*altitudeScale) for i in range(len(self.fillColor))]
         colours.extend([vertColour for n in range(len(self.points)*3)])

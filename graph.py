@@ -10,7 +10,7 @@ class Vertex():
         self.surroundingHexes = dict()
         self.neighbouringVertices = []
         self.addHexNeighbours(hexes)
-        self.altitude = False
+        self.altitude = None
         # Closest coastal vertex can be found by hexRegion.closestBorderVertex[ point.id ]
         self.directionToCoast = False
         # Neighbouring vertex which is drained into from this vertex
