@@ -92,9 +92,9 @@ class GameWindow(pyglet.window.Window):
                 if closestHex:
                     if closestHex != selectedHex:
                         selectedHex = closestHex
-                        self.update_hex_inspector()
                     else:
                         selectedHex = None
+                    self.update_hex_inspector()
                 if closestVertex:
                     if closestVertex != selectedVertex:
                         selectedVertex = closestVertex
@@ -192,6 +192,7 @@ if __name__ == '__main__':
         global newWorld
         selectedHex = None
         selectedVertex = None
+        window.update_hex_inspector()
         print("Generating a new world...")
         hexesInOddRow = int(kytten.GetObjectfromName("txt_mapSize").get_value())
         t0 = time.clock()
@@ -202,31 +203,21 @@ if __name__ == '__main__':
     def handle_hex_inspector_dialog(btn):
         global hex_inspector_dialog
         if not hex_inspector_dialog:
-            if selectedHex:
-                hexIndexVal = str(selectedHex.hexIndex) if selectedHex else "None"
-                altitudeVal = str(selectedHex.centre.altitude) if selectedHex else "None"
-                hex_inspector_dialog = kytten.Dialog(
-                    kytten.VerticalLayout([
-                        kytten.Label("Hex info:"),
-                        kytten.GridLayout([
-                            [kytten.Label("id: %s" % (str(selectedHex.hexIndex))),
-                                kytten.Label(hexIndexVal, name="hexInsp_hexIndex")],
-                            [kytten.Label("Centre Altitude: %s" % (str(selectedHex.centre.altitude))),
-                                kytten.Label(altitudeVal, name="hexInsp_altitude")],
-                        ]),
+            hexIndexVal = str(selectedHex.hexIndex) if selectedHex else "None"
+            altitudeVal = str(selectedHex.centre.altitude) if selectedHex else "None"
+            hex_inspector_dialog = kytten.Dialog(
+                kytten.VerticalLayout([
+                    kytten.Label("Hex info:"),
+                    kytten.GridLayout([
+                        [kytten.Label("id:"),
+                            kytten.Label(hexIndexVal, name="hexInsp_hexIndex")],
+                        [kytten.Label("Centre Altitude:"),
+                            kytten.Label(altitudeVal, name="hexInsp_altitude")],
                     ]),
-                window=window, batch=kytten.KyttenManager, group=kytten.KyttenManager.foregroup,
-                anchor=kytten.ANCHOR_BOTTOM_LEFT,
-                theme=Theme)
-            else:
-                hex_inspector_dialog = kytten.Dialog(
-                    kytten.VerticalLayout([
-                        kytten.Label("Hex info:"),
-                        kytten.Label("No hex selected"),
-                    ], align=kytten.ANCHOR_BOTTOM_LEFT),
-                window=window, batch=kytten.KyttenManager, group=kytten.KyttenManager.foregroup,
-                anchor=kytten.ANCHOR_BOTTOM_LEFT,
-                theme=Theme)
+                ]),
+            window=window, batch=kytten.KyttenManager, group=kytten.KyttenManager.foregroup,
+            anchor=kytten.ANCHOR_BOTTOM_LEFT,
+            theme=Theme)
         else:
             hex_inspector_dialog.teardown()
             hex_inspector_dialog = None
