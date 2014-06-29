@@ -63,6 +63,12 @@ class GameWindow(pyglet.window.Window):
         mouseX = x
         mouseY = y
 
+    def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        global mouseX
+        global mouseY
+        mouseX = x
+        mouseY = y
+
     def update_hex_inspector(self):
         if not hex_inspector_dialog:
             return
