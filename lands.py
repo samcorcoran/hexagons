@@ -18,19 +18,9 @@ class GeographicZone():
         self.noise = noise
         
     def computeBorders(self):
-        t0 = time.clock()
         self.region.findBorderHexes()
-        t1 = time.clock()
-        print("     - LAND BORDERS finding border hexes: ", t1-t0)
-        print("     - Total border hexes: %d" % (len(self.region.borderHexes)))
-        t0 = time.clock()
         self.region.calculateAllClosestBorderVertex()
-        t1 = time.clock()
-        print("     - LAND BORDERS closest border vertex calculation: ", t1-t0)
-        t0 = time.clock()
         self.region.findOrderedBorderVertices()
-        t1 = time.clock()
-        print("     - LAND BORDERS order border vertex finding: ", t1-t0)
 
     def drawGeographicZoneBorders(self):
         self.region.drawRegionBorders()
@@ -47,43 +37,24 @@ class GeographicZone():
 
 class Land(GeographicZone):
     def __init__(self, world, mainRegion, noise=False):
-        print("TIME - LAND:")
         # Initialise base class
-        t0 = time.clock()
         GeographicZone.__init__(self, world, mainRegion, noise=False)
-        t1 = time.clock()
-        print("     - LAND geographic zone initialisation: ", t1-t0)
         self.id = next(landIdGen)
         # Borders
-        t0 = time.clock()
         self.computeBorders()
-        t1 = time.clock()
-        print("     - LAND border computation: ", t1-t0)
         # Altitudes
-        t0 = time.clock()
         self.assignLandHeights()
-        t1 = time.clock()
-        print("     - LAND height assignment: ", t1-t0)
         # Rivers
         self.sinks = set()
         self.outflows = set()
         self.drainageBasins = set()
         self.rivers = set()
         # Drainage routes
-        t0 = time.clock()
         self.calculateDrainageRoutes()
-        t1 = time.clock()
-        print("     - LAND drainage route calculation: ", t1-t0)
         # Basins
-        t0 = time.clock()
         self.createDrainageBasins()
-        t1 = time.clock()
-        print("     - LAND drainage basin calculation: ", t1-t0)
         # Rivers objects
-        t0 = time.clock()
         self.createRivers()
-        t1 = time.clock()
-        print("     - LAND river creation: ", t1-t0)
 
     def assignLandHeights(self):
         # Assign heights to land vertices

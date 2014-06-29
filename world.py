@@ -28,60 +28,30 @@ class World():
         self.waterHexes = dict()
         # Create a hex grid
         self.hexMap = dict()
-        t0 = time.clock()
         self.hexGrid = self.createHexGridFromPoints(clipPointsToWorldLimits)
-        t1 = time.clock()
-        print("TIME - Hex grid creation: ", t1-t0)
-        print("     - time per hex: ", (t1-t0)/float(len(self.hexGrid)))
         if clipPointsToWorldLimits:
-            t0 = time.clock()
             self.clipGridHexagonsToWorldDimensions()
-            t1 = time.clock()
-            print("TIME - World limit clipping: ", t1-t0)
         # Add verts to spatial grid
-        t0 = time.clock()
         self.spatialGrid = graph.SpatialGrid(0, 0, self.worldWidth, self.worldHeight, int(0.75*hexesInOddRow))
-        t1 = time.clock()
-        print("TIME - Grid vert creation: ", t1-t0)
-        t0 = time.clock()
         self.addVertsToSpatialGrid()
-        t1 = time.clock()
-        print("TIME - Adding verts to grid: ", t1-t0)
         # Tag hexagons/vertices according to masks
         self.landMask = maskImage
         ## Collect land and water hexagons
-        t0 = time.clock()
         self.findLandMarkedHexes()
-        t1 = time.clock()
-        print("TIME - Land hex finding: ", t1-t0)
         # Create noise for world altitudes
         self.noise = terrain.createNoiseList(self.worldWidth, self.worldHeight, inBytes=False)
         # Create lands - creation process involves finding borders
-        t0 = time.clock()
         self.islands = []
         self.createLands()
-        t1 = time.clock()
-        print("TIME - Land creation: ", t1-t0)
-        print("     - time per hex: ", (t1-t0)/float(len(self.hexGrid)))
-        print("     - time per land: ", (t1-t0)/float(len(self.islands)))
         # Create oceans/seas and lakes
-        t0 = time.clock()
         self.waters = []
         self.createWaters()
-        t1 = time.clock()
-        print("TIME - Water creation: ", t1-t0)
         # Use land borders to avoid recomputing the same vertex sequences
-        t0 = time.clock()
         for water in self.waters:
             water.receiveBordersFromLands(self.islands)
-        t1 = time.clock()
-        print("TIME - Water border adoption: ", t1-t0)
         # Create weather system
         if createWeather:
-            t0 = time.clock()
             self.weatherSystem = weather.WeatherSystem(worldWidth, worldHeight)
-            t1 = time.clock()
-            print("TIME - Weather system: ", t1-t0)
 
     # Build a hex grid, hex by hex, using points of neighbouring generated hexagons where possible
     def createHexGridFromPoints(self, clipPointsToWorldLimits=True):

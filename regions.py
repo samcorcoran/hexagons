@@ -46,7 +46,6 @@ class Region():
                 self.borderHexes.append(nextRing)
 
     def findBorderVertices(self, drawBorderVertices=False):
-        t0 = time.clock()
         #print("Finding all border vertices...")
         if not self.borderHexes:
             # Find the outer ring of region hexes if not already known
@@ -76,9 +75,6 @@ class Region():
                     else:
                         #print("point had no neighbours outside of region")
                         pass
-        t1 = time.clock()
-        print("     - LAND BORDERS finding border vertices: ", t1-t0)
-
 
     def findOrderedBorderVertices(self, drawBorderVertices=True, borderVertexColor=(0.1, 0.5, 0.5, 1)):
         #print("Finding all border vertices and storing them as an ordered sequence...")
@@ -168,30 +164,13 @@ class Region():
             self.findBorderVertices()
 
         #useKdTree = len(self.borderVertices) > 300
-
-        firstBorderVertex = self.borderVertices.items()[0][1]
-        print(firstBorderVertex.x, firstBorderVertex.y)
-        if firstBorderVertex.y > 280:
-            if firstBorderVertex.x > 330:
-                if firstBorderVertex.x > 530:
-                    print("SHAPE C")
-                else:
-                    print("SHAPE B")
-            else:
-                print("SHAPE A")
-        else:
-            print("SHAPE D")
-
         tree = None
         if useKdTree:
-            t0 = time.clock()
             # Create kdtree of border vertices
             points = []
             for nextV in self.borderVertices.items():
                 points.append((nextV[1].x,nextV[1].y))
             tree = spatial.cKDTree(points)
-            t1 = time.clock()
-            print("KdTree construction of %d points took %f" % (len(points), t1-t0))
 
         t0 = time.clock()
         pointCount = 0
