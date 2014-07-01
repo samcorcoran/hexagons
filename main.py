@@ -6,6 +6,7 @@ from pyglet import window
 from pyglet.window import mouse
 import kytten
 import string
+import sys
 
 import hexagon
 import random
@@ -208,9 +209,14 @@ if __name__ == '__main__':
         print("Generating a new world...")
         hexesInOddRow = int(kytten.GetObjectfromName("txt_mapSize").get_value())
         t0 = time.clock()
+        random.seed(kytten.GetObjectfromName("txt_randSeed").get_value())
         newWorld = world.World(screenWidth, screenHeight, hexesInOddRow, True, maskImage, createWeather)
         t1 = time.clock()
         print("Total world gen time: ", t1-t0)
+
+    def generate_new_seed(btn):
+        seed = random.randint(0, sys.maxint)
+        kytten.GetObjectfromName("txt_randSeed").set_text(str(seed))
 
     def handle_hex_inspector_dialog(btn):
         global hex_inspector_dialog
@@ -245,6 +251,10 @@ if __name__ == '__main__':
             kytten.VerticalLayout([
                 kytten.FoldingSection("Generation:",
                     kytten.VerticalLayout([
+                        kytten.HorizontalLayout([
+                            kytten.Input("1", name="txt_randSeed"),
+                            kytten.Button("New Seed", on_click=generate_new_seed),
+                        ]),
                         kytten.Label("Map size:"),
                         kytten.Input(str(hexesInOddRow), name="txt_mapSize"),
                         kytten.Button("Generate", on_click=generate_new_world),
