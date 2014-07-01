@@ -242,5 +242,10 @@ class Region():
         for borderHex in self.borderHexes[0].values():
             borderHex.drawFilledHex( (1,0,0,1.0) )
 
+    def doesRegionContainHex(self, hex):
+        if hex.hexIndex in self.hexes.keys():
+            return True
+        return False
+
 # Initialise a generator for regions
 regionIdGen = graph.idGenerator()

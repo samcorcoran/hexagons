@@ -350,3 +350,9 @@ class World():
         # Draw points as a batch
         drawUtils.drawHexagonBatch(points, colours)
 
+    def getLandContainingHex(self, hex):
+        for land in self.islands:
+            if land.doesLandContainHex(hex):
+                return land
+        return False
+

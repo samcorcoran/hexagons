@@ -75,9 +75,21 @@ class GameWindow(pyglet.window.Window):
         if selectedHex:
             kytten.GetObjectfromName("hexInsp_hexIndex").set_text(str(selectedHex.hexIndex))
             kytten.GetObjectfromName("hexInsp_altitude").set_text(str(selectedHex.centre.altitude))
+            kytten.GetObjectfromName("hexInsp_distToCoast").set_text(str(selectedHex.centre.altitude))
+            containingLand = newWorld.getLandContainingHex(selectedHex)
+            landName = "None"
+            landSize = 0
+            if containingLand:
+                landName = containingLand.name
+                landSize = len(containingLand.region.hexes)
+            kytten.GetObjectfromName("hexInsp_landName").set_text(landName)
+            kytten.GetObjectfromName("hexInsp_landSize").set_text(str(landSize))
         else:
             kytten.GetObjectfromName("hexInsp_hexIndex").set_text("None")
             kytten.GetObjectfromName("hexInsp_altitude").set_text("None")
+            kytten.GetObjectfromName("hexInsp_distToCoast").set_text("None")
+            kytten.GetObjectfromName("hexInsp_landName").set_text("None")
+            kytten.GetObjectfromName("hexInsp_landSize").set_text("None")
 
     def on_mouse_release(self, x, y, button, modifiers):
         global selectedHex
@@ -203,21 +215,26 @@ if __name__ == '__main__':
     def handle_hex_inspector_dialog(btn):
         global hex_inspector_dialog
         if not hex_inspector_dialog:
-            hexIndexVal = str(selectedHex.hexIndex) if selectedHex else "None"
-            altitudeVal = str(selectedHex.centre.altitude) if selectedHex else "None"
             hex_inspector_dialog = kytten.Dialog(
                 kytten.VerticalLayout([
                     kytten.Label("Hex info:"),
                     kytten.GridLayout([
                         [kytten.Label("id:"),
-                            kytten.Label(hexIndexVal, name="hexInsp_hexIndex")],
+                            kytten.Label("!", name="hexInsp_hexIndex")],
                         [kytten.Label("Centre Altitude:"),
-                            kytten.Label(altitudeVal, name="hexInsp_altitude")],
+                            kytten.Label("!", name="hexInsp_altitude")],
+                        [kytten.Label("Distance to coast:"),
+                            kytten.Label("!", name="hexInsp_distToCoast")],
+                        [kytten.Label("Land Name:"),
+                            kytten.Label("!", name="hexInsp_landName")],
+                        [kytten.Label("Land Size:"),
+                            kytten.Label("!", name="hexInsp_landSize")],
                     ]),
                 ]),
             window=window, batch=kytten.KyttenManager, group=kytten.KyttenManager.foregroup,
             anchor=kytten.ANCHOR_BOTTOM_LEFT,
             theme=Theme)
+            window.update_hex_inspector()
         else:
             hex_inspector_dialog.teardown()
             hex_inspector_dialog = None

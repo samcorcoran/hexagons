@@ -140,6 +140,9 @@ class Land(GeographicZone):
             #print("drawing basin")
             basin.drawDrainageBasin()
 
+    def doesLandContainHex(self, hex):
+        return self.region.doesRegionContainHex(hex)
+
 # Initialise a generator for 
 landIdGen = graph.idGenerator()
 
