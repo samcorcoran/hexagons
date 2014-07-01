@@ -7,6 +7,7 @@ import regions
 import drawUtils
 import terrain
 import drainage
+import namegen
 
 class GeographicZone():
     def __init__(self, world, mainRegion, noise=False):
@@ -55,6 +56,8 @@ class Land(GeographicZone):
         self.createDrainageBasins()
         # Rivers objects
         self.createRivers()
+        # Name land
+        self.name = namegen.generateName()
 
     def assignLandHeights(self):
         # Assign heights to land vertices
