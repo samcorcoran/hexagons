@@ -32,7 +32,7 @@ class Hexagon():
         self.quantityDrained = 0
         self.fillColor = False #(random.random(),random.random(),random.random(),0.5)
         self.land = False
-        self.distanceFromWater = False
+        self.distanceToBorder = False
         self.water = False
         if jitterStrength and not isBorderHex:
             self.calculateCentrePoint()

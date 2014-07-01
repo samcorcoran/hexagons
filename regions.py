@@ -182,6 +182,7 @@ class Region():
         pointCount = 0
         # Search border vertices for closest point
         for nextHex in self.hexes.values():
+            largestDistToBorder = 0
             for nextPoint in nextHex.points:
                 if nextPoint.id not in self.closestBorderVertex.keys():
                     pointCount += 1
@@ -193,14 +194,18 @@ class Region():
                         closestBorderVertex = self.borderVertices.items()[closestVertexId][1]
                     else:
                         closestBorderVertex, distance = self.findClosestBorderVertex(nextPoint)
+                    # Track hex's largest distance to border
+                    largestDistToBorder = max(distance, largestDistToBorder)
                     # Draw diagnostic arrows from region points to nearest coastal points if required
                     if drawArrowsToCoast:
                         drawUtils.drawArrow([nextPoint.x, nextPoint.y], [closestBorderVertex.x, closestBorderVertex.y], (0,1,0,1))
-                    # Keep track of longest distance, for possible normalisation purposes
+                    # Keep track of region's longest distance, for possible normalisation purposes
                     if distance > self.largestVertexBorderDistance:
                         self.largestVertexBorderDistance = distance
+
                     # Register point's distance to border
                     self.closestBorderVertex[ nextPoint.id ] = closestBorderVertex
+            nextHex.distanceToBorder = largestDistToBorder
         t1 = time.clock()
         print("Time spent finding closest border verts: %f" % (t1-t0))
         print("Total border vertices: %d, total vertices: %d, total hexes: %d" % (len(self.borderVertices), pointCount, len(self.hexes.values())))

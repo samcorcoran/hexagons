@@ -76,7 +76,7 @@ class GameWindow(pyglet.window.Window):
         if selectedHex:
             kytten.GetObjectfromName("hexInsp_hexIndex").set_text(str(selectedHex.hexIndex))
             kytten.GetObjectfromName("hexInsp_altitude").set_text(str(selectedHex.centre.altitude))
-            kytten.GetObjectfromName("hexInsp_distToCoast").set_text(str(selectedHex.centre.altitude))
+            kytten.GetObjectfromName("hexInsp_distToBorder").set_text(str(selectedHex.distanceToBorder))
             containingLand = newWorld.getLandContainingHex(selectedHex)
             landName = "None"
             landSize = 0
@@ -88,7 +88,7 @@ class GameWindow(pyglet.window.Window):
         else:
             kytten.GetObjectfromName("hexInsp_hexIndex").set_text("None")
             kytten.GetObjectfromName("hexInsp_altitude").set_text("None")
-            kytten.GetObjectfromName("hexInsp_distToCoast").set_text("None")
+            kytten.GetObjectfromName("hexInsp_distToBorder").set_text("None")
             kytten.GetObjectfromName("hexInsp_landName").set_text("None")
             kytten.GetObjectfromName("hexInsp_landSize").set_text("None")
 
@@ -229,8 +229,8 @@ if __name__ == '__main__':
                             kytten.Label("!", name="hexInsp_hexIndex")],
                         [kytten.Label("Centre Altitude:"),
                             kytten.Label("!", name="hexInsp_altitude")],
-                        [kytten.Label("Distance to coast:"),
-                            kytten.Label("!", name="hexInsp_distToCoast")],
+                        [kytten.Label("Distance to border:"),
+                            kytten.Label("!", name="hexInsp_distToBorder")],
                         [kytten.Label("Land Name:"),
                             kytten.Label("!", name="hexInsp_landName")],
                         [kytten.Label("Land Size:"),
