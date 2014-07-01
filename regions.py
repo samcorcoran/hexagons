@@ -10,6 +10,12 @@ import scipy.spatial as spatial
 import graph
 import drawUtils
 
+#
+# Regions are areas of hexes that are bounded by a border. Regions
+# may consist of hexes which delineate terrain (see: GeographicZone
+# and Land) or areas associated by other attributes such as an area
+# of political control.
+#
 class Region():
     def __init__(self, hexes):
         self.id = next(regionIdGen)

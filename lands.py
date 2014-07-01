@@ -9,6 +9,12 @@ import terrain
 import drainage
 import namegen
 
+#
+# GeographicZones are entities that represent terrain formations. They
+# encompass a region (body of hexes) and so have borders, but may also
+# have other attributes. Examples of a geographic zone are islands, lakes
+# oceans and seas.
+#
 class GeographicZone():
     def __init__(self, world, mainRegion, noise=False):
         # Store a reference to the world that contains this Land
@@ -36,6 +42,9 @@ class GeographicZone():
         for geoZone in geoZones:
             self.region.adoptBordersFromRegion(geoZone.region)
 
+#
+# Land is a particular geographic zone that represents above-sea terrain.
+#
 class Land(GeographicZone):
     def __init__(self, world, mainRegion, noise=False):
         # Initialise base class
