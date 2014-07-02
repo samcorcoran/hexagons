@@ -252,12 +252,14 @@ if __name__ == '__main__':
                 kytten.FoldingSection("Generation:",
                     kytten.VerticalLayout([
                         kytten.HorizontalLayout([
-                            kytten.Input("1", name="txt_randSeed"),
+                            kytten.Input("1", name="txt_randSeed", length=10),
                             kytten.Button("New Seed", on_click=generate_new_seed),
                         ]),
-                        kytten.Label("Map size:"),
-                        kytten.Input(str(hexesInOddRow), name="txt_mapSize"),
-                        kytten.Button("Generate", on_click=generate_new_world),
+                        kytten.HorizontalLayout([
+                            kytten.Label("Size:"),
+                            kytten.Input(str(hexesInOddRow), name="txt_mapSize", length=6),
+                            kytten.Button("Generate", on_click=generate_new_world),
+                        ]),
                         kytten.Button("Open Hex Inspector", on_click=handle_hex_inspector_dialog),
                     ]),
                 ),
