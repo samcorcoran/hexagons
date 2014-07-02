@@ -203,6 +203,7 @@ if __name__ == '__main__':
     newWorld = None
     def generate_new_world(btn):
         global newWorld
+        global maskImage
         selectedHex = None
         selectedVertex = None
         window.update_hex_inspector()
@@ -210,6 +211,7 @@ if __name__ == '__main__':
         hexesInOddRow = int(kytten.GetObjectfromName("txt_mapSize").get_value())
         t0 = time.clock()
         random.seed(kytten.GetObjectfromName("txt_randSeed").get_value())
+        maskImage = pyglet.resource.image(kytten.GetObjectfromName("txt_maskFileName").get_value())
         newWorld = world.World(screenWidth, screenHeight, hexesInOddRow, True, maskImage, createWeather)
         t1 = time.clock()
         print("Total world gen time: ", t1-t0)
@@ -254,6 +256,10 @@ if __name__ == '__main__':
                         kytten.HorizontalLayout([
                             kytten.Input("1", name="txt_randSeed", length=10),
                             kytten.Button("New Seed", on_click=generate_new_seed),
+                        ]),
+                        kytten.HorizontalLayout([
+                            kytten.Label("File:"),
+                            kytten.Input("groundtruth5.jpg", name="txt_maskFileName"),
                         ]),
                         kytten.HorizontalLayout([
                             kytten.Label("Size:"),
@@ -304,7 +310,7 @@ if __name__ == '__main__':
         movable=False)
 
     # Create world
-    maskImage = pyglet.resource.image('groundtruth5.jpg')
+    maskImage = None
     # Create local noise texture to blit
     noiseTexture = image.Texture.create(screenWidth, screenHeight, GL_RGBA, True)
     noiseTexData = noiseTexture.get_image_data()
