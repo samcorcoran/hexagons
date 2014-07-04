@@ -8,6 +8,7 @@ import struct
 
 import graph
 import drawUtils
+import math
 
 class Hexagon():
     def __init__(self, centreCoordinates, radius=20, hexIndex=False, jitterStrength=False, existingNeighbours=(None,None,None), isBorderHex=False):
@@ -145,18 +146,22 @@ class Hexagon():
             return [self.points[pointNumber].x, self.points[pointNumber].y]
         return False
 
-    def getTriangleVerts(self, verts, colours=[]):
-        centreX = self.centre.x
-        centreY = self.centre.y
+    def getTriangleVerts(self, verts, colours=[], perVertexColours=True):
+        centreCol = [int(self.fillColor[i] * min([self.centre.altitude+0.1, 1.0])) for i in range(4)]
+        if perVertexColours:
+            borderCols = [[int(self.fillColor[i] * min([self.points[n].altitude+0.1, 1.0])) for i in range(4)] for n in range(len(self.points))]
         for n in range(len(self.points)):
             verts.extend([self.points[n].x, self.points[n].y,
                          self.points[n-1].x, self.points[n-1].y,
-                         centreX, centreY])
-        altitudeScale = self.centre.altitude
-        if altitudeScale == None:
-            altitudeScale = 1.0
-        vertColour = [int(self.fillColor[i]*altitudeScale) for i in range(len(self.fillColor))]
-        colours.extend([vertColour for n in range(len(self.points)*3)])
+                         self.centre.x, self.centre.y])
+            if perVertexColours:
+                colours.extend([borderCols[n], borderCols[n-1], centreCol])
+        if not perVertexColours:
+            altitudeScale = self.centre.altitude
+            if altitudeScale == None:
+                altitudeScale = 1.0
+            vertColour = [int(self.fillColor[i]*altitudeScale) for i in range(len(self.fillColor))]
+            colours.extend([vertColour for n in range(len(self.points)*3)])
 
     def getPerimeterCoordinatesList(self):
         return list(chain.from_iterable( [(self.points[n].x, self.points[n].y) for n in range(len(self.points))]))
