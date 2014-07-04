@@ -247,6 +247,24 @@ if __name__ == '__main__':
             hex_inspector_dialog.teardown()
             hex_inspector_dialog = None
 
+    def create_file_load_dialog(button):
+        fileDialog = None
+
+        def on_select(filename):
+            before, sep, after = filename.rpartition("\\")
+            kytten.GetObjectfromName("txt_maskFileName").set_text(after)
+            print("File load: %s" % filename)
+            on_escape(fileDialog)
+
+        def on_escape(fileDialog):
+            fileDialog.teardown()
+
+        fileDialog = kytten.FileLoadDialog(  # by default, path is current working dir
+            extensions=['.png', '.jpg', '.bmp', '.gif'],
+            window=window, batch=kytten.KyttenManager, group=kytten.KyttenManager.foregroup,
+            anchor=kytten.ANCHOR_CENTER,
+            theme=Theme, on_escape=on_escape, on_select=on_select)
+
     # UI Panel
     dialog = kytten.Dialog(
         kytten.TitleFrame('Terrain Controls',
@@ -258,8 +276,8 @@ if __name__ == '__main__':
                             kytten.Button("New Seed", on_click=generate_new_seed),
                         ]),
                         kytten.HorizontalLayout([
-                            kytten.Label("File:"),
                             kytten.Input("groundtruth5.jpg", name="txt_maskFileName"),
+                            kytten.Button("Load", on_click=create_file_load_dialog),
                         ]),
                         kytten.HorizontalLayout([
                             kytten.Label("Size:"),
