@@ -33,7 +33,11 @@ class Hexagon():
         self.quantityDrained = 0
         self.fillColor = False #(random.random(),random.random(),random.random(),0.5)
         self.land = False
-        self.distanceToBorder = False
+        # Nearest distance to border is from hex point closest to border
+        self.shortestDistanceToBorder = False
+        self.nearestBorderVertex = False
+        # Furthest distance to border is furthest relative to other hex points' nearest border
+        self.furthestDistanceToBorder = False
         self.water = False
         if jitterStrength and not isBorderHex:
             self.calculateCentrePoint()

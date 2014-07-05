@@ -76,7 +76,7 @@ class GameWindow(pyglet.window.Window):
         if selectedHex:
             kytten.GetObjectfromName("hexInsp_hexIndex").set_text(str(selectedHex.hexIndex))
             kytten.GetObjectfromName("hexInsp_altitude").set_text(str(selectedHex.centre.altitude))
-            kytten.GetObjectfromName("hexInsp_distToBorder").set_text(str(selectedHex.distanceToBorder))
+            kytten.GetObjectfromName("hexInsp_distToBorder").set_text(str(selectedHex.shortestDistanceToBorder) + ", " + str(selectedHex.furthestDistanceToBorder))
             containingLand = newWorld.getLandContainingHex(selectedHex)
             landName = "None"
             landSize = 0
