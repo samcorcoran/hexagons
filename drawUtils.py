@@ -86,4 +86,7 @@ def drawLineBatch(verts, colours = []):
         ('c4B', colours)
     )
 
+# Draws a square at centre of hex, as diagnostic tool to determine which hexes an algorithm is reaching
+def highlightHex(hex, colour=(1.0, 0.75, 0.1, 1.0)):
+    drawSquare([hex.centre.x, hex.centre.y], 2, colour)
 
