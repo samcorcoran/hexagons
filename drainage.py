@@ -107,7 +107,7 @@ def drawDrainageRoute(hexagon, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,
     if not hexagon.drainingNeighbour:
         # Calculate drainage neighbour if not already known
         findDrainingNeighbour(hexagon)
-    if len(hexagon.hexesDrainedAbove) > minHexesDrainedAbove:
+    if len(hexagon.hexesDrainedAbove) >= minHexesDrainedAbove:
         if hexagon.drainingNeighbour == hexagon or (drawMouthsAsSinks and not hexagon.drainingNeighbour.land):
             # Draw a square to indicate sink
             drawUtils.drawSquare([hexagon.centre.x, hexagon.centre.y], 4, sinkColor)
