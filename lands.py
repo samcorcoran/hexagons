@@ -100,7 +100,7 @@ class Land(GeographicZone):
                 #print("adding a basin")
                 self.drainageBasins.add(newBasin)
 
-    def createRivers(self, minRiverSize=0, percentageOfRivers=0.2):
+    def createRivers(self, minRiverSize=0, percentageOfRivers=1.0):
         # A low-bar can be applied to river length acceptance
         riverCandidates = []
         for nextHex in self.outflows:
