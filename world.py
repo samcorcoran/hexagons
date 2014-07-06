@@ -318,8 +318,6 @@ class World():
     # Use pyglet GL calls to draw drainage routes
     def drawDrainageRoutes(self, useSimpleRoutes=True, minHexesDrainedAbove=False):
         for nextHex in self.landHexes.values():
-            #nextHex.drawPerimeterDrainageRoutes()
-            #nextHex.drawVertexDrainageRoute()
             drainage.drawDrainageRoute(nextHex, useSimpleRoutes=useSimpleRoutes, minHexesDrainedAbove=minHexesDrainedAbove)
 
     # Use pyglet GL calls to draw drainage routes for each river hex
