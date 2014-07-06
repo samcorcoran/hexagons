@@ -37,6 +37,7 @@ class River():
                 self.traceFlow(nextDrainedHex)
         else:
             # Drains from no other hexes
+            self.routeHexes.append(currentHex)
             self.sourceHexes.add(currentHex)
 
     def getRiverPoints(self, riverPoints, minDrainedAbove=0, minTotalDrainedAtMouth=False):
@@ -95,7 +96,7 @@ def getDrainageRoutePoints(riverPoints, hexagon, minHexesDrainedAbove):
     if not hexagon.drainingNeighbour:
         # Calculate drainage neighbour if not already known
         findDrainingNeighbour(hexagon)
-    if len(hexagon.hexesDrainedAbove) > minHexesDrainedAbove:
+    if len(hexagon.hexesDrainedAbove) >= minHexesDrainedAbove:
         # Drainage to lowest point in current hex
         riverPoints.extend(hexagon.getCentreCoordinates())
         riverPoints.extend(hexagon.lowestPoint.getCoords())
