@@ -129,11 +129,6 @@ class Land(GeographicZone):
         for nextRiver in self.rivers:
             nextRiver.getRiverPoints(riverPoints, minDrainedAbove, minTotalDrainedAtMouth)
 
-    def drawRivers(self, riverPoints, useSimpleRoutes=True, minDrainedAbove=0, minTotalDrainedAtMouth=False):
-        for nextRiver in self.rivers:
-            nextRiver.getRiverPoints(riverPoints, useSimpleRoutes, minDrainedAbove, minTotalDrainedAtMouth)
-            nextRiver.drawRiver(useSimpleRoutes, minDrainedAbove, minTotalDrainedAtMouth)
-
     def drawDrainageBasins(self):
         #print("Drawing basins for region %d" % (self.id))
         for basin in self.drainageBasins:

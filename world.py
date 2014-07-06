@@ -327,7 +327,6 @@ class World():
         riverPoints = []
         for nextLand in self.islands:
             nextLand.getRiverPoints(riverPoints, minDrainedAbove, minTotalDrainedAtMouth)
-            #nextLand.drawRivers(useSimpleRoutes, minDrainedAbove, minTotalDrainedAtMouth)
         # Do the drawing
         drawUtils.drawRivers(riverPoints)
 
