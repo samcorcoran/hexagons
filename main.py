@@ -135,10 +135,10 @@ class GameWindow(pyglet.window.Window):
 
         # Drainage routes and sink locations
         if kytten.GetObjectfromName("cb_drawDrainage").get_value():
-            newWorld.drawDrainageRoutes(useSimpleRoutes=False, minHexesDrainedAbove=3)
+            newWorld.drawDrainageRoutes(useSimpleRoutes=True, minHexesDrainedAbove=0)
         # Rivers
         if kytten.GetObjectfromName("cb_drawRivers").get_value():
-            newWorld.drawRivers(useSimpleRoutes=False, minDrainedAbove=1, minTotalDrainedAtMouth=10)
+            newWorld.drawRivers(useSimpleRoutes=False, minDrainedAbove=0, minTotalDrainedAtMouth=0)
         # Land outlines
         if kytten.GetObjectfromName("cb_drawIslandBorders").get_value():
             newWorld.drawIslandBorders()
