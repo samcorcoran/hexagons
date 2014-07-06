@@ -37,7 +37,6 @@ class River():
                 self.traceFlow(nextDrainedHex)
         else:
             # Drains from no other hexes
-            self.routeHexes.append(currentHex)
             self.sourceHexes.add(currentHex)
 
     def getRiverPoints(self, riverPoints, minDrainedAbove=0, minTotalDrainedAtMouth=False):
