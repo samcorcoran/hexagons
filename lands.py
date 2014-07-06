@@ -110,20 +110,21 @@ class Land(GeographicZone):
         # Percentage acceptance takes given percentage of longest rivers, and any others that share a length with those accepted
         #   this is so rivers of equal length aren't arbitrarily accepted/discarded
         riverCandidates.sort(key = lambda x: len(x.routeHexes))
-        lastRiverHexLength = len(riverCandidates[0].routeHexes)
-        totalCandidates = len(riverCandidates)
-        while riverCandidates:
-            nextRiver = riverCandidates.pop()
-            # Adding rivers stops if another would take the acceptance percentage too high
-            percentageTooHigh = (len(self.rivers)+1)/float(totalCandidates) > percentageOfRivers
-            # Unless next river is the same length as last, so is included anyway
-            shorterThanLastRiver = len(nextRiver.routeHexes) < lastRiverHexLength
-            if (percentageTooHigh and shorterThanLastRiver):
-                break
-            # Store only legitimate rivers in set
-            self.rivers.add(nextRiver)
-            lastRiverHexLength = len(nextRiver.routeHexes)
-        # What remains in riverCandidates are all failed candidates
+        if len(riverCandidates) > 0:
+            lastRiverHexLength = len(riverCandidates[0].routeHexes)
+            totalCandidates = len(riverCandidates)
+            while riverCandidates:
+                nextRiver = riverCandidates.pop()
+                # Adding rivers stops if another would take the acceptance percentage too high
+                percentageTooHigh = (len(self.rivers)+1)/float(totalCandidates) > percentageOfRivers
+                # Unless next river is the same length as last, so is included anyway
+                shorterThanLastRiver = len(nextRiver.routeHexes) < lastRiverHexLength
+                if (percentageTooHigh and shorterThanLastRiver):
+                    break
+                # Store only legitimate rivers in set
+                self.rivers.add(nextRiver)
+                lastRiverHexLength = len(nextRiver.routeHexes)
+            # What remains in riverCandidates are all failed candidates
 
     def getRiverPoints(self, riverPoints, minDrainedAbove=0, minTotalDrainedAtMouth=False):
         for nextRiver in self.rivers:
