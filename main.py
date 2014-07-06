@@ -12,6 +12,7 @@ import hexagon
 import random
 import math
 import string
+import time
 
 # Import 2d Simplex Noise
 from noise import snoise2
@@ -21,7 +22,7 @@ import terrain
 import regions
 import lands
 import world
-import time
+import drawUtils
 
 # DRAW CONTROLS #
 drawMaskImage = False
@@ -154,6 +155,13 @@ class GameWindow(pyglet.window.Window):
         if drawDrainageBasins:
             for island in newWorld.islands:
                 island.drawDrainageBasins()
+
+        # DIAGNOSTIC RENDERING
+        # Render markers on hexes marked for diagnostic rendering
+        for island in newWorld.islands:
+            for hex in island.region.hexes.values():
+                if hex.renderForDiagnostics:
+                    drawUtils.highlightHex(hex)
 
         # Spatial Grid
         #newWorld.spatialGrid.drawGridCells()

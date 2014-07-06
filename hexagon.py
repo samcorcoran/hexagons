@@ -41,6 +41,7 @@ class Hexagon():
         self.water = False
         if jitterStrength and not isBorderHex:
             self.calculateCentrePoint()
+        self.renderForDiagnostics = False
     
     def createVertices(self, existingNeighbours, jitterStrength, isBorderHex):
         southeastNeighbour = existingNeighbours[0]
