@@ -117,7 +117,7 @@ def drawDrainageRoute(hexagon, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,
             else:
                 # Draw drainage to lowest point in current hex
                 drawUtils.drawArrow(hexagon.getCentreCoordinates(), hexagon.lowestPoint.getCoords(), drainageRouteColor)
-                # Draw drainge into draining hex
+                # Draw drainage into draining hex
                 drawUtils.drawArrow(hexagon.lowestPoint.getCoords(), hexagon.drainingNeighbour.getCentreCoordinates(), drainageRouteColor)
 
 def drawVertexDrainageRoute(hexagon, drainageRouteColor=(1.0,0,0,1), sinkColor=(0,1.0,0,1), drawMouthsAsSinks=False):
