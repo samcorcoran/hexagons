@@ -24,11 +24,6 @@ import lands
 import world
 import drawUtils
 
-# DRAW CONTROLS #
-drawMaskImage = False
-drawHexagons = True
-drawDrainage = False
-drawRivers = True
 
 drawIslandBorders = True
 drawWatersBorders = True
@@ -134,7 +129,7 @@ class GameWindow(pyglet.window.Window):
                                  drawWater=kytten.GetObjectfromName("cb_drawWater").get_value())
 
         # Drainage routes and sink locations
-        if kytten.GetObjectfromName("cb_drawDrainage").get_value():
+        if kytten.GetObjectfromName("cb_drawDrainageRoutes").get_value():
             newWorld.drawDrainageRoutes(useSimpleRoutes=True, minHexesDrainedAbove=0)
         # Rivers
         if kytten.GetObjectfromName("cb_drawRivers").get_value():
@@ -151,8 +146,8 @@ class GameWindow(pyglet.window.Window):
 
         if drawLandBorderHexes:
             newWorld.drawGeographicZoneBorderHexes()
-
-        if drawDrainageBasins:
+        # Drainage Basins
+        if kytten.GetObjectfromName("cb_drawDrainageBasins").get_value():
             for island in newWorld.islands:
                 island.drawDrainageBasins()
 
@@ -313,7 +308,8 @@ if __name__ == '__main__':
                     kytten.FoldingSection("River Drawing",
                         kytten.VerticalLayout([
                             kytten.Checkbox(name="cb_drawRivers", text="Draw Rivers"),
-                            kytten.Checkbox(name="cb_drawDrainage", text="Draw Drainage"),
+                            kytten.Checkbox(name="cb_drawDrainageRoutes", text="Draw Drainage"),
+                            kytten.Checkbox(name="cb_drawDrainageBasins", text="Draw Basins"),
                         ], align=kytten.ANCHOR_LEFT)
                     ),
                     kytten.Checkbox(name="cb_drawLand",
