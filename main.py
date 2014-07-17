@@ -24,6 +24,10 @@ import lands
 import world
 import drawUtils
 
+batch = pyglet.graphics.Batch()
+# Render groups
+background = pyglet.graphics.OrderedGroup(0)
+foreground = pyglet.graphics.OrderedGroup(1)
 
 drawIslandBorders = True
 drawWatersBorders = True
