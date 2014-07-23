@@ -153,8 +153,12 @@ class Hexagon():
 
     def getTriangleVerts(self, verts, colours=[], perVertexColours=True):
         centreCol = [int(self.fillColor[i] * min([self.centre.altitude+0.1, 1.0])) for i in range(4)]
+        borderCols = None
         if perVertexColours:
             borderCols = [[int(self.fillColor[i] * min([self.points[n].altitude+0.1, 1.0])) for i in range(4)] for n in range(len(self.points))]
+        else:
+            print("WARNING: Using centre colour for hex fills!")
+            borderCols = centreCol
         for n in range(len(self.points)):
             verts.extend([self.points[n].x, self.points[n].y,
                          self.points[n-1].x, self.points[n-1].y,
