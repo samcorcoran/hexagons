@@ -52,6 +52,14 @@ class World():
         # Create weather system
         if createWeather:
             self.weatherSystem = weather.WeatherSystem(worldWidth, worldHeight)
+        # Create batch renderable
+        self.batch = pyglet.graphics.Batch()
+        self.buildBatch()
+
+    # Populate batch renderable object with vertex_lists of world features
+    def buildBatch(self):
+        for land in self.islands:
+            land.buildBatch(self.batch)
 
     # Build a hex grid, hex by hex, using points of neighbouring generated hexagons where possible
     def createHexGridFromPoints(self, clipPointsToWorldLimits=True):
@@ -286,7 +294,6 @@ class World():
                         landHex.getTriangleVerts(hexTriangleVerts, hexFillColours)
             # Format centre point vertex list
             if not self.hexCentre_vertex_list and hexCentreVerts:
-
                 numHexCentreVerts = len(hexCentreVerts)/2
                 self.hexCentre_vertex_list = pyglet.graphics.vertex_list(numHexCentreVerts,
                     ('v2f/static', hexCentreVerts),

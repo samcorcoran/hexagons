@@ -47,8 +47,7 @@ class GeographicZone():
 # Land is a particular geographic zone that represents above-sea terrain.
 #
 class Land(GeographicZone):
-    def __init__(self, world, mainRegion, batch_, noise=False):
-        self.batch = batch_
+    def __init__(self, world, mainRegion, noise=False):
         # Initialise base class
         GeographicZone.__init__(self, world, mainRegion, noise=False)
         self.id = next(landIdGen)
@@ -72,11 +71,8 @@ class Land(GeographicZone):
         # Vertex Lists
         self.hex_fill_list = None
         self.hex_edge_list = None
-        self.populateHexVLists()
         self.region_border_list = None
-        self.populateBorderVList()
         self.river_edge_list = None
-        self.populateRiverVList()
 
     def assignLandHeights(self):
         # Assign heights to land vertices
@@ -150,7 +146,7 @@ class Land(GeographicZone):
         return self.region.doesRegionContainHex(hex)
 
     # Hex verts aggregated for land
-    def populateHexVLists(self, batch):
+    def buildTerrainVertexLists(self, batch):
         # Hex edges are the lines that form the perimeter of each hexagon
         hexFillVerts = []
         hexFillColours = []
@@ -169,15 +165,15 @@ class Land(GeographicZone):
             hexCentreVerts.extend([hex.centre.x, hex.centre.y])
             hexCentreColours.extend(hex.fillColor)
         # Construct vertex lists and add to batch
-        self.hex_fill_list = self.batch.add(len(hexFillVerts), pyglet.gl.GL_TRIANGLES, background,
+        self.hex_fill_list = batch.add(len(hexFillVerts)/2, pyglet.gl.GL_TRIANGLES, None,
             ('v2f/static', hexFillVerts),
-            ('c4B/static', hexFillColours)
+            ('c4B/static', list(chain.from_iterable(hexFillColours)))
         )
-        self.hex_edge_list = self.batch.add(len(hexEdgeVerts), pyglet.gl.GL_LINES, foreground,
+        self.hex_edge_list = batch.add(len(hexEdgeVerts)/2, pyglet.gl.GL_LINES, None,
             ('v2f/static', hexEdgeVerts),
-            ('c4B/static', hexEdgeColours)
+            ('c4B/static', list(chain.from_iterable(hexEdgeColours)))
         )
-        self.hex_centre_list = self.batch.add(len(hexCentreVerts), pyglet.gl.GL_POINTS, foreground,
+        self.hex_centre_list = batch.add(len(hexCentreVerts)/2, pyglet.gl.GL_POINTS, None,
             ('v2f/static', hexCentreVerts),
             ('c4B/static', hexCentreColours)
         )
@@ -189,6 +185,15 @@ class Land(GeographicZone):
 
     def populateRiverVList(self):
         self.river_edge_list = None
+
+    def buildBatch(self, batch):
+        # Hexagon edges, fills, centres
+        self.buildTerrainVertexLists(batch)
+        # Region border
+        self.region.buildBatch(batch)
+        # Rivers
+        for river in self.rivers:
+            river.buildBatch(batch)
 
 # Initialise a generator for 
 landIdGen = graph.idGenerator()

@@ -27,6 +27,7 @@ class River():
         self.routeHexes = list()
         self.sourceHexes = set()
         self.traceFlow(self.terminatingHex)
+        self.path_vertex_list = None
 
     # River follows sequence of hexagons 
     def traceFlow(self, currentHex):
@@ -50,6 +51,9 @@ class River():
             for nextHex in self.routeHexes:
                 if len(nextHex.hexesDrainedAbove) >= minDrainedAbove:
                     drawDrainageRoute(nextHex, useSimpleRoutes=useSimpleRoutes)
+
+    def buildBatch(self, batch):
+        pass
 
 # Initialise a generator for 
 basinIdGen = graph.idGenerator()

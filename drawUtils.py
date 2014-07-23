@@ -76,6 +76,10 @@ def drawPointBatch(verts, colours = []):
         ('v2f', verts),
         ('c4B', colours)
     )
+    #vertex_list = pyglet.graphics.vertex_list(len(verts)/2,
+    #    ('v2f', verts),
+    #    ('c4B', colours)
+    #)
 
 def drawLineBatch(verts, colours = []):
     numVerts = len(verts)/2

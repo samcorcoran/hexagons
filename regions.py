@@ -254,5 +254,9 @@ class Region():
             return True
         return False
 
+    def buildBatch(self, batch):
+        # Create vertex list for perimeter
+        pass
+
 # Initialise a generator for regions
 regionIdGen = graph.idGenerator()

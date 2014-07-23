@@ -180,6 +180,8 @@ class GameWindow(pyglet.window.Window):
         # Draw experimental noise texture
         #noiseTexture.blit(0,0)
 
+        newWorld.batch.draw()
+
     def on_draw(self):
         global newWorld
         self.clear()
