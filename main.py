@@ -124,13 +124,6 @@ class GameWindow(pyglet.window.Window):
         if kytten.GetObjectfromName("cb_drawMask").get_value():
             pyglet.gl.glColor4f(1,1,1,1)
             maskImage.blit(0, 0)
-        # Hexagon borders and fillings
-        if kytten.GetObjectfromName("cb_drawHexagons").get_value():
-            newWorld.drawHexGrid(drawHexEdges=kytten.GetObjectfromName("cb_drawHexEdges").get_value(),
-                                 drawHexFills=kytten.GetObjectfromName("cb_drawHexFills").get_value(),
-                                 drawHexCentres=kytten.GetObjectfromName("cb_drawHexCentres").get_value(),
-                                 drawLand=kytten.GetObjectfromName("cb_drawLand").get_value(),
-                                 drawWater=kytten.GetObjectfromName("cb_drawWater").get_value())
 
         # Drainage routes and sink locations
         if kytten.GetObjectfromName("cb_drawDrainageRoutes").get_value():
@@ -256,6 +249,27 @@ if __name__ == '__main__':
             hex_inspector_dialog.teardown()
             hex_inspector_dialog = None
 
+    def toggleHexFills(cb, state):
+        for island in newWorld.islands:
+            if state:
+                island.buildHexFillList(newWorld.batch)
+            else:
+                island.debatchHexFillList()
+
+    def toggleHexCentres(cb, state):
+        for island in newWorld.islands:
+            if state:
+                island.buildHexCentreList(newWorld.batch)
+            else:
+                island.debatchHexCentreList()
+
+    def toggleHexEdges(cb, state):
+        for island in newWorld.islands:
+            if state:
+                island.buildHexEdgeList(newWorld.batch)
+            else:
+                island.debatchHexEdgeList()
+
     def create_file_load_dialog(button):
         fileDialog = None
 
@@ -305,10 +319,11 @@ if __name__ == '__main__':
                             ),
                             kytten.Checkbox(name="cb_drawHexFills",
                                             text="Draw Fills",
-                                            is_checked=True
+                                            is_checked=True,
+                                            on_click=toggleHexFills
                             ),
-                            kytten.Checkbox(name="cb_drawHexCentres", text="Draw Centres"),
-                            kytten.Checkbox(name="cb_drawHexEdges", text="Draw Edges"),
+                            kytten.Checkbox(name="cb_drawHexCentres", text="Draw Centres", on_click=toggleHexCentres),
+                            kytten.Checkbox(name="cb_drawHexEdges", text="Draw Edges", on_click=toggleHexEdges),
                         ], align=kytten.ANCHOR_LEFT)
                     ),
                     kytten.FoldingSection("River Drawing",
