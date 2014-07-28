@@ -32,9 +32,6 @@ class GeographicZone():
         self.region.calculateAllClosestBorderVertex()
         self.region.findOrderedBorderVertices()
 
-    def drawGeographicZoneBorders(self):
-        self.region.drawRegionBorders()
-
     def getGeographicZoneBorderHexTrianglePoints(self, points, colours):
         self.region.getRegionBorderHexTrianglePoints(points, colours)
 
@@ -158,8 +155,7 @@ class Land(GeographicZone):
         if kytten.GetObjectfromName("cb_drawHexCentres").get_value():
             self.buildHexCentreList(batch)
         # Region border
-        if kytten.GetObjectfromName("cb_drawIslandBorders").get_value():
-            self.region.buildBatch(batch)
+        self.region.buildBatch(batch)
         # Rivers
         if kytten.GetObjectfromName("cb_drawRivers").get_value():
             for river in self.rivers:
@@ -173,10 +169,6 @@ class Land(GeographicZone):
         for hex in self.region.hexes.values():
             # Hex fills
             hex.getTriangleVerts(hexFillVerts, hexFillColours)
-        # Perform emergency destruction of vertex_list if still present
-        if self.hex_fill_list:
-            print("WARNING: Land's region hex fill vertex list was being rebuilt before being destroyed.")
-            self.debatchHexFillList()
         # Construct vertex list and add to batch
         self.hex_fill_list = batch.add(len(hexFillVerts)/2, pyglet.gl.GL_TRIANGLES, None,
             ('v2f/static', hexFillVerts),
@@ -189,6 +181,10 @@ class Land(GeographicZone):
             self.hex_fill_list = None
 
     def buildHexCentreList(self, batch):
+        # Perform emergency destruction of vertex_list if still present
+        if self.hex_fill_list:
+            print("WARNING: Land's region hex Centre vertex list was being rebuilt before being destroyed.")
+            self.debatchHexCentreList()
         print("Built batched hex centres for island: " + self.name)
         hexCentreVerts = []
         hexCentreColours = []
@@ -197,10 +193,6 @@ class Land(GeographicZone):
             # Hex centres
             hexCentreVerts.extend([hex.centre.x, hex.centre.y])
             hexCentreColours.extend(hex.fillColor)
-        # Perform emergency destruction of vertex_list if still present
-        if self.hex_fill_list:
-            print("WARNING: Land's region hex Centre vertex list was being rebuilt before being destroyed.")
-            self.debatchHexCentreList()
         # Construct vertex list and add to batch
         self.hex_centre_list = batch.add(len(hexCentreVerts)/2, pyglet.gl.GL_POINTS, None,
             ('v2f/static', hexCentreVerts),
@@ -214,6 +206,10 @@ class Land(GeographicZone):
             self.hex_centre_list = None
 
     def buildHexEdgeList(self, batch):
+        # Perform emergency destruction of vertex_list if still present
+        if self.hex_fill_list:
+            print("WARNING: Land's region hex edge vertex list was being rebuilt before being destroyed.")
+            self.debatchHexEdgeList()
         hexEdgeVerts = []
         hexEdgeColours = []
         # Collect lists of vertices
@@ -221,10 +217,6 @@ class Land(GeographicZone):
             # Hex edges
             hexEdgeVerts.extend(list(chain.from_iterable( [(hex.points[n].x, hex.points[n].y, hex.points[n-1].x, hex.points[n-1].y) for n in range(len(hex.points))])))
             hexEdgeColours.extend([hex.fillColor for n in range(len(hex.points)*2)])
-        # Perform emergency destruction of vertex_list if still present
-        if self.hex_fill_list:
-            print("WARNING: Land's region hex edge vertex list was being rebuilt before being destroyed.")
-            self.debatchHexEdgeList()
         # Construct vertex list and add to batch
         self.hex_edge_list = batch.add(len(hexEdgeVerts)/2, pyglet.gl.GL_LINES, None,
             ('v2f/static', hexEdgeVerts),

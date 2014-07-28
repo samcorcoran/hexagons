@@ -336,11 +336,6 @@ class World():
         # Do the drawing
         drawUtils.drawRivers(riverPoints)
 
-    # Draw borders of each distinct land region
-    def drawIslandBorders(self):
-        for island in self.islands:
-            island.drawGeographicZoneBorders()
-
     # Draw borders of each distinct waters region
     def drawWatersBorders(self):
         for water in self.waters:

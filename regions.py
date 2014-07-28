@@ -9,6 +9,7 @@ import scipy.spatial as spatial
 
 import graph
 import drawUtils
+import kytten
 
 #
 # Regions are areas of hexes that are bounded by a border. Regions
@@ -26,6 +27,8 @@ class Region():
         self.orderedBorderVertices = []
         self.closestBorderVertex = dict()
         self.largestVertexBorderDistance = False
+        # Vertex list for rendering
+        self.border_vert_lists = []
 
     def findBorderHexes(self, ringDepth=False):
         #print("Finding all border hexes...")
@@ -255,8 +258,43 @@ class Region():
         return False
 
     def buildBatch(self, batch):
+        print("build region")
         # Create vertex list for perimeter
-        pass
+        if kytten.GetObjectfromName("cb_drawIslandBorders").get_value():
+            self.buildRegionBorderLists(batch)
+
+    def buildRegionBorderLists(self, batch, borderColor=(204,127,26,127)):
+        print("build region border list")
+        # Perform emergency destruction of vertex_list if still present
+        if self.border_vert_lists:
+            print("WARNING: Region's border vertex list was being rebuilt before being destroyed.")
+            self.debatchBorderLists()
+        # Build border if not already built
+        if not self.orderedBorderVertices:
+            self.findOrderedBorderVertices()
+        # Convert vertices into list of coordinates
+        i = 0
+        for borderList in self.orderedBorderVertices:
+            pointsList = []
+            i += 1
+            print i
+            pointsList = [v.getCoords() for v in borderList]
+            print("Border list num verts: " + str(len(borderList)))
+            pointsList = list(chain.from_iterable(pointsList))
+            #pointsList.append(pointsList[0])
+            #pointsList.append(pointsList[1])
+            # Construct vertex list and add to batch
+            if i == 2 or i == 3:
+                self.border_vert_lists.append( batch.add(len(pointsList)/2, pyglet.gl.GL_LINE_LOOP, None,
+                    ('v2f/static', pointsList),
+                    ('c4B/static', list(chain.from_iterable( [ borderColor for n in range(len(pointsList)/2) ] )))
+                ))
+
+    def debatchBorderLists(self):
+        print("Debatched region border")
+        for list in self.border_vert_list:
+            list.delete()
+        self.border_vert_list = []
 
 # Initialise a generator for regions
 regionIdGen = graph.idGenerator()

@@ -131,9 +131,7 @@ class GameWindow(pyglet.window.Window):
         # Rivers
         if kytten.GetObjectfromName("cb_drawRivers").get_value():
             newWorld.drawRivers(useSimpleRoutes=False, minDrainedAbove=0, minTotalDrainedAtMouth=0)
-        # Land outlines
-        if kytten.GetObjectfromName("cb_drawIslandBorders").get_value():
-            newWorld.drawIslandBorders()
+
         # Water outlines (seas, lakes)
         if drawWatersBorders and createWeather:
             newWorld.drawWatersBorders()
@@ -270,6 +268,13 @@ if __name__ == '__main__':
             else:
                 island.debatchHexEdgeList()
 
+    def toggleRegionBorders(cb, state):
+        for island in newWorld.islands:
+            if state:
+                island.region.buildRegionBorderLists(newWorld.batch)
+            else:
+                island.region.debatchBorderLists()
+
     def create_file_load_dialog(button):
         fileDialog = None
 
@@ -340,7 +345,8 @@ if __name__ == '__main__':
                     kytten.Checkbox(name="cb_drawWater", text="Draw Water Hexes"),
                     kytten.Checkbox(name="cb_drawIslandBorders",
                                     text="Draw Island Borders",
-                                    is_checked=True
+                                    is_checked=True,
+                                    on_click=toggleRegionBorders
                     ),
                     kytten.Checkbox(name="cb_drawMask", text="Draw Mask"),
                     kytten.Checkbox(name="cb_displayFPS", text="Show FPS"),
