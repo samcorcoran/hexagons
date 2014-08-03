@@ -277,7 +277,7 @@ class Region():
         for borderList in self.orderedBorderVertices:
             pointsList = []
             i += 1
-            print i
+            print(i)
             pointsList = [v.getCoords() for v in borderList]
             print("Border list num verts: " + str(len(borderList)))
             pointsList = list(chain.from_iterable(pointsList))

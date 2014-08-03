@@ -217,7 +217,7 @@ if __name__ == '__main__':
         print("Total world gen time: ", t1-t0)
 
     def generate_new_seed(btn):
-        seed = random.randint(0, sys.maxint)
+        seed = random.randint(0, sys.maxsize)
         kytten.GetObjectfromName("txt_randSeed").set_text(str(seed))
 
     def handle_hex_inspector_dialog(btn):
