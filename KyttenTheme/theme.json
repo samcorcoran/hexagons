@@ -1,0 +1,369 @@
+{
+  "font": "Lucida Grande",
+  "font_size": 10,
+  "vscrollbar": {
+    "bar": {
+      "image": {
+        "src": "vscrollbar.png",
+        "region": [0, 16, 16, 16],
+        "stretch": [0, 6, 16, 4],
+        "padding": [0, 0, 0, 0]
+      }
+    },
+    "space": {
+      "image": {
+        "src": "vscrollbar.png",
+        "region": [0, 64, 16, 16]
+      }
+    },
+    "downmax": {
+      "image": {
+        "src": "vscrollbar.png",
+        "region": [0, 0, 16, 16]
+      }
+    },
+    "up": {
+      "image": {
+        "src": "vscrollbar.png",
+        "region": [0, 80, 16, 16]
+      }
+    },
+    "down": {
+      "image": {
+        "src": "vscrollbar.png",
+        "region": [0, 48, 16, 16]
+      }
+    },
+    "upmax": {
+      "image": {
+        "src": "vscrollbar.png",
+        "region": [0, 32, 16, 16]
+      }
+    }
+  },
+  "disabled_color": [160, 160, 160, 255],
+  "dropdown": {
+    "pulldown": {
+      "image": {
+        "src": "pulldown.png",
+        "region": [0, 0, 64, 64],
+        "stretch": [12, 12, 12, 12],
+        "padding": [18, 18, 18, 18]
+      }
+    },
+    "image": {
+      "src": "dropdown.png",
+      "stretch": [4, 8, 20, 5],
+      "padding": [6, 10, 6, 10]
+    }
+  },
+  "gui_color": [255, 255, 255, 255],
+  "frame": {
+    "image": {
+      "src": "menu0.png",
+      "region": [0, 0, 256, 256],
+      "stretch": [14, 14, 231, 228],
+      "padding": [21, 17, 20, 19]
+    }
+  },
+  "colorselector": {
+    "swatch": {
+      "image": {
+        "src": "colorswatch.png",
+        "region": [0, 0, 26, 26],
+        "stretch": [5, 5, 16, 16],
+        "padding": [5, 5, 5, 5]
+      }
+    },
+    "crosshair": {
+      "image": {
+        "src": "crosshair.png",
+        "region": [0, 0, 16, 16],
+        "stretch": [8, 8, 0, 0],
+        "padding": [8, 8, 8, 8]
+      }
+    }
+  },
+  "spinbutton": {
+    "upsoutharrow": {
+      "highlight": {
+        "image": {
+          "src": "spinbutton.png",
+          "region": [19, 0, 8, 7],
+          "stretch": [0, 0, 8, 7],
+          "padding": [4, 4, 3, 4]
+        }
+      },
+      "image": {
+        "src": "spinbutton.png",
+        "region": [1, 0, 8, 7],
+        "stretch": [0, 0, 8, 7],
+        "padding": [4, 4, 3, 4]
+      }
+    },
+    "downnortharrow": {
+      "highlight": {
+        "image": {
+          "src": "spinbutton.png",
+          "region": [19, 8, 8, 7],
+          "stretch": [0, 0, 8, 7],
+          "padding": [4, 4, 4, 4]
+        }
+      },
+      "image": {
+        "src": "spinbutton.png",
+        "region": [10, 8, 8, 7],
+        "stretch": [0, 0, 8, 7],
+        "padding": [4, 4, 4, 4]
+      }
+    },
+    "upnortharrow": {
+      "highlight": {
+        "image": {
+          "src": "spinbutton.png",
+          "region": [19, 8, 8, 7],
+          "stretch": [0, 0, 8, 7],
+          "padding": [4, 4, 4, 4]
+        }
+      },
+      "image": {
+        "src": "spinbutton.png",
+        "region": [1, 8, 8, 7],
+        "stretch": [0, 0, 8, 7],
+        "padding": [4, 4, 4, 4]
+      }
+    },
+    "downsoutharrow": {
+      "highlight": {
+        "image": {
+          "src": "spinbutton.png",
+          "region": [19, 0, 8, 7],
+          "stretch": [0, 0, 8, 7],
+          "padding": [4, 4, 4, 4]
+        }
+      },
+      "image": {
+        "src": "spinbutton.png",
+        "region": [10, 0, 8, 7],
+        "stretch": [0, 0, 8, 7],
+        "padding": [4, 4, 3, 4]
+      }
+    }
+  },
+  "text_color": [62, 255, 0, 255],
+  "hscrollbar": {
+    "leftmax": {
+      "image": {
+        "src": "hscrollbar.png",
+        "region": [48, 0, 16, 16]
+      }
+    },
+    "right": {
+      "image": {
+        "src": "hscrollbar.png",
+        "region": [32, 0, 16, 16]
+      }
+    },
+    "rightmax": {
+      "image": {
+        "src": "hscrollbar.png",
+        "region": [80, 0, 16, 16]
+      }
+    },
+    "space": {
+      "image": {
+        "src": "hscrollbar.png",
+        "region": [16, 0, 16, 16]
+      }
+    },
+    "bar": {
+      "image": {
+        "src": "hscrollbar.png",
+        "region": [64, 0, 16, 16],
+        "stretch": [6, 0, 4, 16],
+        "padding": [0, 0, 0, 0]
+      }
+    },
+    "left": {
+      "image": {
+        "src": "hscrollbar.png",
+        "region": [0, 0, 16, 16]
+      }
+    }
+  },
+  "checkbox": {
+    "checked": {
+      "highlight": {
+        "image": {
+          "src": "input-highlight.png"
+        }
+      },
+      "image": {
+        "src": "checkbox-checked.png"
+      }
+    },
+    "unchecked": {
+      "highlight": {
+        "image": {
+          "src": "input-highlight.png"
+        }
+      },
+      "image": {
+        "src": "checkbox.png"
+      }
+    }
+  },
+  "section": {
+    "right": {
+      "image": {
+        "src": "line.png",
+        "region": [2, 0, 6, 4],
+        "stretch": [0, 4, 4, 0],
+        "padding": [0, 0, 0, 6]
+      }
+    },
+    "font_size": 14,
+    "opened": {
+      "image": {
+        "src": "book-open.png"
+      }
+    },
+    "closed": {
+      "image": {
+        "src": "book.png"
+      }
+    },
+    "left": {
+      "image": {
+        "src": "line.png",
+        "region": [0, 0, 6, 4],
+        "stretch": [2, 4, 4, 0],
+        "padding": [0, 0, 0, 6]
+      }
+    },
+    "center": {
+      "image": {
+        "src": "line.png",
+        "region": [2, 0, 4, 4],
+        "stretch": [0, 4, 4, 0],
+        "padding": [0, 0, 0, 6]
+      }
+    }
+  },
+  "input": {
+    "highlight": {
+      "image": {
+        "src": "input-highlight.png"
+      }
+    },
+    "image": {
+      "src": "input.png",
+      "region": [0, 0, 8, 8],
+      "stretch": [2, 2, 4, 4],
+      "padding": [3, 3, 2, 2]
+    }
+  },
+  "font_size_small": 8,
+  "highlight_color": [255, 255, 255, 64],
+  "menuoption": {
+    "highlight": {
+      "image": {
+        "src": "input-highlight.png"
+      }
+    },
+    "selection": {
+      "gui_color": [255, 255, 255, 255],
+      "text_color": [0, 0, 0, 255]
+    }
+  },
+  "button": {
+    "down": {
+      "highlight": {
+        "image": {
+          "src": "button-highlight.png",
+          "stretch": [8, 6, 2, 2],
+          "padding": [18, 18, 8, 6]
+        }
+      },
+      "image": {
+        "src": "button-down.png",
+        "region": [2, 2, 32, 22],
+        "stretch": [6, 6, 20, 10],
+        "padding": [8, 6, 6, 7]
+      },
+      "text_color": [0, 0, 0, 255]
+    },
+    "up": {
+      "highlight": {
+        "image": {
+          "src": "button-highlight.png",
+          "stretch": [8, 6, 2, 2],
+          "padding": [18, 18, 8, 6]
+        }
+      },
+      "image": {
+        "src": "button.png",
+        "region": [2, 2, 32, 22],
+        "stretch": [6, 6, 20, 10],
+        "padding": [8, 6, 6, 7]
+      }
+    }
+  },
+  "slider": {
+    "knob": {
+      "image": {
+        "src": "slider-knob.png"
+      },
+      "offset": [-5, -11]
+    },
+    "padding": [8, 8, 8, 8],
+    "step": {
+      "image": {
+        "src": "slider-step.png"
+      },
+      "offset": [-2, -8]
+    },
+    "bar": {
+      "image": {
+        "src": "slider-bar.png",
+        "stretch": [8, 8, 8, 0],
+        "padding": [8, 8, 8, 8]
+      }
+    }
+  },
+  "titlebar": {
+    "frame": {
+      "image": {
+        "src": "titlepanel.png",
+        "region": [0, 0, 128, 42],
+        "stretch": [10, 9, 108, 33],
+        "padding": [16, 16, 0, 16]
+      }
+    },
+    "right": {
+      "image": {
+        "src": "titlepanel.png",
+        "region": [116, 42, 12, 22],
+        "stretch": [3, 12, 0, 4],
+        "padding": [0, 0, 0, 0]
+      }
+    },
+    "font_size": 12,
+    "center": {
+      "image": {
+        "src": "titlepanel.png",
+        "region": [9, 42, 110, 22],
+        "stretch": [1, 9, 109, 10],
+        "padding": [24, 24, 16, 24]
+      }
+    },
+    "left": {
+      "image": {
+        "src": "titlepanel.png",
+        "region": [0, 42, 9, 22],
+        "stretch": [9, 12, 0, 5],
+        "padding": [0, 0, 0, 0]
+      }
+    }
+  }
+}

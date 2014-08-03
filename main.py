@@ -47,7 +47,7 @@ selectedHex = None
 selectedVertex = None
 
 # GUI Theme
-Theme = kytten.Theme('C:/Programming/Kytten/KyttenParashurama/theme', override={
+Theme = kytten.Theme('KyttenTheme', override={
     "gui_color": [200, 200, 200, 255],
     "text_color": [0,100,255,255],
     "font_size": 10
