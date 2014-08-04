@@ -170,7 +170,7 @@ class Land(GeographicZone):
             # Hex fills
             hex.getTriangleVerts(hexFillVerts, hexFillColours)
         # Construct vertex list and add to batch
-        self.hex_fill_list = batch.add(len(hexFillVerts)/2, pyglet.gl.GL_TRIANGLES, None,
+        self.hex_fill_list = batch.add(int(len(hexFillVerts)/2), pyglet.gl.GL_TRIANGLES, None,
             ('v2f/static', hexFillVerts),
             ('c4B/static', list(chain.from_iterable(hexFillColours)))
         )

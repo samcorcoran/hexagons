@@ -376,8 +376,6 @@ class Hexagon():
                 # Extract intensity info
                 #data = image_data.get_data('I', 1)
                 data = maskImageData[i]
-                # Convert from byte to int
-                data = struct.unpack('<B', data)[0]
 
                 if data > 0:
                 #   print("Vote")

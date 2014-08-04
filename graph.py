@@ -176,7 +176,7 @@ class SpatialGrid():
         closestPerimeterVertex, perimeterMinDist, closestCentreVertex, centreMinDist = self.findNearestVertex(x, y)
 
         if closestCentreVertex and closestCentreVertex.surroundingHexes:
-            closestHex = closestCentreVertex.surroundingHexes.values()[0]
+            closestHex = list(closestCentreVertex.surroundingHexes.values())[0]
 
         if perimeterMinDist >= centreMinDist:
             closestVertex = closestCentreVertex

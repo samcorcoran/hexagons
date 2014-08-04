@@ -66,7 +66,7 @@ def findDrainingNeighbour(hexagon):
         # Determine which of the hexagons neighbouring this point has the lowest altitude
         lowestHexes = [lowestPoint.surroundingHexes[0]]
         for nextHex in lowestPoint.surroundingHexes.values():
-            if nextHex.centre.altitude < lowestHexes[0].centre.altitude:
+            if nextHex.centre.altitude and lowestHexes[0].centre.altitude and (nextHex.centre.altitude < lowestHexes[0].centre.altitude):
                 # A preferred draining hex has been found
                 lowestHexes = [nextHex]
             elif nextHex.centre.altitude == lowestHexes[0].centre.altitude:

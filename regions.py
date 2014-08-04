@@ -183,6 +183,7 @@ class Region():
 
         t0 = time.clock()
         pointCount = 0
+        borderVertsList = list(self.borderVertices.items())
         # Search border vertices for closest point
         for nextHex in self.hexes.values():
             largestDistToBorder = 0
@@ -193,7 +194,7 @@ class Region():
                 distance = None
                 if useKdTree:
                     distance, closestVertexId = tree.query([nextPoint.x, nextPoint.y], k=1)
-                    closestBorderVertex = self.borderVertices.items()[closestVertexId][1]
+                    closestBorderVertex = borderVertsList[closestVertexId][1]
                 else:
                     closestBorderVertex, distance = self.findClosestBorderVertex(nextPoint)
                 # Track hex's shortest distance to border
@@ -278,23 +279,23 @@ class Region():
             pointsList = []
             i += 1
             print(i)
-            pointsList = [v.getCoords() for v in borderList]
-            print("Border list num verts: " + str(len(borderList)))
+            pointsList = [[v.getCoords(), v.getCoords()] for v in borderList]
             pointsList = list(chain.from_iterable(pointsList))
             #pointsList.append(pointsList[0])
             #pointsList.append(pointsList[1])
             # Construct vertex list and add to batch
             if i == 2 or i == 3:
-                self.border_vert_lists.append( batch.add(len(pointsList)/2, pyglet.gl.GL_LINE_LOOP, None,
-                    ('v2f/static', pointsList),
-                    ('c4B/static', list(chain.from_iterable( [ borderColor for n in range(len(pointsList)/2) ] )))
+                numVerts = int(len(pointsList))
+                self.border_vert_lists.append( batch.add(int(len(pointsList)), pyglet.gl.GL_LINES, None,
+                    ('v2f/static', list(chain.from_iterable(pointsList))),
+                    ('c4B/static', list(chain.from_iterable( [ borderColor for n in range(numVerts) ] )))
                 ))
 
     def debatchBorderLists(self):
         print("Debatched region border")
-        for list in self.border_vert_list:
+        for list in self.border_vert_lists:
             list.delete()
-        self.border_vert_list = []
+        self.border_vert_lists = []
 
 # Initialise a generator for regions
 regionIdGen = graph.idGenerator()
